@@ -186,5 +186,5 @@ npm run build
 Proyek **ShareRoom** dirilis di bawah lisensi [MIT License](LICENSE). Bebas digunakan dan dikembangkan kembali.
 
 <div align="center">
-  <p>Dikembangkan dengan ❤️ Oleh <b></b> & <b>Dev Team</b></p>
+  <p>Dikembangkan dengan ❤️ Oleh <b></b><b>Dev Team</b></p>
 </div>
