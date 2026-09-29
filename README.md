@@ -123,8 +123,8 @@ Pastikan komputer Anda telah terinstal:
 
 ```bash
 # 1. Clone repository ini
-git clone https://github.com/username/share_room.git
-cd share_room
+git clone https://github.com/NewX-Team/share-room-web.git
+cd share_room / share-room-web
 
 # 2. Install dependensi PHP (Composer)
 composer install
