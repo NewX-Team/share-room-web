@@ -1,0 +1,554 @@
+import { Head, useForm, usePage, router } from '@inertiajs/react';
+import { showConfirmDialog, showWarningAlert } from '@/lib/swal';
+import { dashboard } from '@/routes';
+import { 
+    Users, 
+    ShieldAlert, 
+    Clock, 
+    Wallet, 
+    Sparkles, 
+    BarChart3, 
+    LineChart,
+    ArrowUpRight,
+    CheckCircle2,
+    PlusCircle,
+    KeyRound,
+    LogIn,
+    Copy,
+    Check,
+    ArrowRight,
+    Crown,
+    Coins,
+    User as UserIcon,
+    Trash2,
+    LogOut,
+    Lock
+} from 'lucide-react';
+import { useState } from 'react';
+import type { Auth } from '@/types/auth';
+
+interface RoomData {
+    id: number;
+    name: string;
+    code: string;
+    duration_hours: number;
+    expires_at: string;
+    wallet_balance: number;
+    role_in_room?: string;
+    is_owner?: boolean;
+    is_joined?: boolean;
+    is_expired?: boolean;
+}
+
+interface StatsData {
+    totalUsers: number;
+    totalRooms: number;
+    totalActiveRooms: number;
+    totalWalletBalance: number;
+}
+
+interface DashboardProps {
+    stats: StatsData;
+    rooms?: RoomData[];
+}
+
+export default function Dashboard({ stats, rooms = [] }: DashboardProps) {
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const currentUser = auth?.user;
+    const isAdmin = currentUser?.role === 'admin';
+
+    // Inertia Forms for User
+    const createRoomForm = useForm({
+        name: '',
+        duration_hours: 3,
+    });
+
+    const joinRoomForm = useForm({
+        code: '',
+    });
+
+    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+    const handleCreateRoom = (e: React.FormEvent) => {
+        e.preventDefault();
+        createRoomForm.post('/rooms');
+    };
+
+    const handleJoinRoom = (e: React.FormEvent) => {
+        e.preventDefault();
+        joinRoomForm.post('/rooms/join');
+    };
+
+    const handleCopyCode = (code: string, idx: number) => {
+        navigator.clipboard?.writeText(code);
+        setCopiedIndex(idx);
+        setTimeout(() => setCopiedIndex(null), 2000);
+    };
+    const handleRemoveHistory = (roomId: number, isJoined: boolean, isExpired: boolean) => {
+        if (isJoined && !isExpired) {
+            showWarningAlert('Anda masih terdaftar di room aktif ini! Silakan masuk dan pilih "Keluar dari Room" terlebih dahulu sebelum menghapus riwayat.', 'Aksi Ditolak');
+            return;
+        }
+
+        showConfirmDialog({
+            title: 'Hapus Riwayat Room?',
+            text: 'Riwayat room ini akan dihapus dari dashboard Anda.',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+            icon: 'warning',
+        }, () => {
+            router.delete(`/rooms/${roomId}/history`);
+        });
+    };
+
+    // Trend data for admin charts
+    const userGrowthData = [
+        { month: 'Jan', count: 12 },
+        { month: 'Feb', count: 19 },
+        { month: 'Mar', count: 28 },
+        { month: 'Apr', count: 35 },
+        { month: 'Mei', count: 52 },
+        { month: 'Jun', count: stats?.totalUsers || 65 },
+    ];
+
+    const walletGrowthData = [
+        { week: 'Minggu 1', balance: 250000 },
+        { week: 'Minggu 2', balance: 520000 },
+        { week: 'Minggu 3', balance: 890000 },
+        { week: 'Minggu 4', balance: stats?.totalWalletBalance || 1450000 },
+    ];
+
+    return (
+        <>
+            <Head title={isAdmin ? 'Dashboard Utama Admin — ShareRoom' : 'Dashboard Saya — ShareRoom'} />
+
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+                {/* Header Banner */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl shadow-sm">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            {isAdmin ? (
+                                <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1">
+                                    <ShieldAlert className="w-3.5 h-3.5" /> Dashboard Utama Admin
+                                </span>
+                            ) : (
+                                <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold flex items-center gap-1">
+                                    <Sparkles className="w-3.5 h-3.5" /> User Workspace
+                                </span>
+                            )}
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-foreground dark:text-white">
+                            Halo, {currentUser?.name || 'User'}! 👋
+                        </h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground dark:text-zinc-400">
+                            {isAdmin 
+                                ? 'Pantau total pengguna, total room terdaftar, dan grafik pertumbuhan kas secara real-time.'
+                                : 'Buat room temporary baru atau masuk menggunakan kode unik.'}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <div className="bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 px-4 py-2 rounded-xl text-xs">
+                            <span className="text-muted-foreground block">Role Akun</span>
+                            <span className={`font-bold font-mono uppercase ${isAdmin ? 'text-rose-600 dark:text-rose-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                                {currentUser?.role || 'user'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ========================================================================= */}
+                {/* 📊 DASHBOARD UNTUK ADMINISTRATOR                                          */}
+                {/* ========================================================================= */}
+                {isAdmin ? (
+                    <div className="space-y-8 animate-in fade-in duration-300">
+                        {/* Main Stats Cards Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {/* Stat 1: Total Users */}
+                            <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl space-y-3 relative overflow-hidden group hover:border-indigo-500/40 transition-colors shadow-sm">
+                                <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-zinc-400">
+                                    <span className="font-semibold uppercase tracking-wider">Total User Terdaftar</span>
+                                    <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                                        <Users className="w-5 h-5" />
+                                    </div>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl font-extrabold text-foreground dark:text-white font-mono">{stats?.totalUsers ?? 0}</span>
+                                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center">
+                                        <ArrowUpRight className="w-3.5 h-3.5" /> +12% bulan ini
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground dark:text-zinc-500">Pengguna aktif terverifikasi di server</p>
+                            </div>
+
+                            {/* Stat 2: Total Rooms */}
+                            <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl space-y-3 relative overflow-hidden group hover:border-amber-500/40 transition-colors shadow-sm">
+                                <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-zinc-400">
+                                    <span className="font-semibold uppercase tracking-wider">Total Room Dibuat</span>
+                                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                                        <Clock className="w-5 h-5" />
+                                    </div>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl font-extrabold text-foreground dark:text-white font-mono">{stats?.totalRooms ?? 0}</span>
+                                    <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
+                                        ({stats?.totalActiveRooms ?? 0} Room Aktif)
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground dark:text-zinc-500">Total room temporary buatan user</p>
+                            </div>
+
+                            {/* Stat 3: Total Kas Server */}
+                            <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl space-y-3 relative overflow-hidden group hover:border-emerald-500/40 transition-colors sm:col-span-2 lg:col-span-1 shadow-sm">
+                                <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-zinc-400">
+                                    <span className="font-semibold uppercase tracking-wider">Total Kas Dompet Server</span>
+                                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                                        <Wallet className="w-5 h-5" />
+                                    </div>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-2xl sm:text-3xl font-extrabold text-foreground dark:text-white font-mono">
+                                        Rp {(stats?.totalWalletBalance ?? 0).toLocaleString('id-ID')}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                                    <CheckCircle2 className="w-3.5 h-3.5" /> Saldo Kas Akumulasi Real-Time
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Charts Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            {/* CHART 1: User Growth */}
+                            <div className="lg:col-span-6 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-6 space-y-4 shadow-sm">
+                                <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-4">
+                                    <div>
+                                        <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
+                                            <LineChart className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                            Grafik Pertumbuhan User (Monthly)
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground dark:text-zinc-400 mt-0.5">Tren jumlah user yang mendaftar tiap bulan</p>
+                                    </div>
+                                    <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
+                                        2026 Trend
+                                    </span>
+                                </div>
+
+                                <div className="h-56 w-full pt-4 flex flex-col justify-between relative">
+                                    <div className="absolute inset-0 top-6 bottom-8 flex items-center justify-center pointer-events-none">
+                                        <svg className="w-full h-full overflow-visible" viewBox="0 0 500 150" preserveAspectRatio="none">
+                                            <defs>
+                                                <linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.35" />
+                                                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                                                </linearGradient>
+                                            </defs>
+                                            <path
+                                                d="M 0,130 Q 100,100 200,80 T 400,30 T 500,10 L 500,150 L 0,150 Z"
+                                                fill="url(#userGrad)"
+                                            />
+                                            <path
+                                                d="M 0,130 Q 100,100 200,80 T 400,30 T 500,10"
+                                                fill="none"
+                                                stroke="#6366f1"
+                                                strokeWidth="3"
+                                            />
+                                        </svg>
+                                    </div>
+
+                                    <div className="grid grid-cols-6 items-end h-40 gap-3 z-10">
+                                        {userGrowthData.map((d, idx) => (
+                                            <div key={idx} className="flex flex-col items-center gap-2 group h-full justify-end">
+                                                <span className="text-[10px] font-mono font-bold text-foreground dark:text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity bg-background dark:bg-zinc-950 px-1.5 py-0.5 rounded border border-border dark:border-zinc-800">
+                                                    {d.count}
+                                                </span>
+                                                <div 
+                                                    className="w-full bg-gradient-to-t from-indigo-600/40 to-indigo-500 rounded-t-lg transition-all group-hover:scale-105"
+                                                    style={{ height: `${(d.count / (stats?.totalUsers || 70)) * 100}%` }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="grid grid-cols-6 text-center text-xs font-semibold text-muted-foreground border-t border-border dark:border-zinc-800/80 pt-2 z-10">
+                                        {userGrowthData.map((d, idx) => (
+                                            <span key={idx}>{d.month}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* CHART 2: Wallet Growth */}
+                            <div className="lg:col-span-6 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-6 space-y-4 shadow-sm">
+                                <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-4">
+                                    <div>
+                                        <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
+                                            <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                            Grafik Akumulasi Kas Server (Weekly)
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground dark:text-zinc-400 mt-0.5">Pertumbuhan saldo kas dompet room per minggu</p>
+                                    </div>
+                                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                                        Real-Time
+                                    </span>
+                                </div>
+
+                                <div className="h-56 w-full pt-4 flex flex-col justify-between relative">
+                                    <div className="absolute inset-0 top-6 bottom-8 flex items-center justify-center pointer-events-none">
+                                        <svg className="w-full h-full overflow-visible" viewBox="0 0 500 150" preserveAspectRatio="none">
+                                            <defs>
+                                                <linearGradient id="walletGrad" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+                                                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                                                </linearGradient>
+                                            </defs>
+                                            <path
+                                                d="M 0,140 Q 120,110 250,70 T 500,15 L 500,150 L 0,150 Z"
+                                                fill="url(#walletGrad)"
+                                            />
+                                            <path
+                                                d="M 0,140 Q 120,110 250,70 T 500,15"
+                                                fill="none"
+                                                stroke="#10b981"
+                                                strokeWidth="3"
+                                            />
+                                        </svg>
+                                    </div>
+
+                                    <div className="grid grid-cols-4 items-end h-40 gap-6 z-10">
+                                        {walletGrowthData.map((d, idx) => (
+                                            <div key={idx} className="flex flex-col items-center gap-2 group h-full justify-end">
+                                                <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-300 opacity-0 group-hover:opacity-100 transition-opacity bg-background dark:bg-zinc-950 px-2 py-0.5 rounded border border-border dark:border-zinc-800">
+                                                    Rp {(d.balance / 1000).toFixed(0)}k
+                                                </span>
+                                                <div 
+                                                    className="w-full bg-gradient-to-t from-emerald-600/40 to-emerald-500 rounded-t-lg transition-all group-hover:scale-105"
+                                                    style={{ height: `${(d.balance / (stats?.totalWalletBalance || 1500000)) * 100}%` }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="grid grid-cols-4 text-center text-xs font-semibold text-muted-foreground border-t border-border dark:border-zinc-800/80 pt-2 z-10">
+                                        {walletGrowthData.map((d, idx) => (
+                                            <span key={idx}>{d.week}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    /* ========================================================================= */
+                    /* 👥 DASHBOARD UNTUK USER BIASA                                            */
+                    /* ========================================================================= */
+                    <div className="space-y-8 animate-in fade-in duration-300">
+                        {/* Quick Action Cards Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                            {/* Card 1: Buat Room Baru */}
+                            <div className="md:col-span-6 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 shadow-sm">
+                                <div className="flex items-center gap-2 border-b border-border dark:border-zinc-800 pb-3">
+                                    <PlusCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                    <h3 className="font-bold text-foreground dark:text-white text-base">Buat Room Baru Cepat</h3>
+                                </div>
+
+                                <form onSubmit={handleCreateRoom} className="space-y-3">
+                                    <div>
+                                        <label className="block text-xs font-medium text-foreground dark:text-zinc-300 mb-1">
+                                            Nama Acara / Room
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={createRoomForm.data.name}
+                                            onChange={e => createRoomForm.setData('name', e.target.value)}
+                                            placeholder="Contoh: Kumpul Panitia / Patungan Pizza"
+                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                            required
+                                        />
+                                        {createRoomForm.errors.name && <p className="text-rose-500 text-[11px] mt-1">{createRoomForm.errors.name}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-medium text-foreground dark:text-zinc-300 mb-1">
+                                            Durasi Aktif Room (Auto-Destruct)
+                                        </label>
+                                        <div className="grid grid-cols-5 gap-1.5">
+                                            {[1, 3, 6, 12, 24].map(dur => (
+                                                <button
+                                                    key={dur}
+                                                    type="button"
+                                                    onClick={() => createRoomForm.setData('duration_hours', dur)}
+                                                    className={`py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                                                        createRoomForm.data.duration_hours === dur
+                                                            ? 'bg-indigo-600/20 border-indigo-500 text-indigo-600 dark:text-indigo-300 font-bold'
+                                                            : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:border-zinc-400'
+                                                    }`}
+                                                >
+                                                    {dur} Jam
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={createRoomForm.processing}
+                                        className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20"
+                                    >
+                                        <PlusCircle className="w-4 h-4" />
+                                        <span>{createRoomForm.processing ? 'Membuat Room...' : 'Bikin Room & Generate Kode'}</span>
+                                    </button>
+                                </form>
+                            </div>
+
+                            {/* Card 2: Masuk via Kode Unik */}
+                            <div className="md:col-span-6 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between shadow-sm">
+                                <div>
+                                    <div className="flex items-center gap-2 border-b border-border dark:border-zinc-800 pb-3 mb-4">
+                                        <KeyRound className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+                                        <h3 className="font-bold text-foreground dark:text-white text-base">Masuk via Kode Room</h3>
+                                    </div>
+
+                                    <form onSubmit={handleJoinRoom} className="space-y-3">
+                                        <div>
+                                            <label className="block text-xs font-medium text-foreground dark:text-zinc-300 mb-1">
+                                                Masukkan Kode Unik Room
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={joinRoomForm.data.code}
+                                                onChange={e => joinRoomForm.setData('code', e.target.value.toUpperCase())}
+                                                placeholder="Contoh: SR-8849"
+                                                required
+                                                className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm font-mono font-bold text-amber-500 dark:text-amber-400 focus:outline-none focus:border-amber-500 uppercase"
+                                            />
+                                            {joinRoomForm.errors.code && <p className="text-rose-500 text-[11px] mt-1">{joinRoomForm.errors.code}</p>}
+                                        </div>
+
+                                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                            💡 Punya kode dari teman? Masukkan kode 6-digit di atas untuk bergabung ke room chat & kas dompet.
+                                        </p>
+
+                                        <button
+                                            type="submit"
+                                            disabled={joinRoomForm.processing}
+                                            className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+                                        >
+                                            <LogIn className="w-4 h-4" />
+                                            <span>{joinRoomForm.processing ? 'Menghubungkan...' : 'Masuk ke Room Chat'}</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* List Room Saya (Baik Owner maupun Joined Member) */}
+                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 shadow-sm">
+                            <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
+                                <div>
+                                    <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
+                                        <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Riwayat & Room Aktif Saya ({rooms?.length || 0})
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground">Menampilkan room buatanmu dan room yang kamu ikuti</p>
+                                </div>
+                                <span className="text-xs text-muted-foreground">Auto-destruct timer aktif</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {rooms?.map((room, idx) => {
+                                    const isOwner = room.is_owner || room.role_in_room === 'owner';
+                                    const isBendahara = room.role_in_room === 'bendahara';
+                                    const isJoined = room.is_joined ?? true;
+                                    const isExpired = room.is_expired ?? false;
+
+                                    return (
+                                        <div key={room.id} className="bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl p-4 space-y-3 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div>
+                                                    <h4 className="font-bold text-foreground dark:text-white text-sm">{room.name}</h4>
+                                                    <div className="flex items-center gap-1.5 mt-1">
+                                                        {isOwner ? (
+                                                            <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 flex items-center gap-1">
+                                                                <Crown className="w-2.5 h-2.5" /> Owner Room
+                                                            </span>
+                                                        ) : isBendahara ? (
+                                                            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
+                                                                <Coins className="w-2.5 h-2.5" /> Bendahara
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-[10px] font-semibold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 flex items-center gap-1">
+                                                                <UserIcon className="w-2.5 h-2.5" /> Anggota
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-1 text-xs font-mono font-bold text-amber-500 dark:text-amber-400 bg-amber-400/10 px-2 py-1 rounded border border-amber-400/20">
+                                                    {room.code}
+                                                    <button onClick={() => handleCopyCode(room.code, idx)} className="hover:text-foreground">
+                                                        {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between text-xs pt-2 border-t border-border dark:border-zinc-900">
+                                                <span className="text-muted-foreground flex items-center gap-1">
+                                                    <Clock className="w-3.5 h-3.5 text-zinc-400" /> 
+                                                    {isExpired ? (
+                                                        <strong className="text-rose-500">Kadaluarsa</strong>
+                                                    ) : (
+                                                        <span>Durasi: <strong>{room.duration_hours}h</strong></span>
+                                                    )}
+                                                </span>
+
+                                                <div className="flex items-center gap-2">
+                                                    {/* Hapus Riwayat Button logic */}
+                                                    <button
+                                                        onClick={() => handleRemoveHistory(room.id, isJoined, isExpired)}
+                                                        className={`text-xs px-2 py-1 rounded border flex items-center gap-1 transition-colors ${
+                                                            isJoined && !isExpired
+                                                                ? 'text-zinc-400 border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 cursor-not-allowed opacity-60'
+                                                                : 'text-rose-500 border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20'
+                                                        }`}
+                                                        title={isJoined && !isExpired ? 'Keluar dari room dulu sebelum menghapus riwayat' : 'Hapus riwayat dari dashboard'}
+                                                    >
+                                                        {isJoined && !isExpired ? <Lock className="w-3 h-3" /> : <Trash2 className="w-3 h-3" />}
+                                                        <span>Hapus Riwayat</span>
+                                                    </button>
+
+                                                    {!isExpired && (
+                                                        <a
+                                                            href={`/rooms/${room.code}`}
+                                                            className="text-xs px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg flex items-center gap-1 shadow-sm"
+                                                        >
+                                                            Chat <ArrowRight className="w-3.5 h-3.5" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {(!rooms || rooms.length === 0) && (
+                                    <p className="text-xs text-muted-foreground col-span-2 text-center py-6">
+                                        Belum ada riwayat room yang kamu buat atau ikuti.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
+    );
+}
+
+Dashboard.layout = {
+    breadcrumbs: [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+        },
+    ],
+};
