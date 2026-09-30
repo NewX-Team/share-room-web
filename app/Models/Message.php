@@ -20,6 +20,10 @@ class Message extends Model
         'room_id',
         'user_id',
         'message',
+        'file_path',
+        'file_name',
+        'file_type',
+        'file_size',
     ];
 
     public function room(): BelongsTo

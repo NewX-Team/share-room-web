@@ -20,6 +20,7 @@ class RoomMember extends Model
         'room_id',
         'user_id',
         'role_in_room',
+        'last_read_message_id',
     ];
 
     public function room(): BelongsTo

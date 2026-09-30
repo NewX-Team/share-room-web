@@ -185,8 +185,17 @@ class UserRoomController extends Controller
                     'role_in_room' => $memberRole,
                     'message' => $msg->message,
                     'time' => $msg->created_at->format('H:i'),
+                    'file_path' => $msg->file_path ? asset('storage/' . $msg->file_path) : null,
+                    'file_name' => $msg->file_name,
+                    'file_type' => $msg->file_type,
+                    'file_size' => $msg->file_size,
                 ];
             });
+
+        // Count total file uploads in this room across all members
+        $roomFileCount = Message::where('room_id', $room->id)
+            ->whereNotNull('file_path')
+            ->count();
 
         // Fetch announcements/notifications for the room
         $announcements = $room->announcements()
@@ -225,6 +234,20 @@ class UserRoomController extends Controller
                 });
         }
 
+        // Track last read message ID for current user before updating
+        $currentMemberRecord = RoomMember::where('room_id', $room->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        $lastReadMessageId = $currentMemberRecord ? $currentMemberRecord->last_read_message_id : null;
+
+        $latestMessageId = Message::where('room_id', $room->id)->max('id');
+        if ($currentMemberRecord && $latestMessageId) {
+            $currentMemberRecord->update([
+                'last_read_message_id' => $latestMessageId,
+            ]);
+        }
+
         return Inertia::render('rooms/show', [
             'room' => [
                 'id' => $room->id,
@@ -242,6 +265,9 @@ class UserRoomController extends Controller
             'messages' => $messages,
             'announcements' => $announcements,
             'pendingRequests' => $pendingRequests,
+            'userFileCount' => $roomFileCount,
+            'maxFiles' => 20,
+            'lastReadMessageId' => $lastReadMessageId,
         ]);
     }
 
@@ -322,13 +348,18 @@ class UserRoomController extends Controller
     }
 
     /**
-     * Send a new chat message in the room.
+     * Send a new chat message or file attachment in the room.
      */
     public function sendMessage(Request $request, string $code): RedirectResponse
     {
         $validated = $request->validate([
-            'message' => ['required', 'string', 'max:1000'],
+            'message' => ['nullable', 'string', 'max:1000'],
+            'file' => ['nullable', 'file', 'max:25600'], // max 25MB
         ]);
+
+        if (empty($validated['message']) && !$request->hasFile('file')) {
+            return redirect()->back()->with('error', 'Silakan ketik pesan atau pilih file untuk dikirim.');
+        }
 
         $code = strtoupper(trim($code));
         $room = Room::where('code', $code)->firstOrFail();
@@ -337,10 +368,58 @@ class UserRoomController extends Controller
             return redirect()->back()->with('error', 'Room sudah kadaluarsa.');
         }
 
+        $user = $request->user();
+        $filePath = null;
+        $fileName = null;
+        $fileType = null;
+        $fileSize = null;
+
+        if ($request->hasFile('file')) {
+            // Enforce 20 file limit total across all members in this room
+            $roomFileCount = Message::where('room_id', $room->id)
+                ->whereNotNull('file_path')
+                ->count();
+
+            if ($roomFileCount >= 20) {
+                return redirect()->back()->with('error', 'Batas total 20 file untuk room ini telah tercapai (seluruh member). Silakan upgrade ke Premium untuk upload tanpa batas.');
+            }
+
+            $file = $request->file('file');
+            $ext = strtolower($file->getClientOriginalExtension());
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'zip', 'rar', '7z', 'tar', 'gz'];
+
+            if (!in_array($ext, $allowedExtensions)) {
+                return redirect()->back()->with('error', "Format file .{$ext} tidak diizinkan. Silakan kompres file tersebut menjadi format .ZIP atau kirim berkas dokumen/foto yang sesuai kriteria.");
+            }
+
+            $filePath = $file->store('room_files', 'public');
+            $fileName = $file->getClientOriginalName();
+            $fileSize = $file->getSize();
+
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) {
+                $fileType = 'image';
+            } elseif (in_array($ext, ['zip', 'rar', '7z', 'tar', 'gz'])) {
+                $fileType = 'archive';
+            } elseif (in_array($ext, ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'])) {
+                $fileType = 'document';
+            } else {
+                $fileType = 'other';
+            }
+        }
+
+        $messageText = $validated['message'] ?? '';
+        if (empty($messageText) && $fileName) {
+            $messageText = "File: {$fileName}";
+        }
+
         Message::create([
             'room_id' => $room->id,
-            'user_id' => $request->user()->id,
-            'message' => $validated['message'],
+            'user_id' => $user->id,
+            'message' => $messageText,
+            'file_path' => $filePath,
+            'file_name' => $fileName,
+            'file_type' => $fileType,
+            'file_size' => $fileSize,
         ]);
 
         return redirect()->back();

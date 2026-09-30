@@ -1,5 +1,5 @@
 import { Head, useForm, usePage, router } from '@inertiajs/react';
-import { showConfirmDialog, showErrorAlert, showInfoAlert, showSuccessAlert, showWarningAlert } from '@/lib/swal';
+import { getSwalConfig, showConfirmDialog, showErrorAlert, showInfoAlert, showSuccessAlert, showWarningAlert } from '@/lib/swal';
 import { 
     Clock, 
     Wallet, 
@@ -32,9 +32,15 @@ import {
     CheckCircle2,
     Ticket,
     Tag,
-    ArrowRight
+    ArrowRight,
+    Paperclip,
+    FileArchive,
+    FileText,
+    File,
+    Image as ImageIcon,
+    Download
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import type { Auth } from '@/types/auth';
 
 interface MemberData {
@@ -53,6 +59,10 @@ interface MessageData {
     role_in_room: string;
     message: string;
     time: string;
+    file_path?: string | null;
+    file_name?: string | null;
+    file_type?: string | null;
+    file_size?: number | null;
 }
 
 interface AnnouncementData {
@@ -99,12 +109,53 @@ interface RoomDetailProps {
     messages: MessageData[];
     announcements?: AnnouncementData[];
     pendingRequests?: PendingJoinRequestData[];
+    userFileCount?: number;
+    maxFiles?: number;
+    lastReadMessageId?: number | null;
 }
 
-export default function RoomShow({ room, members, messages, announcements = [], pendingRequests = [] }: RoomDetailProps) {
+export default function RoomShow({ 
+    room, 
+    members, 
+    messages, 
+    announcements = [], 
+    pendingRequests = [],
+    userFileCount = 0,
+    maxFiles = 20,
+    lastReadMessageId = null,
+}: RoomDetailProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
     const isOwnerOrAdmin = room.is_owner || currentUser?.role === 'admin';
+
+    // Ref untuk Scroll Posisi Chat
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Auto Scroll: Ke pesan pertama belum dibaca atau langsung ke pesan terbaru
+    useEffect(() => {
+        if (!messages || messages.length === 0) return;
+
+        let unreadTargetId: number | null = null;
+        if (lastReadMessageId) {
+            const firstUnread = messages.find(m => m.id > lastReadMessageId);
+            if (firstUnread) {
+                unreadTargetId = firstUnread.id;
+            }
+        }
+
+        const timer = setTimeout(() => {
+            if (unreadTargetId) {
+                const el = document.getElementById(`msg-${unreadTargetId}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+            }
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 200);
+
+        return () => clearTimeout(timer);
+    }, [messages, lastReadMessageId]);
 
     // State untuk Copy Link & Share Modal
     const [copiedCode, setCopiedCode] = useState(false);
@@ -145,10 +196,79 @@ export default function RoomShow({ room, members, messages, announcements = [], 
     const [isProcessingTopUp, setIsProcessingTopUp] = useState(false);
     const [simulatorOrderId, setSimulatorOrderId] = useState<string | null>(null);
 
-    // Form Inertia untuk Kirim Pesan Chat
+    // State Modal Upgrade Premium (Dummy)
+    const [showPremiumModal, setShowPremiumModal] = useState(false);
+
+    // Form Inertia untuk Kirim Pesan & File Chat
     const chatForm = useForm({
         message: '',
+        file: null as File | null,
     });
+
+    const handleSendMessage = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!chatForm.data.message.trim() && !chatForm.data.file) return;
+
+        chatForm.post(`/rooms/${room.code}/messages`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                chatForm.reset();
+            },
+        });
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const selected = e.target.files[0];
+            if (userFileCount >= maxFiles) {
+                setShowPremiumModal(true);
+                e.target.value = '';
+                return;
+            }
+
+            // Validate allowed file extensions (e.g. forbid .apk, .dmg, .exe, etc.)
+            const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'zip', 'rar', '7z', 'tar', 'gz'];
+            const fileNameParts = selected.name.split('.');
+            const ext = fileNameParts.length > 1 ? (fileNameParts.pop()?.toLowerCase() || '') : '';
+
+            if (!allowedExtensions.includes(ext)) {
+                e.target.value = '';
+                getSwalConfig().fire({
+                    icon: 'warning',
+                    title: 'Format File Tidak Sesuai Kriteria!',
+                    html: `
+                        <div style="text-align: left; font-size: 13px; line-height: 1.6;">
+                            <p style="margin-bottom: 10px;">File <strong>"${selected.name}"</strong> (format <code>.${ext.toUpperCase() || 'UNKNOWN'}</code>) tidak dapat diunggah secara langsung.</p>
+                            <div style="background-color: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                                <strong style="color: #d97706; display: block; margin-bottom: 4px;">📌 Petunjuk & Solusi:</strong>
+                                Silakan ubah atau kompres file tersebut ke dalam format <strong>.ZIP</strong> atau <strong>.RAR</strong> terlebih dahulu, atau kirimkan berkas foto/dokumen lain yang sesuai kriteria.
+                            </div>
+                            <p style="font-size: 11px; color: #71717a; margin: 0;">
+                                <strong>Format Diizinkan:</strong> Gambar (.png, .jpg, .svg), Dokumen (.pdf, .docx, .xlsx, .txt), Arsip (.zip, .rar, .7z).
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Mengerti & Ubah File',
+                    confirmButtonColor: '#f59e0b',
+                });
+                return;
+            }
+
+            chatForm.setData('file', selected);
+        }
+    };
+
+    const handleClearSelectedFile = () => {
+        chatForm.setData('file', null);
+    };
+
+    const formatFileSize = (bytes?: number | null) => {
+        if (!bytes) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    };
 
     // Real-Time Countdown Timer calculation
     const calculateSecondsLeft = () => {
@@ -199,18 +319,6 @@ export default function RoomShow({ room, members, messages, announcements = [], 
     const handleShareWhatsApp = () => {
         const text = `Yuk gabung ke room "${room.name}" di ShareRoom! Kode Unik: *${room.code}*. Klik link: ${window.location.origin}/rooms/${room.code}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-    };
-
-    const handleSendMessage = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!chatForm.data.message.trim()) return;
-
-        chatForm.post(`/rooms/${room.code}/messages`, {
-            preserveScroll: true,
-            onSuccess: () => {
-                chatForm.reset();
-            },
-        });
     };
 
     const handleToggleBendaharaRole = (memberId: number, currentRole: string) => {
@@ -1009,73 +1117,154 @@ export default function RoomShow({ room, members, messages, announcements = [], 
                     
                     {/* LEFT COLUMN: LIVE GROUP CHAT FEED */}
                     <div className="lg:col-span-8 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between min-h-[540px] shadow-sm">
-                        <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
+                        <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3 flex-wrap gap-2">
                             <div className="flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                 <h2 className="font-bold text-foreground dark:text-white text-sm">Obrolan Room ({messages.length})</h2>
                             </div>
-                            <span className="text-[11px] text-muted-foreground font-mono">End-to-End Temporary Chat</span>
+                            
+                            {/* File Limit Indicator & Upgrade Badge */}
+                            <button
+                                type="button"
+                                onClick={() => setShowPremiumModal(true)}
+                                className={`px-2.5 py-1 rounded-xl text-xs font-mono font-semibold border transition-all flex items-center gap-1.5 ${
+                                    userFileCount >= maxFiles
+                                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 shadow-sm'
+                                        : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground'
+                                }`}
+                                title="Batas 20 File gabungan per room (Seluruh Member). Klik untuk info Premium"
+                            >
+                                <Paperclip className="w-3.5 h-3.5 text-indigo-500" />
+                                <span>File: <strong className={userFileCount >= maxFiles ? 'text-rose-500 font-bold' : 'text-emerald-500'}>{userFileCount}/{maxFiles}</strong></span>
+                                {userFileCount >= maxFiles && (
+                                    <span className="px-1.5 py-0.2 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded text-[9px] font-sans font-bold flex items-center gap-0.5">
+                                        <Lock className="w-2.5 h-2.5" /> Terkunci
+                                    </span>
+                                )}
+                            </button>
                         </div>
 
                         {/* Chat Messages Feed Container */}
                         <div className="space-y-4 overflow-y-auto max-h-[400px] pr-2 my-auto py-2">
-                            {messages.map((msg) => {
+                            {messages.map((msg, index) => {
                                 const isSelf = msg.user_id === currentUser?.id;
                                 const isOwner = msg.role_in_room === 'owner';
                                 const isBendahara = msg.role_in_room === 'bendahara';
 
-                                return (
-                                    <div
-                                        key={msg.id}
-                                        className={`flex items-start gap-2.5 ${isSelf ? 'flex-row-reverse' : 'flex-row'}`}
-                                    >
-                                        {/* User Initial Avatar */}
-                                        <div
-                                            className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 text-white shadow-sm ${
-                                                isSelf
-                                                    ? 'bg-indigo-600'
-                                                    : isOwner
-                                                    ? 'bg-amber-600'
-                                                    : isBendahara
-                                                    ? 'bg-emerald-600'
-                                                    : 'bg-zinc-600 dark:bg-zinc-700'
-                                            }`}
-                                        >
-                                            {msg.user_name.charAt(0)}
-                                        </div>
+                                const isFirstUnread = lastReadMessageId
+                                    ? msg.id > lastReadMessageId && (index === 0 || messages[index - 1].id <= lastReadMessageId)
+                                    : false;
 
-                                        {/* Gelembung Chat Bubble */}
-                                        <div
-                                            className={`max-w-[78%] rounded-2xl p-3.5 text-xs border space-y-1 shadow-sm ${
-                                                isSelf
-                                                    ? 'bg-indigo-600 text-white rounded-tr-none border-indigo-500'
-                                                    : 'bg-background dark:bg-zinc-950 text-foreground dark:text-zinc-200 rounded-tl-none border-border dark:border-zinc-800'
-                                            }`}
-                                        >
-                                            {/* Sender Header Name & Role Badge */}
-                                            <div className="flex items-center gap-2 justify-between border-b border-white/10 dark:border-white/10 pb-1 mb-1">
-                                                <span className="font-bold text-[11px] flex items-center gap-1.5 flex-wrap">
-                                                    <span>{msg.user_name}</span>
-                                                    {isOwner && (
-                                                        <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-600 dark:text-amber-300 text-[9px] font-bold border border-amber-500/30 inline-flex items-center gap-0.5">
-                                                            <Crown className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400" /> Owner Room
-                                                        </span>
-                                                    )}
-                                                    {isBendahara && (
-                                                        <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[9px] font-bold border border-emerald-500/30 inline-flex items-center gap-0.5">
-                                                            <Coins className="w-2.5 h-2.5 text-emerald-500 dark:text-emerald-400" /> Bendahara
-                                                        </span>
-                                                    )}
+                                return (
+                                    <Fragment key={msg.id}>
+                                        {isFirstUnread && (
+                                            <div id="unread-divider" className="my-4 flex items-center gap-3">
+                                                <div className="h-[1px] flex-1 bg-amber-500/30 dark:bg-amber-500/20" />
+                                                <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                                                    <Bell className="w-3 h-3 text-amber-500 animate-bounce" /> Pesan Belum Dibaca
                                                 </span>
-                                                <span className={`text-[9px] font-mono ${isSelf ? 'text-indigo-200' : 'text-muted-foreground'}`}>{msg.time}</span>
+                                                <div className="h-[1px] flex-1 bg-amber-500/30 dark:bg-amber-500/20" />
+                                            </div>
+                                        )}
+
+                                        <div
+                                            id={`msg-${msg.id}`}
+                                            className={`flex items-start gap-2.5 ${isSelf ? 'flex-row-reverse' : 'flex-row'}`}
+                                        >
+                                            {/* User Initial Avatar */}
+                                            <div
+                                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 text-white shadow-sm ${
+                                                    isSelf
+                                                        ? 'bg-indigo-600'
+                                                        : isOwner
+                                                        ? 'bg-amber-600'
+                                                        : isBendahara
+                                                        ? 'bg-emerald-600'
+                                                        : 'bg-zinc-600 dark:bg-zinc-700'
+                                                }`}
+                                            >
+                                                {msg.user_name.charAt(0)}
                                             </div>
 
-                                            {/* Message Text */}
-                                            <p className="leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                                            {/* Gelembung Chat Bubble */}
+                                            <div
+                                                className={`max-w-[78%] rounded-2xl p-3.5 text-xs border space-y-1 shadow-sm ${
+                                                    isSelf
+                                                        ? 'bg-indigo-600 text-white rounded-tr-none border-indigo-500'
+                                                        : 'bg-background dark:bg-zinc-950 text-foreground dark:text-zinc-200 rounded-tl-none border-border dark:border-zinc-800'
+                                                }`}
+                                            >
+                                                {/* Sender Header Name & Role Badge */}
+                                                <div className="flex items-center gap-2 justify-between border-b border-white/10 dark:border-white/10 pb-1 mb-1">
+                                                    <span className="font-bold text-[11px] flex items-center gap-1.5 flex-wrap">
+                                                        <span>{msg.user_name}</span>
+                                                        {isOwner && (
+                                                            <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-600 dark:text-amber-300 text-[9px] font-bold border border-amber-500/30 inline-flex items-center gap-0.5">
+                                                                <Crown className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400" /> Owner Room
+                                                            </span>
+                                                        )}
+                                                        {isBendahara && (
+                                                            <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[9px] font-bold border border-emerald-500/30 inline-flex items-center gap-0.5">
+                                                                <Coins className="w-2.5 h-2.5 text-emerald-500 dark:text-emerald-400" /> Bendahara
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                    <span className={`text-[9px] font-mono ${isSelf ? 'text-indigo-200' : 'text-muted-foreground'}`}>{msg.time}</span>
+                                                </div>
+
+                                                {/* Message Text */}
+                                                <p className="leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+
+                                                {/* File Attachment Render */}
+                                                {msg.file_path && (
+                                                    <div className={`mt-2 p-2.5 rounded-xl border text-xs ${
+                                                        isSelf ? 'bg-indigo-700/60 border-indigo-400/30 text-white' : 'bg-card dark:bg-zinc-900 border-border dark:border-zinc-800 text-foreground dark:text-zinc-200'
+                                                    }`}>
+                                                        {msg.file_type === 'image' ? (
+                                                            <div className="space-y-2">
+                                                                <img src={msg.file_path} alt={msg.file_name || 'Gambar'} className="max-h-48 rounded-lg object-cover w-full border border-black/10 dark:border-white/10" />
+                                                                <div className="flex items-center justify-between gap-2 text-[10px]">
+                                                                    <span className="truncate max-w-[150px] font-mono">{msg.file_name}</span>
+                                                                    <a href={msg.file_path} target="_blank" rel="noopener noreferrer" download className="px-2 py-1 rounded bg-black/20 hover:bg-black/40 text-white flex items-center gap-1 font-semibold">
+                                                                        <Download className="w-3 h-3" /> Unduh
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center justify-between gap-3">
+                                                                <div className="flex items-center gap-2 min-w-0">
+                                                                    {msg.file_type === 'archive' ? (
+                                                                        <FileArchive className="w-6 h-6 text-amber-400 flex-shrink-0" />
+                                                                    ) : msg.file_type === 'document' ? (
+                                                                        <FileText className="w-6 h-6 text-indigo-400 flex-shrink-0" />
+                                                                    ) : (
+                                                                        <File className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+                                                                    )}
+                                                                    <div className="min-w-0">
+                                                                        <p className="font-bold truncate text-[11px]">{msg.file_name}</p>
+                                                                        <p className="text-[9px] opacity-75 font-mono">{formatFileSize(msg.file_size)}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <a
+                                                                    href={msg.file_path}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    download
+                                                                    className="px-2.5 py-1.5 rounded-lg bg-black/20 hover:bg-black/30 text-white font-semibold text-[10px] transition-colors flex items-center gap-1 flex-shrink-0"
+                                                                >
+                                                                    <Download className="w-3 h-3" />
+                                                                    <span>Unduh</span>
+                                                                </a>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
+                                    </Fragment>
                                 );
                             })}
+                            <div ref={messagesEndRef} />
 
                             {messages.length === 0 && (
                                 <div className="text-center py-12 text-muted-foreground space-y-2">
@@ -1085,25 +1274,75 @@ export default function RoomShow({ room, members, messages, announcements = [], 
                             )}
                         </div>
 
-                        {/* Send Message Form Bar */}
-                        <form onSubmit={handleSendMessage} className="pt-3 border-t border-border dark:border-zinc-800 flex gap-2">
-                            <input
-                                type="text"
-                                value={chatForm.data.message}
-                                onChange={e => chatForm.setData('message', e.target.value)}
-                                placeholder="Ketik pesan kamu..."
-                                required
-                                className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
-                            />
-                            <button
-                                type="submit"
-                                disabled={chatForm.processing}
-                                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
-                            >
-                                <Send className="w-4 h-4" />
-                                <span>Kirim</span>
-                            </button>
-                        </form>
+                        {/* Send Message & File Attachment Form Bar */}
+                        <div className="pt-3 border-t border-border dark:border-zinc-800 space-y-2">
+                            {/* Selected File Preview Banner */}
+                            {chatForm.data.file && (
+                                <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/30 rounded-xl flex items-center justify-between gap-2 text-xs text-indigo-600 dark:text-indigo-300">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <Paperclip className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                                        <span className="font-bold font-mono truncate">{chatForm.data.file.name}</span>
+                                        <span className="text-[10px] opacity-75 font-mono">({formatFileSize(chatForm.data.file.size)})</span>
+                                    </div>
+                                    <button type="button" onClick={handleClearSelectedFile} className="p-1 rounded hover:bg-indigo-500/20 text-rose-500">
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            )}
+
+                            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                                {/* Hidden File Input */}
+                                <input
+                                    id="chat-file-input"
+                                    type="file"
+                                    onChange={handleFileSelect}
+                                    className="hidden"
+                                    accept="*/*"
+                                    disabled={userFileCount >= maxFiles}
+                                />
+
+                                {/* Attach File Button */}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (userFileCount >= maxFiles) {
+                                            setShowPremiumModal(true);
+                                        } else {
+                                            document.getElementById('chat-file-input')?.click();
+                                        }
+                                    }}
+                                    className={`p-2.5 rounded-xl border transition-all flex items-center justify-center flex-shrink-0 ${
+                                        userFileCount >= maxFiles
+                                            ? 'bg-rose-500/10 border-rose-500/30 text-rose-500 hover:bg-rose-500/20'
+                                            : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground hover:border-indigo-500'
+                                    }`}
+                                    title={userFileCount >= maxFiles ? 'Batas total 20 file room tercapai! Klik untuk upgrade Premium' : 'Unggah dokumen, foto, atau ZIP (Maks 20 file gabungan room)'}
+                                >
+                                    {userFileCount >= maxFiles ? (
+                                        <Lock className="w-4 h-4 text-rose-500" />
+                                    ) : (
+                                        <Paperclip className="w-4 h-4" />
+                                    )}
+                                </button>
+
+                                <input
+                                    type="text"
+                                    value={chatForm.data.message}
+                                    onChange={e => chatForm.setData('message', e.target.value)}
+                                    placeholder={userFileCount >= maxFiles ? "Ketik pesan kamu (Upload file terkunci)..." : "Ketik pesan kamu atau lampirkan file..."}
+                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                />
+
+                                <button
+                                    type="submit"
+                                    disabled={chatForm.processing || (!chatForm.data.message.trim() && !chatForm.data.file)}
+                                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-indigo-600/20 flex-shrink-0"
+                                >
+                                    <Send className="w-4 h-4" />
+                                    <span>Kirim</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     {/* RIGHT COLUMN: DAFTAR ANGGOTA / MEMBER ROOM & BENDAHARA MANAGEMENT & KICK */}
@@ -1200,6 +1439,82 @@ export default function RoomShow({ room, members, messages, announcements = [], 
                     </div>
 
                 </div>
+
+                {/* DUMMY PREMIUM UPGRADE MODAL */}
+                {showPremiumModal && (
+                    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-card dark:bg-zinc-900 border border-amber-500/30 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                            <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
+                                <div className="flex items-center gap-2">
+                                    <Crown className="w-5 h-5 text-amber-500" />
+                                    <h3 className="font-bold text-foreground dark:text-white text-base">ShareRoom Premium Pass</h3>
+                                </div>
+                                <button onClick={() => setShowPremiumModal(false)} className="text-muted-foreground hover:text-foreground">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-1">
+                                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 block">
+                                        Quota Limit File Room Tercapai ({userFileCount}/{maxFiles} File)
+                                    </span>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        Batas maksimum 20 file reguler gabungan untuk seluruh member di room ini telah tercapai. Upgrade ke paket Premium untuk mengunggah file tanpa batas!
+                                    </p>
+                                </div>
+
+                                <div className="space-y-2.5">
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Keuntungan Akun Premium:</h4>
+                                    <ul className="space-y-2 text-xs">
+                                        <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                            <span>Upload File Tanpa Batas (Unlimited File Slots)</span>
+                                        </li>
+                                        <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                            <span>Batas Ukuran File Hingga 100 MB (ZIP, Dokumen, Foto)</span>
+                                        </li>
+                                        <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                            <span>Prioritas Kecepatan Server & Penyimpanan Permanen</span>
+                                        </li>
+                                        <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                            <span>Lencana Khusus Mahkota Premium di profil room</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="bg-background dark:bg-zinc-950 p-4 rounded-xl border border-border dark:border-zinc-800 text-center space-y-1">
+                                    <span className="text-[10px] text-muted-foreground block uppercase font-bold">Harga Spesial Promo</span>
+                                    <span className="text-2xl font-mono font-extrabold text-amber-500">Rp 29.000 <span className="text-xs text-muted-foreground font-normal">/ bulan</span></span>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2 pt-1">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowPremiumModal(false);
+                                        showInfoAlert('Fitur Pembelian Premium masih dalam tahap pengujian (Dummy Demo). Nantikan update selanjutnya!', 'Fitur Premium (Demo)');
+                                    }}
+                                    className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5"
+                                >
+                                    <Crown className="w-4 h-4" />
+                                    <span>Upgrade Ke Premium Sekarang</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPremiumModal(false)}
+                                    className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-semibold"
+                                >
+                                    Nanti Saja
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     );
