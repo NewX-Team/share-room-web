@@ -10,7 +10,14 @@ import {
     Flame,
     Lock,
     AlertCircle,
-    X
+    X,
+    Wallet,
+    Crown,
+    Clock,
+    TrendingUp,
+    Coins,
+    Clock3,
+    ShieldCheck
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -23,6 +30,8 @@ interface RoomData {
     wallet_balance: number;
     is_frozen: boolean;
     freeze_reason?: string | null;
+    is_expired?: boolean;
+    is_premium?: boolean;
     members_count?: number;
     user?: {
         id: number;
@@ -31,11 +40,18 @@ interface RoomData {
     };
 }
 
-interface AdminRoomsIndexProps {
-    rooms: RoomData[];
+interface WalletStats {
+    active_wallet_balance: number;
+    expired_wallet_balance: number;
+    total_combined_balance: number;
 }
 
-export default function AdminRoomsIndex({ rooms }: AdminRoomsIndexProps) {
+interface AdminRoomsIndexProps {
+    rooms: RoomData[];
+    walletStats?: WalletStats;
+}
+
+export default function AdminRoomsIndex({ rooms, walletStats }: AdminRoomsIndexProps) {
     // State Modal Tambah Saldo
     const [selectedAddFundsRoom, setSelectedAddFundsRoom] = useState<RoomData | null>(null);
     const addFundsForm = useForm({
@@ -119,8 +135,65 @@ export default function AdminRoomsIndex({ rooms }: AdminRoomsIndexProps) {
                             Manajemen Room ({rooms?.length || 0})
                         </h1>
                         <p className="text-xs sm:text-sm text-muted-foreground dark:text-zinc-400">
-                            Kelola saldo kas dompet room secara manual, bekukan dompet bermasalah dengan alasan wajib, atau hapus room.
+                            Kelola saldo kas dompet room secara manual, pelacakan saldo dana terbuang, bekukan dompet bermasalah, atau hapus room.
                         </p>
+                    </div>
+                </div>
+
+                {/* 3 FINANSL WALLET CARDS REAL-TIME STATS */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* DOMPET 1: SALDO DIGITAL ROOM AKTIF */}
+                    <div className="bg-card dark:bg-zinc-900 border border-emerald-500/30 p-5 rounded-2xl space-y-2 shadow-sm relative overflow-hidden">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                                <Wallet className="w-4 h-4 text-emerald-500" /> 1. Saldo Digital Room Aktif
+                            </span>
+                            <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded text-[10px] font-bold">Live</span>
+                        </div>
+                        <div className="space-y-1">
+                            <span className="text-2xl font-mono font-extrabold text-emerald-600 dark:text-emerald-400 block">
+                                Rp {(walletStats?.active_wallet_balance || 0).toLocaleString('id-ID')}
+                            </span>
+                            <p className="text-[11px] text-muted-foreground">
+                                Dana digital tersimpan pada seluruh room user yang sedang berjalan (aktif).
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* DOMPET 2: SALDO DANA TERBUANG / EXPIRED ROOMS */}
+                    <div className="bg-card dark:bg-zinc-900 border border-amber-500/30 p-5 rounded-2xl space-y-2 shadow-sm relative overflow-hidden">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                                <Clock3 className="w-4 h-4 text-amber-500" /> 2. Saldo Terbuang (Expired)
+                            </span>
+                            <span className="px-2 py-0.5 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded text-[10px] font-bold">Hangus</span>
+                        </div>
+                        <div className="space-y-1">
+                            <span className="text-2xl font-mono font-extrabold text-amber-500 block">
+                                Rp {(walletStats?.expired_wallet_balance || 0).toLocaleString('id-ID')}
+                            </span>
+                            <p className="text-[11px] text-muted-foreground">
+                                Saldo tersisa di room user yang terlanjur kadaluarsa / telah ditutup.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* DOMPET 3: TOTAL SALDO GABUNGAN ADMIN */}
+                    <div className="bg-card dark:bg-zinc-900 border border-indigo-500/30 p-5 rounded-2xl space-y-2 shadow-sm relative overflow-hidden">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                                <Coins className="w-4 h-4 text-indigo-500" /> 3. Total Saldo Gabungan Admin
+                            </span>
+                            <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded text-[10px] font-bold">Total Kas</span>
+                        </div>
+                        <div className="space-y-1">
+                            <span className="text-2xl font-mono font-extrabold text-indigo-500 block">
+                                Rp {(walletStats?.total_combined_balance || 0).toLocaleString('id-ID')}
+                            </span>
+                            <p className="text-[11px] text-muted-foreground">
+                                Akumulasi total saldo digital milik Admin (Dompet 1 + Dompet 2).
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -141,7 +214,16 @@ export default function AdminRoomsIndex({ rooms }: AdminRoomsIndexProps) {
                             <tbody className="divide-y divide-border dark:divide-zinc-800/60">
                                 {rooms?.map((r) => (
                                     <tr key={r.id} className="hover:bg-background/50 dark:hover:bg-zinc-950/50 transition-colors">
-                                        <td className="p-3.5 font-bold text-foreground dark:text-white text-sm">{r.name}</td>
+                                        <td className="p-3.5">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-foreground dark:text-white text-sm">{r.name}</span>
+                                                {r.is_premium && (
+                                                    <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold text-[9px] border border-amber-500/30 flex items-center gap-0.5">
+                                                        <Crown className="w-2.5 h-2.5" /> PRO
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
                                         <td className="p-3.5 font-mono text-amber-600 dark:text-amber-400 font-bold tracking-wider">{r.code}</td>
                                         <td className="p-3.5 text-muted-foreground dark:text-zinc-300">
                                             {r.user ? (
@@ -162,7 +244,7 @@ export default function AdminRoomsIndex({ rooms }: AdminRoomsIndexProps) {
                                             </div>
                                         </td>
 
-                                        {/* Kas Dompet Digital & Status Badge */}
+                                        {/* Kas Dompet Digital & Accurate Status Badge */}
                                         <td className="p-3.5">
                                             <div className="space-y-1">
                                                 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm block">
@@ -171,6 +253,10 @@ export default function AdminRoomsIndex({ rooms }: AdminRoomsIndexProps) {
                                                 {r.is_frozen ? (
                                                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20" title={`Alasan: ${r.freeze_reason}`}>
                                                         <Lock className="w-3 h-3" /> Dibekukan
+                                                    </span>
+                                                ) : r.is_expired ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                                        <Clock3 className="w-3 h-3 text-amber-500" /> Kadaluarsa
                                                     </span>
                                                 ) : (
                                                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">

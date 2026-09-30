@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AbandonedRoomWallet;
 use App\Models\Room;
 use App\Models\RoomAnnouncement;
 use Illuminate\Http\RedirectResponse;
@@ -13,15 +14,43 @@ use Inertia\Response;
 class RoomController extends Controller
 {
     /**
-     * Display a listing of all rooms for Admin.
+     * Display a listing of all rooms for Admin with 3 digital wallet statistics.
      */
     public function index(): Response
     {
+        $activeWalletBalance = (float) Room::where('expires_at', '>', now())->sum('wallet_balance');
+        $expiredWalletBalance = (float) Room::where('expires_at', '<=', now())->sum('wallet_balance') + (float) AbandonedRoomWallet::sum('amount');
+        $totalCombinedBalance = $activeWalletBalance + $expiredWalletBalance;
+
+        $rooms = Room::with('user:id,name,email')
+            ->withCount('members')
+            ->latest()
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'name' => $r->name,
+                    'code' => $r->code,
+                    'type' => $r->type ?? 'public',
+                    'duration_hours' => $r->duration_hours,
+                    'expires_at' => $r->expires_at->toIso8601String(),
+                    'wallet_balance' => (float) $r->wallet_balance,
+                    'is_frozen' => (bool) $r->is_frozen,
+                    'freeze_reason' => $r->freeze_reason,
+                    'is_expired' => $r->isExpired(),
+                    'is_premium' => (bool) $r->is_premium,
+                    'members_count' => $r->members_count,
+                    'user' => $r->user,
+                ];
+            });
+
         return Inertia::render('admin/rooms/index', [
-            'rooms' => Room::with('user:id,name,email')
-                ->withCount('members')
-                ->latest()
-                ->get(),
+            'rooms' => $rooms,
+            'walletStats' => [
+                'active_wallet_balance' => $activeWalletBalance,
+                'expired_wallet_balance' => $expiredWalletBalance,
+                'total_combined_balance' => $totalCombinedBalance,
+            ],
         ]);
     }
 
@@ -95,10 +124,20 @@ class RoomController extends Controller
     }
 
     /**
-     * Remove the specified room.
+     * Remove the specified room and archive leftover balance if any.
      */
     public function destroy(Room $room): RedirectResponse
     {
+        if ($room->wallet_balance > 0) {
+            AbandonedRoomWallet::create([
+                'room_name' => $room->name,
+                'room_code' => $room->code,
+                'user_name' => $room->user->name ?? 'User',
+                'amount' => $room->wallet_balance,
+                'expired_at' => $room->expires_at,
+            ]);
+        }
+
         $room->delete();
 
         return redirect()->back()->with('success', 'Room berhasil dihapus!');

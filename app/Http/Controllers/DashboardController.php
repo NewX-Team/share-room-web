@@ -19,12 +19,19 @@ class DashboardController extends Controller
     {
         $currentUser = $request->user();
 
+        $activeWalletBalance = (float) Room::where('expires_at', '>', now())->sum('wallet_balance');
+        $expiredWalletBalance = (float) Room::where('expires_at', '<=', now())->sum('wallet_balance') + (float) \App\Models\AbandonedRoomWallet::sum('amount');
+        $totalCombinedBalance = $activeWalletBalance + $expiredWalletBalance;
+
         // Real-time statistics from database
         $stats = [
             'totalUsers' => User::count(),
             'totalRooms' => Room::count(),
             'totalActiveRooms' => Room::where('expires_at', '>', now())->count(),
-            'totalWalletBalance' => (float) Room::sum('wallet_balance'),
+            'totalWalletBalance' => $activeWalletBalance,
+            'activeWalletBalance' => $activeWalletBalance,
+            'expiredWalletBalance' => $expiredWalletBalance,
+            'totalCombinedBalance' => $totalCombinedBalance,
         ];
 
         // Real User list for Admin
@@ -55,7 +62,22 @@ class DashboardController extends Controller
 
         // Real Room list for Admin or User
         if ($currentUser->isAdmin()) {
-            $rooms = Room::with('user:id,name,email')->latest()->get();
+            $rooms = Room::with('user:id,name,email')->latest()->get()->map(function ($room) {
+                return [
+                    'id' => $room->id,
+                    'name' => $room->name,
+                    'code' => $room->code,
+                    'type' => $room->type ?? 'public',
+                    'duration_hours' => $room->duration_hours,
+                    'expires_at' => $room->expires_at->toIso8601String(),
+                    'wallet_balance' => (float) $room->wallet_balance,
+                    'is_frozen' => (bool) $room->is_frozen,
+                    'freeze_reason' => $room->freeze_reason,
+                    'is_expired' => $room->isExpired(),
+                    'is_premium' => (bool) $room->is_premium,
+                    'user' => $room->user,
+                ];
+            });
         } else {
             // Fetch all rooms where current user is a member
             $rooms = Room::whereHas('members', function ($query) use ($currentUser) {
