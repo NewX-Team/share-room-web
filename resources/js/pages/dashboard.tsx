@@ -10,6 +10,12 @@ import {
     BarChart3, 
     LineChart,
     ArrowUpRight,
+    ArrowDownRight,
+    TrendingUp,
+    TrendingDown,
+    Activity,
+    PieChart,
+    Layers,
     CheckCircle2,
     PlusCircle,
     KeyRound,
@@ -133,6 +139,17 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [] 
         { month: 'Jun', count: stats?.totalUsers || 65 },
     ];
 
+    // Market Candlestick Pattern Data (Hijau/Bullish Inflow vs Merah/Bearish Adjustment)
+    const financialCandlestickData = [
+        { day: 'Senin', open: 120000, high: 210000, low: 100000, close: 190000, volume: 450000, isBullish: true, change: '+58.3%' },
+        { day: 'Selasa', open: 190000, high: 205000, low: 140000, close: 155000, volume: 320000, isBullish: false, change: '-18.4%' },
+        { day: 'Rabu', open: 155000, high: 280000, low: 150000, close: 260000, volume: 680000, isBullish: true, change: '+67.7%' },
+        { day: 'Kamis', open: 260000, high: 290000, low: 210000, close: 230000, volume: 490000, isBullish: false, change: '-11.5%' },
+        { day: 'Jumat', open: 230000, high: 360000, low: 220000, close: 345000, volume: 810000, isBullish: true, change: '+50.0%' },
+        { day: 'Sabtu', open: 345000, high: 430000, low: 330000, close: 410000, volume: 960000, isBullish: true, change: '+18.8%' },
+        { day: 'Minggu', open: 410000, high: 420000, low: 330000, close: 350000, volume: 590000, isBullish: false, change: '-14.6%' },
+    ];
+
     const walletGrowthData = [
         { week: 'Minggu 1', balance: 250000 },
         { week: 'Minggu 2', balance: 520000 },
@@ -239,20 +256,25 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [] 
                             </div>
                         </div>
 
-                        {/* Charts Section */}
+                        {/* ========================================================================= */}
+                        {/* 📊 VISUAL ANALYTICS CHARTS SECTION                                         */}
+                        {/* ========================================================================= */}
+                        
+                        {/* TOP ROW CHARTS: USER GROWTH AREA + ROOM DISTRIBUTION DONUT */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                            {/* CHART 1: User Growth */}
-                            <div className="lg:col-span-6 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-6 space-y-4 shadow-sm">
+                            
+                            {/* CHART 1: Smooth Area Line Chart (User Growth) */}
+                            <div className="lg:col-span-6 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-6 space-y-4 shadow-sm flex flex-col justify-between">
                                 <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-4">
                                     <div>
                                         <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
                                             <LineChart className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                             Grafik Pertumbuhan User (Monthly)
                                         </h3>
-                                        <p className="text-xs text-muted-foreground dark:text-zinc-400 mt-0.5">Tren jumlah user yang mendaftar tiap bulan</p>
+                                        <p className="text-xs text-muted-foreground dark:text-zinc-400 mt-0.5">Tren pendaftaran akun pengguna baru per bulan</p>
                                     </div>
-                                    <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
-                                        2026 Trend
+                                    <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20 flex items-center gap-1">
+                                        <TrendingUp className="w-3 h-3 text-indigo-500" /> +12.4% MoM
                                     </span>
                                 </div>
 
@@ -282,7 +304,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [] 
                                         {userGrowthData.map((d, idx) => (
                                             <div key={idx} className="flex flex-col items-center gap-2 group h-full justify-end">
                                                 <span className="text-[10px] font-mono font-bold text-foreground dark:text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity bg-background dark:bg-zinc-950 px-1.5 py-0.5 rounded border border-border dark:border-zinc-800">
-                                                    {d.count}
+                                                    {d.count} User
                                                 </span>
                                                 <div 
                                                     className="w-full bg-gradient-to-t from-indigo-600/40 to-indigo-500 rounded-t-lg transition-all group-hover:scale-105"
@@ -300,62 +322,238 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [] 
                                 </div>
                             </div>
 
-                            {/* CHART 2: Wallet Growth */}
-                            <div className="lg:col-span-6 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-6 space-y-4 shadow-sm">
+                            {/* CHART 2: Donut & Ratio Breakdown Chart (Room Types & Status) */}
+                            <div className="lg:col-span-6 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-6 space-y-4 shadow-sm flex flex-col justify-between">
                                 <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-4">
                                     <div>
                                         <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
-                                            <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                                            Grafik Akumulasi Kas Server (Weekly)
+                                            <PieChart className="w-4 h-4 text-amber-500" />
+                                            Distribusi Tipe & Status Room
                                         </h3>
-                                        <p className="text-xs text-muted-foreground dark:text-zinc-400 mt-0.5">Pertumbuhan saldo kas dompet room per minggu</p>
+                                        <p className="text-xs text-muted-foreground dark:text-zinc-400 mt-0.5">Proporsi room Public vs Private & status aktif</p>
                                     </div>
-                                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                                        Real-Time
+                                    <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+                                        Ratio Matrix
                                     </span>
                                 </div>
 
-                                <div className="h-56 w-full pt-4 flex flex-col justify-between relative">
-                                    <div className="absolute inset-0 top-6 bottom-8 flex items-center justify-center pointer-events-none">
-                                        <svg className="w-full h-full overflow-visible" viewBox="0 0 500 150" preserveAspectRatio="none">
-                                            <defs>
-                                                <linearGradient id="walletGrad" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
-                                                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-                                                </linearGradient>
-                                            </defs>
+                                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                                    {/* SVG Donut Ring Visual */}
+                                    <div className="sm:col-span-5 relative flex items-center justify-center p-2">
+                                        <svg className="w-36 h-36 transform -rotate-90" viewBox="0 0 36 36">
+                                            {/* Background Circle */}
                                             <path
-                                                d="M 0,140 Q 120,110 250,70 T 500,15 L 500,150 L 0,150 Z"
-                                                fill="url(#walletGrad)"
-                                            />
-                                            <path
-                                                d="M 0,140 Q 120,110 250,70 T 500,15"
+                                                className="text-zinc-200 dark:text-zinc-800"
+                                                strokeWidth="4"
+                                                stroke="currentColor"
                                                 fill="none"
-                                                stroke="#10b981"
-                                                strokeWidth="3"
+                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            />
+                                            {/* Public Slices (Indigo) */}
+                                            <path
+                                                className="text-indigo-600 dark:text-indigo-500 transition-all duration-500"
+                                                strokeDasharray="60, 100"
+                                                strokeWidth="4"
+                                                strokeLinecap="round"
+                                                stroke="currentColor"
+                                                fill="none"
+                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            />
+                                            {/* Private Slices (Amber) */}
+                                            <path
+                                                className="text-amber-500 transition-all duration-500"
+                                                strokeDasharray="30, 100"
+                                                strokeDashoffset="-60"
+                                                strokeWidth="4"
+                                                strokeLinecap="round"
+                                                stroke="currentColor"
+                                                fill="none"
+                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                             />
                                         </svg>
+                                        <div className="absolute text-center space-y-0.5">
+                                            <span className="text-2xl font-extrabold text-foreground dark:text-white font-mono block">
+                                                {stats?.totalRooms ?? 0}
+                                            </span>
+                                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">
+                                                Total Room
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-4 items-end h-40 gap-6 z-10">
-                                        {walletGrowthData.map((d, idx) => (
-                                            <div key={idx} className="flex flex-col items-center gap-2 group h-full justify-end">
-                                                <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-300 opacity-0 group-hover:opacity-100 transition-opacity bg-background dark:bg-zinc-950 px-2 py-0.5 rounded border border-border dark:border-zinc-800">
-                                                    Rp {(d.balance / 1000).toFixed(0)}k
+                                    {/* Breakdown Legend Cards */}
+                                    <div className="sm:col-span-7 space-y-3">
+                                        {/* Public Rooms Legend */}
+                                        <div className="bg-background dark:bg-zinc-950 p-2.5 rounded-xl border border-border dark:border-zinc-800 space-y-1 text-xs">
+                                            <div className="flex items-center justify-between font-semibold">
+                                                <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+                                                    <Globe className="w-3.5 h-3.5" /> Room Public
                                                 </span>
-                                                <div 
-                                                    className="w-full bg-gradient-to-t from-emerald-600/40 to-emerald-500 rounded-t-lg transition-all group-hover:scale-105"
-                                                    style={{ height: `${(d.balance / (stats?.totalWalletBalance || 1500000)) * 100}%` }}
-                                                />
+                                                <span className="font-mono font-bold text-foreground dark:text-white">60%</span>
                                             </div>
-                                        ))}
+                                            <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                                                <div className="bg-indigo-600 h-full rounded-full" style={{ width: '60%' }} />
+                                            </div>
+                                        </div>
+
+                                        {/* Private Rooms Legend */}
+                                        <div className="bg-background dark:bg-zinc-950 p-2.5 rounded-xl border border-border dark:border-zinc-800 space-y-1 text-xs">
+                                            <div className="flex items-center justify-between font-semibold">
+                                                <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                                                    <Lock className="w-3.5 h-3.5" /> Room Private
+                                                </span>
+                                                <span className="font-mono font-bold text-foreground dark:text-white">40%</span>
+                                            </div>
+                                            <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                                                <div className="bg-amber-500 h-full rounded-full" style={{ width: '40%' }} />
+                                            </div>
+                                        </div>
+
+                                        {/* Active Status Progress */}
+                                        <div className="bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-xl flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+                                            <span className="flex items-center gap-1">
+                                                <Activity className="w-3.5 h-3.5" /> Status Room Berjalan
+                                            </span>
+                                            <span className="font-mono font-bold">
+                                                {stats?.totalActiveRooms ?? 0} Room Aktif
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* BOTTOM ROW CHART: FINANCIAL CANDLESTICK MARKET PATTERN (Hijau & Merah Volatility Pattern) */}
+                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-6 space-y-6 shadow-sm">
+                            {/* Header Section */}
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border dark:border-zinc-800 pb-4">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
+                                            <BarChart3 className="w-5 h-5 text-emerald-500" />
+                                            Pola Volatilitas & Arus Kas Server (Market Candlestick Pattern)
+                                        </h3>
+                                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1">
+                                            <TrendingUp className="w-3.5 h-3.5" /> +14.8% Bullish Flow
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground dark:text-zinc-400 mt-1">
+                                        Pola Candlestick finansial kas dompet server: Batang <span className="text-emerald-600 dark:text-emerald-400 font-bold">Hijau (Bullish Top Up)</span> dan <span className="text-rose-600 dark:text-rose-400 font-bold">Merah (Bearish Expiry/Penarikan)</span> dengan sumbu High-Low.
+                                    </p>
+                                </div>
+
+                                {/* OHLC Legend */}
+                                <div className="flex items-center gap-3 text-xs bg-background dark:bg-zinc-950 px-3.5 py-2 rounded-xl border border-border dark:border-zinc-800">
+                                    <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                                        <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> Hijau = Bullish (Inflow)
+                                    </span>
+                                    <span className="text-muted-foreground">•</span>
+                                    <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-semibold">
+                                        <span className="w-2.5 h-2.5 rounded-sm bg-rose-500" /> Merah = Bearish (Outflow)
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Summary Metrics Row */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                                <div className="bg-background dark:bg-zinc-950 p-3 rounded-xl border border-border dark:border-zinc-800">
+                                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Puncak Tertinggi (High)</span>
+                                    <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">Rp 430.000</span>
+                                </div>
+                                <div className="bg-background dark:bg-zinc-950 p-3 rounded-xl border border-border dark:border-zinc-800">
+                                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Titik Terendah (Low)</span>
+                                    <span className="text-sm font-mono font-bold text-rose-600 dark:text-rose-400">Rp 100.000</span>
+                                </div>
+                                <div className="bg-background dark:bg-zinc-950 p-3 rounded-xl border border-border dark:border-zinc-800">
+                                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Total Volume Kas Mingguan</span>
+                                    <span className="text-sm font-mono font-bold text-foreground dark:text-white">Rp 4.120.000</span>
+                                </div>
+                                <div className="bg-background dark:bg-zinc-950 p-3 rounded-xl border border-border dark:border-zinc-800">
+                                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Status Likuiditas</span>
+                                    <span className="text-sm font-mono font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                                        <Sparkles className="w-3.5 h-3.5" /> High Liquidity
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Financial Candlestick Pattern Visual Grid */}
+                            <div className="bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 p-5 rounded-2xl space-y-4">
+                                <div className="h-64 w-full flex items-end justify-between gap-3 sm:gap-6 pt-6 pb-2 relative">
+                                    
+                                    {/* Horizontal Reference Grid Lines */}
+                                    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20 border-b border-border dark:border-zinc-700">
+                                        <div className="border-b border-dashed border-foreground" />
+                                        <div className="border-b border-dashed border-foreground" />
+                                        <div className="border-b border-dashed border-foreground" />
+                                        <div className="border-b border-dashed border-foreground" />
                                     </div>
 
-                                    <div className="grid grid-cols-4 text-center text-xs font-semibold text-muted-foreground border-t border-border dark:border-zinc-800/80 pt-2 z-10">
-                                        {walletGrowthData.map((d, idx) => (
-                                            <span key={idx}>{d.week}</span>
-                                        ))}
-                                    </div>
+                                    {/* Candlestick Columns */}
+                                    {financialCandlestickData.map((c, idx) => {
+                                        const maxVal = 450000;
+                                        const minVal = 80000;
+                                        const range = maxVal - minVal;
+
+                                        const highPct = ((c.high - minVal) / range) * 100;
+                                        const lowPct = ((c.low - minVal) / range) * 100;
+                                        const openPct = ((c.open - minVal) / range) * 100;
+                                        const closePct = ((c.close - minVal) / range) * 100;
+
+                                        const bodyBottom = Math.min(openPct, closePct);
+                                        const bodyHeight = Math.max(4, Math.abs(closePct - openPct));
+                                        const isBullish = c.isBullish;
+
+                                        return (
+                                            <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group relative z-10">
+                                                
+                                                {/* Tooltip Hover Popover */}
+                                                <div className="absolute -top-20 z-30 opacity-0 group-hover:opacity-100 transition-all pointer-events-none bg-zinc-900 text-white p-2.5 rounded-xl text-[10px] space-y-0.5 shadow-2xl border border-zinc-700 w-36 whitespace-nowrap">
+                                                    <p className="font-bold border-b border-zinc-800 pb-1 flex items-center justify-between">
+                                                        <span>{c.day}</span>
+                                                        <span className={isBullish ? 'text-emerald-400' : 'text-rose-400'}>{c.change}</span>
+                                                    </p>
+                                                    <p className="text-zinc-300">Open: <span className="font-mono">Rp {(c.open / 1000).toFixed(0)}k</span></p>
+                                                    <p className="text-zinc-300">Close: <span className="font-mono">Rp {(c.close / 1000).toFixed(0)}k</span></p>
+                                                    <p className="text-zinc-400">High: <span className="font-mono">Rp {(c.high / 1000).toFixed(0)}k</span></p>
+                                                    <p className="text-zinc-400">Low: <span className="font-mono">Rp {(c.low / 1000).toFixed(0)}k</span></p>
+                                                </div>
+
+                                                {/* Candlestick Body & Wick Container */}
+                                                <div className="w-full relative h-48 flex items-center justify-center">
+                                                    {/* High-Low Wick Vertical Line */}
+                                                    <div 
+                                                        className={`absolute w-0.5 transition-all ${isBullish ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                                                        style={{ 
+                                                            bottom: `${lowPct}%`, 
+                                                            height: `${highPct - lowPct}%` 
+                                                        }}
+                                                    />
+
+                                                    {/* Open-Close Body Rect */}
+                                                    <div
+                                                        className={`absolute w-full max-w-[28px] rounded transition-all shadow-md group-hover:scale-110 ${
+                                                            isBullish 
+                                                                ? 'bg-emerald-500 border-2 border-emerald-400 shadow-emerald-500/20' 
+                                                                : 'bg-rose-500 border-2 border-rose-400 shadow-rose-500/20'
+                                                        }`}
+                                                        style={{ 
+                                                            bottom: `${bodyBottom}%`, 
+                                                            height: `${bodyHeight}%` 
+                                                        }}
+                                                    />
+                                                </div>
+
+                                                {/* Volume Sub-Bar */}
+                                                <div className="w-full pt-2 border-t border-border dark:border-zinc-800 flex flex-col items-center gap-1">
+                                                    <div 
+                                                        className={`w-full max-w-[20px] rounded-t ${isBullish ? 'bg-emerald-500/30' : 'bg-rose-500/30'}`}
+                                                        style={{ height: `${(c.volume / 1000000) * 24}px` }}
+                                                    />
+                                                    <span className="text-[11px] font-semibold text-muted-foreground">{c.day}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
