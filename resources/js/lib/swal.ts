@@ -32,7 +32,7 @@ export const showSuccessAlert = (message: string, title: string = 'Berhasil!') =
         text: message,
         timer: 3500,
         timerProgressBar: true,
-        confirmButtonText: 'Mantap! 👍',
+        confirmButtonText: 'OK',
     });
 };
 
@@ -51,7 +51,7 @@ export const showWarningAlert = (message: string, title: string = 'Peringatan') 
         icon: 'warning',
         title,
         text: message,
-        confirmButtonText: 'Oke',
+        confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b', // Amber-500
     });
 };
@@ -61,7 +61,7 @@ export const showInfoAlert = (message: string, title: string = 'Informasi') => {
         icon: 'info',
         title,
         text: message,
-        confirmButtonText: 'Siap',
+        confirmButtonText: 'OK',
     });
 };
 

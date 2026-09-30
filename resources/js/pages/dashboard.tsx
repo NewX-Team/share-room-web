@@ -21,8 +21,10 @@ import {
     Coins,
     User as UserIcon,
     Trash2,
-    LogOut,
-    Lock
+    Lock,
+    Globe,
+    XCircle,
+    X
 } from 'lucide-react';
 import { useState } from 'react';
 import type { Auth } from '@/types/auth';
@@ -31,6 +33,7 @@ interface RoomData {
     id: number;
     name: string;
     code: string;
+    type?: 'public' | 'private';
     duration_hours: number;
     expires_at: string;
     wallet_balance: number;
@@ -38,6 +41,16 @@ interface RoomData {
     is_owner?: boolean;
     is_joined?: boolean;
     is_expired?: boolean;
+}
+
+interface PendingRequestData {
+    id: number;
+    room_id: number;
+    room_name: string;
+    room_code: string;
+    status: 'pending' | 'approved' | 'rejected';
+    created_at: string;
+    time_left: string;
 }
 
 interface StatsData {
@@ -50,9 +63,10 @@ interface StatsData {
 interface DashboardProps {
     stats: StatsData;
     rooms?: RoomData[];
+    pendingJoinRequests?: PendingRequestData[];
 }
 
-export default function Dashboard({ stats, rooms = [] }: DashboardProps) {
+export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [] }: DashboardProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
     const isAdmin = currentUser?.role === 'admin';
@@ -60,6 +74,7 @@ export default function Dashboard({ stats, rooms = [] }: DashboardProps) {
     // Inertia Forms for User
     const createRoomForm = useForm({
         name: '',
+        type: 'public' as 'public' | 'private',
         duration_hours: 3,
     });
 
@@ -84,6 +99,7 @@ export default function Dashboard({ stats, rooms = [] }: DashboardProps) {
         setCopiedIndex(idx);
         setTimeout(() => setCopiedIndex(null), 2000);
     };
+
     const handleRemoveHistory = (roomId: number, isJoined: boolean, isExpired: boolean) => {
         if (isJoined && !isExpired) {
             showWarningAlert('Anda masih terdaftar di room aktif ini! Silakan masuk dan pilih "Keluar dari Room" terlebih dahulu sebelum menghapus riwayat.', 'Aksi Ditolak');
@@ -98,6 +114,12 @@ export default function Dashboard({ stats, rooms = [] }: DashboardProps) {
             icon: 'warning',
         }, () => {
             router.delete(`/rooms/${roomId}/history`);
+        });
+    };
+
+    const handleDismissRequest = (requestId: number) => {
+        router.delete(`/rooms/requests/${requestId}/dismiss`, {
+            preserveScroll: true,
         });
     };
 
@@ -138,12 +160,12 @@ export default function Dashboard({ stats, rooms = [] }: DashboardProps) {
                             )}
                         </div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-foreground dark:text-white">
-                            Halo, {currentUser?.name || 'User'}! 👋
+                            Halo, {currentUser?.name || 'User'}!
                         </h1>
                         <p className="text-xs sm:text-sm text-muted-foreground dark:text-zinc-400">
                             {isAdmin 
                                 ? 'Pantau total pengguna, total room terdaftar, dan grafik pertumbuhan kas secara real-time.'
-                                : 'Buat room temporary baru atau masuk menggunakan kode unik.'}
+                                : 'Buat room temporary (Public / Private) baru atau masuk menggunakan kode unik.'}
                         </p>
                     </div>
 
@@ -368,6 +390,44 @@ export default function Dashboard({ stats, rooms = [] }: DashboardProps) {
                                         {createRoomForm.errors.name && <p className="text-rose-500 text-[11px] mt-1">{createRoomForm.errors.name}</p>}
                                     </div>
 
+                                    {/* Select Room Type (Public vs Private) */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-foreground dark:text-zinc-300 mb-1">
+                                            Tipe Akses Room
+                                        </label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => createRoomForm.setData('type', 'public')}
+                                                className={`p-2.5 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
+                                                    createRoomForm.data.type === 'public'
+                                                        ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm'
+                                                        : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:border-zinc-400'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-1.5 text-xs font-bold">
+                                                    <Globe className="w-3.5 h-3.5" /> Room Public
+                                                </div>
+                                                <span className="text-[10px] opacity-80 font-normal">Bebas masuk langsung via kode unik</span>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => createRoomForm.setData('type', 'private')}
+                                                className={`p-2.5 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
+                                                    createRoomForm.data.type === 'private'
+                                                        ? 'bg-purple-500/10 border-purple-500 text-purple-600 dark:text-purple-400 font-bold shadow-sm'
+                                                        : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:border-zinc-400'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-1.5 text-xs font-bold">
+                                                    <Lock className="w-3.5 h-3.5" /> Room Private
+                                                </div>
+                                                <span className="text-[10px] opacity-80 font-normal">Butuh persetujuan Owner untuk masuk</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <div>
                                         <label className="block text-xs font-medium text-foreground dark:text-zinc-300 mb-1">
                                             Durasi Aktif Room (Auto-Destruct)
@@ -426,7 +486,7 @@ export default function Dashboard({ stats, rooms = [] }: DashboardProps) {
                                         </div>
 
                                         <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                            💡 Punya kode dari teman? Masukkan kode 6-digit di atas untuk bergabung ke room chat & kas dompet.
+                                            Punya kode unik dari teman? Jika room Public Anda dapat langsung masuk, jika Private permintaan gabung akan dikirim ke Owner (berlaku 24 jam).
                                         </p>
 
                                         <button
@@ -435,12 +495,68 @@ export default function Dashboard({ stats, rooms = [] }: DashboardProps) {
                                             className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
                                         >
                                             <LogIn className="w-4 h-4" />
-                                            <span>{joinRoomForm.processing ? 'Menghubungkan...' : 'Masuk ke Room Chat'}</span>
+                                            <span>{joinRoomForm.processing ? 'Menghubungkan...' : 'Gabung ke Room'}</span>
                                         </button>
                                     </form>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Section Pending Join Requests (24h Window) */}
+                        {pendingJoinRequests && pendingJoinRequests.length > 0 && (
+                            <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 shadow-sm">
+                                <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
+                                    <div>
+                                        <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
+                                            <Clock className="w-5 h-5 text-amber-500" /> Permintaan Gabung Room Private ({pendingJoinRequests.length})
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground">Status persetujuan pengajuan masuk room private dalam 24 jam terakhir</p>
+                                    </div>
+                                    <span className="text-[11px] text-muted-foreground font-medium">Auto-expire 24 jam</span>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {pendingJoinRequests.map((req) => (
+                                        <div key={req.id} className="bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl p-4 flex items-center justify-between gap-3">
+                                            <div className="space-y-1">
+                                                <div className="font-bold text-foreground dark:text-white text-sm flex items-center gap-2">
+                                                    <span>{req.room_name}</span>
+                                                    <span className="font-mono text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                                                        {req.room_code}
+                                                    </span>
+                                                </div>
+                                                <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                                                    <span>Diajukan {req.created_at}</span>
+                                                    <span>•</span>
+                                                    <span>{req.time_left}</span>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                {req.status === 'pending' ? (
+                                                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-bold">
+                                                        <Clock className="w-3.5 h-3.5 animate-spin" /> Menunggu Respon Owner
+                                                    </span>
+                                                ) : req.status === 'rejected' ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-bold">
+                                                            <XCircle className="w-3.5 h-3.5" /> Ditolak Owner
+                                                        </span>
+                                                        <button
+                                                            onClick={() => handleDismissRequest(req.id)}
+                                                            className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-500 transition-colors"
+                                                            title="Hapus notifikasi"
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* List Room Saya (Baik Owner maupun Joined Member) */}
                         <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 shadow-sm">
@@ -460,12 +576,24 @@ export default function Dashboard({ stats, rooms = [] }: DashboardProps) {
                                     const isBendahara = room.role_in_room === 'bendahara';
                                     const isJoined = room.is_joined ?? true;
                                     const isExpired = room.is_expired ?? false;
+                                    const isPrivate = room.type === 'private';
 
                                     return (
                                         <div key={room.id} className="bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl p-4 space-y-3 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div>
-                                                    <h4 className="font-bold text-foreground dark:text-white text-sm">{room.name}</h4>
+                                                    <div className="flex items-center gap-2">
+                                                        <h4 className="font-bold text-foreground dark:text-white text-sm">{room.name}</h4>
+                                                        {isPrivate ? (
+                                                            <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 flex items-center gap-0.5" title="Room Private (Butuh Izin Owner)">
+                                                                <Lock className="w-2.5 h-2.5" /> Private
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-0.5" title="Room Public (Bebas Masuk)">
+                                                                <Globe className="w-2.5 h-2.5" /> Public
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <div className="flex items-center gap-1.5 mt-1">
                                                         {isOwner ? (
                                                             <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 flex items-center gap-1">

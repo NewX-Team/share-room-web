@@ -27,6 +27,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('rooms/{code}/leave', [UserRoomController::class, 'leave'])->name('rooms.leave');
     Route::delete('rooms/{room}/history', [UserRoomController::class, 'removeHistory'])->name('rooms.history.remove');
 
+    // Private Room Join Request Routes
+    Route::post('rooms/{code}/requests/{requestId}/approve', [UserRoomController::class, 'approveJoinRequest'])->name('rooms.requests.approve');
+    Route::post('rooms/{code}/requests/{requestId}/reject', [UserRoomController::class, 'rejectJoinRequest'])->name('rooms.requests.reject');
+    Route::delete('rooms/requests/{requestId}/dismiss', [UserRoomController::class, 'dismissJoinRequest'])->name('rooms.requests.dismiss');
+
     // Room Top Up Routes (Midtrans Sandbox)
     Route::post('rooms/{code}/topup/verify-promo', [TopUpController::class, 'verifyPromo'])->name('rooms.topup.verify-promo');
     Route::post('rooms/{code}/topup/token', [TopUpController::class, 'createSnapToken'])->name('rooms.topup.token');

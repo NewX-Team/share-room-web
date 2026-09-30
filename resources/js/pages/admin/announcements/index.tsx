@@ -48,7 +48,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
     const quickTemplates = [
         {
             id: 'maintenance',
-            label: '📢 Maintenance / Perawatan',
+            label: 'Maintenance / Perawatan',
             icon: Wrench,
             color: 'bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20',
             data: {
@@ -61,7 +61,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
         },
         {
             id: 'release',
-            label: '🚀 Rilis Fitur Baru',
+            label: 'Rilis Fitur Baru',
             icon: Rocket,
             color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20',
             data: {
@@ -74,7 +74,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
         },
         {
             id: 'promo',
-            label: '🎁 Event / Diskon Promo',
+            label: 'Event / Diskon Promo',
             icon: Gift,
             color: 'bg-purple-500/10 text-purple-600 border-purple-500/30 hover:bg-purple-500/20',
             data: {
@@ -87,7 +87,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
         },
         {
             id: 'security',
-            label: '⚠️ Peringatan Keamanan',
+            label: 'Peringatan Keamanan',
             icon: ShieldAlert,
             color: 'bg-rose-500/10 text-rose-600 border-rose-500/30 hover:bg-rose-500/20',
             data: {

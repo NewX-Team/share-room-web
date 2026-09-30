@@ -19,6 +19,10 @@ import {
     Shield,
     Snowflake,
     Lock,
+    Globe,
+    UserPlus,
+    UserCheck,
+    XCircle,
     Bell,
     X,
     PlusCircle,
@@ -59,6 +63,15 @@ interface AnnouncementData {
     created_at: string;
 }
 
+interface PendingJoinRequestData {
+    id: number;
+    user_id: number;
+    name: string;
+    email: string;
+    created_at: string;
+    time_left: string;
+}
+
 interface PromoResult {
     valid: boolean;
     code: string;
@@ -74,6 +87,7 @@ interface RoomDetailProps {
         id: number;
         name: string;
         code: string;
+        type?: 'public' | 'private';
         duration_hours: number;
         expires_at: string;
         wallet_balance: number;
@@ -84,9 +98,10 @@ interface RoomDetailProps {
     members: MemberData[];
     messages: MessageData[];
     announcements?: AnnouncementData[];
+    pendingRequests?: PendingJoinRequestData[];
 }
 
-export default function RoomShow({ room, members, messages, announcements = [] }: RoomDetailProps) {
+export default function RoomShow({ room, members, messages, announcements = [], pendingRequests = [] }: RoomDetailProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
     const isOwnerOrAdmin = room.is_owner || currentUser?.role === 'admin';
@@ -96,9 +111,28 @@ export default function RoomShow({ room, members, messages, announcements = [] }
     const [copiedLink, setCopiedLink] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
 
-    // State untuk Dismiss Notification Banners
-    const [dismissedIds, setDismissedIds] = useState<number[]>([]);
-    const [hideFrozenBanner, setHideFrozenBanner] = useState(false);
+    // State untuk Dismiss Notification Banners (Persisted in localStorage per user & room)
+    const storageKey = currentUser ? `dismissed_announcements_${currentUser.id}_${room.id}` : `dismissed_announcements_${room.id}`;
+    const frozenBannerKey = currentUser ? `hide_frozen_banner_${currentUser.id}_${room.id}` : `hide_frozen_banner_${room.id}`;
+
+    const [dismissedIds, setDismissedIds] = useState<number[]>(() => {
+        if (typeof window === 'undefined') return [];
+        try {
+            const saved = localStorage.getItem(storageKey);
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+
+    const [hideFrozenBanner, setHideFrozenBanner] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        try {
+            return localStorage.getItem(frozenBannerKey) === 'true';
+        } catch (e) {
+            return false;
+        }
+    });
 
     // State Top Up Saldo Kas Modal & Kode Promo
     const [showTopUpModal, setShowTopUpModal] = useState(false);
@@ -214,8 +248,53 @@ export default function RoomShow({ room, members, messages, announcements = [] }
         });
     };
 
+    const handleApproveJoinRequest = (requestId: number, userName: string) => {
+        showConfirmDialog({
+            title: `Terima ${userName}?`,
+            text: 'Pengguna ini akan disetujui untuk masuk dan berinteraksi di room chat private ini.',
+            confirmButtonText: 'Ya, Terima',
+            cancelButtonText: 'Batal',
+            icon: 'question',
+        }, () => {
+            router.post(`/rooms/${room.code}/requests/${requestId}/approve`, {}, {
+                preserveScroll: true,
+            });
+        });
+    };
+
+    const handleRejectJoinRequest = (requestId: number, userName: string) => {
+        showConfirmDialog({
+            title: `Tolak ${userName}?`,
+            text: 'Permintaan gabung pengguna ini ke room private akan ditolak.',
+            confirmButtonText: 'Ya, Tolak',
+            cancelButtonText: 'Batal',
+            icon: 'warning',
+        }, () => {
+            router.post(`/rooms/${room.code}/requests/${requestId}/reject`, {}, {
+                preserveScroll: true,
+            });
+        });
+    };
+
     const handleDismissAnnouncement = (id: number) => {
-        setDismissedIds((prev) => [...prev, id]);
+        setDismissedIds((prev) => {
+            const updated = prev.includes(id) ? prev : [...prev, id];
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(updated));
+            } catch (e) {
+                // ignore
+            }
+            return updated;
+        });
+    };
+
+    const handleDismissFrozenBanner = () => {
+        setHideFrozenBanner(true);
+        try {
+            localStorage.setItem(frozenBannerKey, 'true');
+        } catch (e) {
+            // ignore
+        }
     };
 
     // TOP UP SALDO KAS & KODE PROMO LOGIC
@@ -404,7 +483,7 @@ export default function RoomShow({ room, members, messages, announcements = [] }
 
                 showSuccessAlert(
                     `Saldo Kas Dompet bertambah Rp ${selectedNominal.toLocaleString('id-ID')}! Total yang dibayar: Rp ${finalPayAmount.toLocaleString('id-ID')}${promoSuccessNote}.`,
-                    'Top Up Berhasil! 💳'
+                    'Top Up Berhasil'
                 );
             },
             onError: () => {
@@ -422,7 +501,7 @@ export default function RoomShow({ room, members, messages, announcements = [] }
                 {/* Room Top Header Bar */}
                 <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
                     <div className="space-y-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <a href="/dashboard" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 font-medium transition-colors">
                                 <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
                             </a>
@@ -430,6 +509,16 @@ export default function RoomShow({ room, members, messages, announcements = [] }
                             <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" /> Live Room Active
                             </span>
+                            <span className="text-muted-foreground">•</span>
+                            {room.type === 'private' ? (
+                                <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-semibold flex items-center gap-1" title="Room Private: Akses harus disetujui owner">
+                                    <Lock className="w-3 h-3 text-amber-500" /> Private Room
+                                </span>
+                            ) : (
+                                <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-xs font-semibold flex items-center gap-1" title="Room Public: Akses langsung dengan kode">
+                                    <Globe className="w-3 h-3 text-indigo-500" /> Public Room
+                                </span>
+                            )}
                         </div>
 
                         <h1 className="text-2xl font-bold text-foreground dark:text-white flex items-center gap-2">
@@ -505,6 +594,57 @@ export default function RoomShow({ room, members, messages, announcements = [] }
 
                 {/* NOTIFICATION BANNERS SECTION */}
                 <div className="space-y-3">
+                    {/* Owner Pending Join Requests Banner */}
+                    {isOwnerOrAdmin && pendingRequests.length > 0 && (
+                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 space-y-3 shadow-sm animate-in fade-in duration-200">
+                            <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
+                                <div className="flex items-center gap-2">
+                                    <UserPlus className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                                    <h4 className="font-bold text-amber-800 dark:text-amber-300 text-sm">
+                                        Permintaan Gabung Room Private ({pendingRequests.length})
+                                    </h4>
+                                </div>
+                                <span className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+                                    Persetujuan Owner Room
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {pendingRequests.map((req) => (
+                                    <div key={req.id} className="bg-background dark:bg-zinc-950 p-3 rounded-xl border border-amber-500/20 flex items-center justify-between gap-3 text-xs">
+                                        <div className="space-y-0.5 min-w-0">
+                                            <p className="font-bold text-foreground dark:text-white truncate flex items-center gap-1.5">
+                                                <span>{req.name}</span>
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground truncate">{req.email}</p>
+                                            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-mono">
+                                                Minta: {req.created_at} ({req.time_left})
+                                            </p>
+                                        </div>
+
+                                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                                            <button
+                                                onClick={() => handleApproveJoinRequest(req.id, req.name)}
+                                                className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold text-[11px] transition-colors flex items-center gap-1 shadow-sm"
+                                                title="Setujui bergabung"
+                                            >
+                                                <UserCheck className="w-3.5 h-3.5" />
+                                                <span>Terima</span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleRejectJoinRequest(req.id, req.name)}
+                                                className="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-lg font-semibold text-[11px] transition-colors flex items-center gap-1"
+                                                title="Tolak permintaan"
+                                            >
+                                                <XCircle className="w-3.5 h-3.5" />
+                                                <span>Tolak</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     {/* 1. Frozen Wallet Alert Banner with Admin Reason */}
                     {room.is_frozen && !hideFrozenBanner && (
                         <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 flex items-start justify-between gap-4 text-xs shadow-sm animate-in fade-in duration-200">
@@ -514,7 +654,7 @@ export default function RoomShow({ room, members, messages, announcements = [] }
                                 </div>
                                 <div className="space-y-1">
                                     <h4 className="font-bold text-rose-700 dark:text-rose-400 text-sm flex items-center gap-1.5">
-                                        <span>⚠️ Dompet Digital Room Dibekukan oleh Admin</span>
+                                        <span>Dompet Digital Room Dibekukan oleh Admin</span>
                                     </h4>
                                     <p className="text-rose-600 dark:text-rose-300 font-medium">
                                         Alasan Pembekuan: <span className="italic">"{room.freeze_reason || 'Pemeriksaan keamanan oleh administrator server'}"</span>
@@ -525,7 +665,7 @@ export default function RoomShow({ room, members, messages, announcements = [] }
                                 </div>
                             </div>
                             <button
-                                onClick={() => setHideFrozenBanner(true)}
+                                onClick={handleDismissFrozenBanner}
                                 className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition-colors flex-shrink-0"
                                 title="Tutup notifikasi ini"
                             >
@@ -807,7 +947,7 @@ export default function RoomShow({ room, members, messages, announcements = [] }
                                             className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs transition-all shadow-md shadow-emerald-600/20 disabled:opacity-50 flex items-center gap-1.5"
                                         >
                                             <CreditCard className="w-4 h-4" />
-                                            <span>{isProcessingTopUp ? 'Memproses Token...' : 'Lanjutkan Midtrans Sandbox ➔'}</span>
+                                            <span>{isProcessingTopUp ? 'Memproses Token...' : 'Lanjutkan Midtrans Sandbox'}</span>
                                         </button>
                                     </div>
                                 </form>
@@ -824,7 +964,7 @@ export default function RoomShow({ room, members, messages, announcements = [] }
                                 <Share2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Bagikan Kode Unik Room
                             </h3>
                             <button onClick={() => setShowShareModal(false)} className="text-xs text-muted-foreground hover:text-foreground">
-                                Batal ✕
+                                Batal
                             </button>
                         </div>
 
@@ -847,7 +987,7 @@ export default function RoomShow({ room, members, messages, announcements = [] }
                                 className="p-3 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 rounded-xl text-left space-y-1 transition-colors"
                             >
                                 <span className="text-xs text-emerald-600 dark:text-emerald-300 font-semibold block">Bagikan via WhatsApp</span>
-                                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold block pt-1">Kirim Pesan WA ➔</span>
+                                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold block pt-1">Kirim Pesan WA</span>
                             </button>
 
                             {/* Option 3: Copy Direct Link */}
@@ -857,7 +997,7 @@ export default function RoomShow({ room, members, messages, announcements = [] }
                             >
                                 <span className="text-xs text-muted-foreground font-semibold block">Link Langsung:</span>
                                 <span className="text-xs font-mono text-indigo-600 dark:text-indigo-300 flex items-center justify-between pt-1">
-                                    {copiedLink ? 'Link Tersalin!' : 'Salin URL Direct 🔗'}
+                                    {copiedLink ? 'Link Tersalin!' : 'Salin URL Direct'}
                                 </span>
                             </button>
                         </div>

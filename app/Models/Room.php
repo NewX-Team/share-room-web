@@ -28,6 +28,7 @@ class Room extends Model
         'user_id',
         'name',
         'code',
+        'type',
         'duration_hours',
         'expires_at',
         'wallet_balance',
@@ -78,10 +79,26 @@ class Room extends Model
     }
 
     /**
+     * Get join requests for the room.
+     */
+    public function joinRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RoomJoinRequest::class);
+    }
+
+    /**
      * Check if the room duration has expired.
      */
     public function isExpired(): bool
     {
         return $this->expires_at->isPast();
+    }
+
+    /**
+     * Check if room is private.
+     */
+    public function isPrivate(): bool
+    {
+        return $this->type === 'private';
     }
 }

@@ -391,13 +391,13 @@ export default function Welcome() {
                                             <div className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-[10px] text-white">S</div>
                                             <div className="bg-zinc-900 p-2 rounded-xl rounded-tl-none border border-zinc-800 max-w-[80%]">
                                                 <p className="font-semibold text-zinc-400 text-[10px]">Siti</p>
-                                                <p className="text-zinc-200">Otw 5 menit lagi! Jangan lupa patungan sate udah di-set di dompet kas room ya 💸</p>
+                                                <p className="text-zinc-200">Pengingat patungan telah diatur di dompet kas room.</p>
                                             </div>
                                         </div>
 
                                         <div className="flex justify-end">
                                             <div className="bg-indigo-600 text-white p-2 rounded-xl rounded-tr-none max-w-[80%]">
-                                                <p className="text-[11px]">Siap! Gw udah isi urunan Rp 20rb barusan 👍🏻</p>
+                                                <p className="text-[11px]">Siap, transaksi kas Rp 20.000 sudah berhasil disetor.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -532,31 +532,31 @@ export default function Welcome() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         <div className="bg-zinc-900/70 border border-zinc-800 p-5 rounded-xl space-y-2">
                             <div className="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
-                                ⏳
+                                <Timer className="w-5 h-5" />
                             </div>
                             <h3 className="font-bold text-white text-sm">Hapus Otomatis</h3>
                             <p className="text-xs text-zinc-400 leading-relaxed">
-                                Bebas menentukan timer. Begitu abis, chat & media langsung bersih tanpa jejak.
+                                Bebas menentukan timer. Begitu masa aktif habis, chat dan media dibersihkan otomatis.
                             </p>
                         </div>
 
                         <div className="bg-zinc-900/70 border border-zinc-800 p-5 rounded-xl space-y-2">
                             <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
-                                🔑
+                                <KeyRound className="w-5 h-5" />
                             </div>
-                            <h3 className="font-bold text-white text-sm">Cukup Kode 6-Digit</h3>
+                            <h3 className="font-bold text-white text-sm">Cukup Kode Unik</h3>
                             <p className="text-xs text-zinc-400 leading-relaxed">
-                                Gak perlu tambah kontak WA atau bikin grup baru yang numpuk. Tinggal share kode unik!
+                                Tidak perlu menambah kontak atau membuat grup baru. Cukup bagikan kode unik room.
                             </p>
                         </div>
 
                         <div className="bg-zinc-900/70 border border-zinc-800 p-5 rounded-xl space-y-2">
                             <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
-                                💳
+                                <Wallet className="w-5 h-5" />
                             </div>
                             <h3 className="font-bold text-white text-sm">Dompet Kas Bersama</h3>
                             <p className="text-xs text-zinc-400 leading-relaxed">
-                                Patungan uang jadi jelas dan transparan. Kelihatan langsung siapa yang udah bayar.
+                                Patungan uang terdata secara transparan. Rincian pembayar dan saldo kas terlihat langsung.
                             </p>
                         </div>
                     </div>

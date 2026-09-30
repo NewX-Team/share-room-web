@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\Room;
+use App\Models\RoomAnnouncement;
+use App\Models\RoomJoinRequest;
 use App\Models\RoomMember;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +21,7 @@ class UserRoomController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'string', 'in:public,private'],
             'duration_hours' => ['required', 'integer', 'in:1,3,6,12,24,48'],
         ]);
 
@@ -33,6 +36,7 @@ class UserRoomController extends Controller
             'user_id' => $user->id,
             'name' => $validated['name'],
             'code' => $code,
+            'type' => $validated['type'],
             'duration_hours' => $validated['duration_hours'],
             'expires_at' => now()->addHours((int) $validated['duration_hours']),
             'wallet_balance' => 0, // Initial wallet balance is set to 0
@@ -65,18 +69,55 @@ class UserRoomController extends Controller
         }
 
         if ($room->isExpired()) {
-            return redirect()->back()->with('error', 'Room ini sudah kadaluarsa dan otomatis terhapus.');
+            return redirect()->back()->with('error', 'Room ini sudah kadaluarsa dan tidak aktif.');
         }
 
         $user = $request->user();
 
-        // Attach user as member if not already joined
-        RoomMember::firstOrCreate(
+        // Check if user is already a member or owner
+        $isMember = RoomMember::where('room_id', $room->id)->where('user_id', $user->id)->exists();
+        if ($isMember) {
+            return redirect()->route('rooms.show', $room->code);
+        }
+
+        // Public Room: Join immediately
+        if ($room->type === 'public') {
+            RoomMember::create([
+                'room_id' => $room->id,
+                'user_id' => $user->id,
+                'role_in_room' => 'member',
+            ]);
+
+            return redirect()->route('rooms.show', $room->code)->with('success', 'Berhasil bergabung ke room public!');
+        }
+
+        // Private Room: Requires Owner Approval
+        $activeRequest = RoomJoinRequest::where('room_id', $room->id)
+            ->where('user_id', $user->id)
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        if ($activeRequest) {
+            if ($activeRequest->status === 'pending') {
+                return redirect()->back()->with('info', 'Permintaan gabung Anda sedang menunggu persetujuan Owner room (berlaku 24 jam).');
+            }
+
+            if ($activeRequest->status === 'rejected') {
+                return redirect()->back()->with('error', 'Permintaan gabung Anda ke room private ini sebelumnya telah ditolak oleh Owner.');
+            }
+        }
+
+        // Create new pending join request valid for 24 hours
+        RoomJoinRequest::updateOrCreate(
             ['room_id' => $room->id, 'user_id' => $user->id],
-            ['role_in_room' => 'member']
+            [
+                'status' => 'pending',
+                'expires_at' => now()->addHours(24),
+            ]
         );
 
-        return redirect()->route('rooms.show', $room->code);
+        return redirect()->back()->with('info', 'Permintaan gabung terkirim! Room ini bersifat Private, silakan menunggu persetujuan dari Owner room.');
     }
 
     /**
@@ -97,15 +138,21 @@ class UserRoomController extends Controller
 
         $user = $request->user();
 
-        // Auto join user as member if opening the link directly
+        // Check member record
         $memberRecord = RoomMember::where('room_id', $room->id)->where('user_id', $user->id)->first();
 
         if (! $memberRecord) {
-            $memberRecord = RoomMember::create([
-                'room_id' => $room->id,
-                'user_id' => $user->id,
-                'role_in_room' => $room->user_id === $user->id ? 'owner' : 'member',
-            ]);
+            // Auto join if room is Public
+            if ($room->type === 'public') {
+                $memberRecord = RoomMember::create([
+                    'room_id' => $room->id,
+                    'user_id' => $user->id,
+                    'role_in_room' => $room->user_id === $user->id ? 'owner' : 'member',
+                ]);
+            } else {
+                // Private room without member record: redirect to dashboard
+                return redirect()->route('dashboard')->with('error', 'Room ini bersifat Private. Anda harus menunggu persetujuan Owner room untuk dapat masuk.');
+            }
         }
 
         // Fetch members with user info
@@ -118,7 +165,7 @@ class UserRoomController extends Controller
                     'user_id' => $member->user_id,
                     'name' => $member->user->name ?? 'User',
                     'email' => $member->user->email ?? '',
-                    'role_in_room' => $member->role_in_room, // 'owner', 'bendahara', or 'member'
+                    'role_in_room' => $member->role_in_room,
                     'joined_at' => $member->created_at->diffForHumans(),
                 ];
             });
@@ -129,7 +176,6 @@ class UserRoomController extends Controller
             ->oldest()
             ->get()
             ->map(function ($msg) use ($members) {
-                // Find member role in room
                 $memberRole = $members->firstWhere('user_id', $msg->user_id)['role_in_room'] ?? 'member';
 
                 return [
@@ -157,22 +203,122 @@ class UserRoomController extends Controller
                 ];
             });
 
+        // Pending Join Requests for Owner or Admin
+        $isOwner = $room->user_id === $user->id;
+        $pendingRequests = [];
+        if ($isOwner || $user->isAdmin()) {
+            $pendingRequests = RoomJoinRequest::with('user:id,name,email')
+                ->where('room_id', $room->id)
+                ->where('status', 'pending')
+                ->where('expires_at', '>', now())
+                ->latest()
+                ->get()
+                ->map(function ($req) {
+                    return [
+                        'id' => $req->id,
+                        'user_id' => $req->user_id,
+                        'name' => $req->user->name ?? 'User',
+                        'email' => $req->user->email ?? '',
+                        'created_at' => $req->created_at->diffForHumans(),
+                        'time_left' => $req->expires_at->diffForHumans(['syntax' => \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW]),
+                    ];
+                });
+        }
+
         return Inertia::render('rooms/show', [
             'room' => [
                 'id' => $room->id,
                 'name' => $room->name,
                 'code' => $room->code,
+                'type' => $room->type ?? 'public',
                 'duration_hours' => $room->duration_hours,
                 'expires_at' => $room->expires_at->toIso8601String(),
                 'wallet_balance' => (float) $room->wallet_balance,
                 'is_frozen' => (bool) $room->is_frozen,
                 'freeze_reason' => $room->freeze_reason,
-                'is_owner' => $room->user_id === $user->id,
+                'is_owner' => $isOwner,
             ],
             'members' => $members,
             'messages' => $messages,
             'announcements' => $announcements,
+            'pendingRequests' => $pendingRequests,
         ]);
+    }
+
+    /**
+     * Owner approves a user's join request to a private room.
+     */
+    public function approveJoinRequest(Request $request, string $code, int $requestId): RedirectResponse
+    {
+        $code = strtoupper(trim($code));
+        $room = Room::where('code', $code)->firstOrFail();
+        $currentUser = $request->user();
+
+        if ($room->user_id !== $currentUser->id && ! $currentUser->isAdmin()) {
+            return redirect()->back()->with('error', 'Hanya Owner Room yang dapat menyetujui permintaan gabung.');
+        }
+
+        $joinRequest = RoomJoinRequest::where('room_id', $room->id)->where('id', $requestId)->firstOrFail();
+
+        $joinRequest->update([
+            'status' => 'approved',
+        ]);
+
+        // Attach user to room members
+        RoomMember::firstOrCreate(
+            ['room_id' => $room->id, 'user_id' => $joinRequest->user_id],
+            ['role_in_room' => 'member']
+        );
+
+        // Add room announcement
+        $requestUser = $joinRequest->user;
+        $userName = $requestUser ? $requestUser->name : 'Anggota baru';
+
+        RoomAnnouncement::create([
+            'room_id' => $room->id,
+            'type' => 'info',
+            'title' => 'Anggota Baru Bergabung',
+            'message' => "{$userName} telah disetujui bergabung ke room oleh Owner.",
+        ]);
+
+        return redirect()->back()->with('success', "Permintaan gabung {$userName} berhasil disetujui!");
+    }
+
+    /**
+     * Owner rejects a user's join request to a private room.
+     */
+    public function rejectJoinRequest(Request $request, string $code, int $requestId): RedirectResponse
+    {
+        $code = strtoupper(trim($code));
+        $room = Room::where('code', $code)->firstOrFail();
+        $currentUser = $request->user();
+
+        if ($room->user_id !== $currentUser->id && ! $currentUser->isAdmin()) {
+            return redirect()->back()->with('error', 'Hanya Owner Room yang dapat menolak permintaan gabung.');
+        }
+
+        $joinRequest = RoomJoinRequest::where('room_id', $room->id)->where('id', $requestId)->firstOrFail();
+
+        $joinRequest->update([
+            'status' => 'rejected',
+        ]);
+
+        return redirect()->back()->with('success', 'Permintaan gabung telah ditolak.');
+    }
+
+    /**
+     * Dismiss a rejected or expired join request from user dashboard.
+     */
+    public function dismissJoinRequest(Request $request, int $requestId): RedirectResponse
+    {
+        $currentUser = $request->user();
+        $joinRequest = RoomJoinRequest::where('user_id', $currentUser->id)->where('id', $requestId)->first();
+
+        if ($joinRequest) {
+            $joinRequest->delete();
+        }
+
+        return redirect()->back()->with('success', 'Permintaan room berhasil dihapus dari daftar pending.');
     }
 
     /**
@@ -201,7 +347,7 @@ class UserRoomController extends Controller
     }
 
     /**
-     * Update a member's role in the room (e.g. promote to 'bendahara' or demote to 'member').
+     * Update a member's role in the room.
      */
     public function updateMemberRole(Request $request, string $code, int $memberId): RedirectResponse
     {
@@ -213,14 +359,12 @@ class UserRoomController extends Controller
         $room = Room::where('code', $code)->firstOrFail();
         $currentUser = $request->user();
 
-        // Only Room Owner or Admin can assign roles
         if ($room->user_id !== $currentUser->id && ! $currentUser->isAdmin()) {
             return redirect()->back()->with('error', 'Hanya Owner Room yang dapat mengubah role anggota.');
         }
 
         $member = RoomMember::where('room_id', $room->id)->where('id', $memberId)->firstOrFail();
 
-        // Cannot change owner role
         if ($member->role_in_room === 'owner') {
             return redirect()->back()->with('error', 'Role Owner Room tidak dapat diubah.');
         }
@@ -233,7 +377,7 @@ class UserRoomController extends Controller
     }
 
     /**
-     * Kick a member from the room (Owner or Admin action).
+     * Kick a member from the room.
      */
     public function kickMember(Request $request, string $code, int $memberId): RedirectResponse
     {
@@ -247,7 +391,6 @@ class UserRoomController extends Controller
 
         $member = RoomMember::where('room_id', $room->id)->where('id', $memberId)->firstOrFail();
 
-        // Cannot kick the owner
         if ($member->role_in_room === 'owner') {
             return redirect()->back()->with('error', 'Tidak dapat mengeluarkan Owner Room.');
         }
@@ -276,14 +419,13 @@ class UserRoomController extends Controller
     }
 
     /**
-     * Remove room history item from user dashboard (only allowed if already left room or expired).
+     * Remove room history item from user dashboard.
      */
     public function removeHistory(Request $request, int $roomId): RedirectResponse
     {
         $currentUser = $request->user();
         $room = Room::find($roomId);
 
-        // Check if member is still joined in an active room
         $memberRecord = RoomMember::where('room_id', $roomId)->where('user_id', $currentUser->id)->first();
 
         if ($memberRecord && $room && ! $room->isExpired()) {

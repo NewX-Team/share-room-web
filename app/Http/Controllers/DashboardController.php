@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Room;
+use App\Models\RoomJoinRequest;
 use App\Models\RoomMember;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -27,9 +28,30 @@ class DashboardController extends Controller
         ];
 
         // Real User list for Admin
-        $users = $currentUser->isAdmin() 
+        $users = $currentUser->isAdmin()
             ? User::select(['id', 'name', 'email', 'role', 'created_at'])->latest()->get()
             : [];
+
+        // Pending Join Requests for Regular User (last 24h)
+        $pendingJoinRequests = [];
+        if (! $currentUser->isAdmin()) {
+            $pendingJoinRequests = RoomJoinRequest::with('room:id,name,code,type,user_id')
+                ->where('user_id', $currentUser->id)
+                ->where('expires_at', '>', now())
+                ->latest()
+                ->get()
+                ->map(function ($req) {
+                    return [
+                        'id' => $req->id,
+                        'room_id' => $req->room_id,
+                        'room_name' => $req->room->name ?? 'Room',
+                        'room_code' => $req->room->code ?? '',
+                        'status' => $req->status, // 'pending', 'rejected', 'approved'
+                        'created_at' => $req->created_at->diffForHumans(),
+                        'time_left' => $req->expires_at->diffForHumans(['syntax' => \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW]),
+                    ];
+                });
+        }
 
         // Real Room list for Admin or User
         if ($currentUser->isAdmin()) {
@@ -47,6 +69,7 @@ class DashboardController extends Controller
                     'id' => $room->id,
                     'name' => $room->name,
                     'code' => $room->code,
+                    'type' => $room->type ?? 'public',
                     'duration_hours' => $room->duration_hours,
                     'expires_at' => $room->expires_at->toIso8601String(),
                     'wallet_balance' => (float) $room->wallet_balance,
@@ -62,6 +85,7 @@ class DashboardController extends Controller
             'stats' => $stats,
             'users' => $users,
             'rooms' => $rooms,
+            'pendingJoinRequests' => $pendingJoinRequests,
         ]);
     }
 }

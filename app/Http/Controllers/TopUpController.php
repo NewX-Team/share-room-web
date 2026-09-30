@@ -186,7 +186,7 @@ class TopUpController extends Controller
             RoomAnnouncement::create([
                 'room_id' => $room->id,
                 'type' => 'add_funds',
-                'title' => 'Top Up Saldo Kas Berhasil 💳',
+                'title' => 'Top Up Saldo Kas Berhasil',
                 'message' => "Pengguna {$user->name} berhasil Top Up saldo kas dompet room sebesar Rp " . number_format($transaction->gross_amount, 0, ',', '.') . "{$promoText} via Midtrans Sandbox.",
             ]);
         }
@@ -257,7 +257,7 @@ class TopUpController extends Controller
             RoomAnnouncement::create([
                 'room_id' => $room->id,
                 'type' => 'add_funds',
-                'title' => 'Top Up Saldo Kas Berhasil 💳',
+                'title' => 'Top Up Saldo Kas Berhasil',
                 'message' => "Pengguna {$user->name} berhasil Top Up saldo kas dompet room sebesar Rp " . number_format($transaction->gross_amount, 0, ',', '.') . "{$promoText} via Midtrans Sandbox.",
             ]);
         }
