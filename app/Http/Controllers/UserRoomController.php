@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Message;
 use App\Models\Room;
 use App\Models\RoomAnnouncement;
+use App\Models\RoomInvoice;
 use App\Models\RoomJoinRequest;
 use App\Models\RoomMember;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -248,6 +250,23 @@ class UserRoomController extends Controller
             ]);
         }
 
+        $premiumPrice = $room->calculatePremiumPrice();
+        $invoices = RoomInvoice::with('user:id,name,email')
+            ->where('room_id', $room->id)
+            ->latest()
+            ->get()
+            ->map(function ($inv) {
+                return [
+                    'id' => $inv->id,
+                    'invoice_number' => $inv->invoice_number,
+                    'user_name' => $inv->user->name ?? 'User',
+                    'feature_name' => $inv->feature_name,
+                    'amount' => (float) $inv->amount,
+                    'duration_hours' => $inv->duration_hours,
+                    'paid_at' => $inv->paid_at->format('d M Y, H:i'),
+                ];
+            });
+
         return Inertia::render('rooms/show', [
             'room' => [
                 'id' => $room->id,
@@ -260,6 +279,8 @@ class UserRoomController extends Controller
                 'is_frozen' => (bool) $room->is_frozen,
                 'freeze_reason' => $room->freeze_reason,
                 'is_owner' => $isOwner,
+                'is_premium' => (bool) $room->is_premium,
+                'premium_price' => $premiumPrice,
             ],
             'members' => $members,
             'messages' => $messages,
@@ -268,6 +289,7 @@ class UserRoomController extends Controller
             'userFileCount' => $roomFileCount,
             'maxFiles' => 20,
             'lastReadMessageId' => $lastReadMessageId,
+            'invoices' => $invoices,
         ]);
     }
 
@@ -348,6 +370,63 @@ class UserRoomController extends Controller
     }
 
     /**
+     * Purchase Premium Pass for the room using Digital Wallet balance.
+     */
+    public function buyPremium(Request $request, string $code): RedirectResponse
+    {
+        $code = strtoupper(trim($code));
+        $room = Room::where('code', $code)->firstOrFail();
+
+        if ($room->isExpired()) {
+            return redirect()->back()->with('error', 'Room sudah kadaluarsa.');
+        }
+
+        if ($room->is_premium) {
+            return redirect()->back()->with('info', 'Fitur Premium Pass untuk room ini sudah aktif!');
+        }
+
+        $user = $request->user();
+        $price = $room->calculatePremiumPrice();
+
+        if ($room->wallet_balance < $price) {
+            return redirect()->back()->with('error', 'Saldo Dompet Digital Room tidak mencukupi (Saldo: Rp ' . number_format($room->wallet_balance, 0, ',', '.') . ', Harga: Rp ' . number_format($price, 0, ',', '.') . '). Silakan Top Up Saldo Kas Room terlebih dahulu.');
+        }
+
+        // Deduct room wallet balance and activate premium status
+        $room->wallet_balance -= $price;
+        $room->is_premium = true;
+        $room->save();
+
+        // Create Room Invoice
+        $invoice = RoomInvoice::create([
+            'room_id' => $room->id,
+            'user_id' => $user->id,
+            'invoice_number' => 'INV-PRO-' . strtoupper(Str::random(8)),
+            'feature_name' => 'ShareRoom Pro Pass (Unlimited File & Premium Badge)',
+            'amount' => $price,
+            'duration_hours' => $room->duration_hours,
+            'paid_at' => now(),
+        ]);
+
+        // Post Room Announcement visible to all members
+        RoomAnnouncement::create([
+            'room_id' => $room->id,
+            'type' => 'success',
+            'title' => '👑 FITUR PREMIUM PASS AKTIF!',
+            'message' => "{$user->name} telah mengaktifkan Paket Premium Pass seharga Rp " . number_format($price, 0, ',', '.') . " menggunakan Saldo Dompet Digital Room. Seluruh member kini menikmati fitur Unggah File Tanpa Batas!",
+        ]);
+
+        // Post automated Chat Message so all members see it in the feed
+        Message::create([
+            'room_id' => $room->id,
+            'user_id' => $user->id,
+            'message' => "🎉 TELAH MENG-UPGRADE ROOM KE PREMIUM PASS! 👑\nNo. Invoice: {$invoice->invoice_number}\nTotal Pembayaran: Rp " . number_format($price, 0, ',', '.') . "\nStatus: Fitur Unggah File Tanpa Batas Aktif untuk Seluruh Member!",
+        ]);
+
+        return redirect()->back()->with('success', 'Selamat! Fitur Premium Pass berhasil diaktifkan untuk seluruh member di room ini.');
+    }
+
+    /**
      * Send a new chat message or file attachment in the room.
      */
     public function sendMessage(Request $request, string $code): RedirectResponse
@@ -375,13 +454,15 @@ class UserRoomController extends Controller
         $fileSize = null;
 
         if ($request->hasFile('file')) {
-            // Enforce 20 file limit total across all members in this room
-            $roomFileCount = Message::where('room_id', $room->id)
-                ->whereNotNull('file_path')
-                ->count();
+            // Enforce 20 file limit total across all members in this room (unless Premium Pass is active)
+            if (!$room->is_premium) {
+                $roomFileCount = Message::where('room_id', $room->id)
+                    ->whereNotNull('file_path')
+                    ->count();
 
-            if ($roomFileCount >= 20) {
-                return redirect()->back()->with('error', 'Batas total 20 file untuk room ini telah tercapai (seluruh member). Silakan upgrade ke Premium untuk upload tanpa batas.');
+                if ($roomFileCount >= 20) {
+                    return redirect()->back()->with('error', 'Batas total 20 file untuk room ini telah tercapai (seluruh member). Silakan upgrade ke Premium untuk upload tanpa batas.');
+                }
             }
 
             $file = $request->file('file');

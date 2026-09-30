@@ -92,6 +92,16 @@ interface PromoResult {
     message: string;
 }
 
+interface RoomInvoiceData {
+    id: number;
+    invoice_number: string;
+    user_name: string;
+    feature_name: string;
+    amount: number;
+    duration_hours: number;
+    paid_at: string;
+}
+
 interface RoomDetailProps {
     room: {
         id: number;
@@ -104,6 +114,8 @@ interface RoomDetailProps {
         is_frozen?: boolean;
         freeze_reason?: string | null;
         is_owner: boolean;
+        is_premium?: boolean;
+        premium_price?: number;
     };
     members: MemberData[];
     messages: MessageData[];
@@ -112,6 +124,7 @@ interface RoomDetailProps {
     userFileCount?: number;
     maxFiles?: number;
     lastReadMessageId?: number | null;
+    invoices?: RoomInvoiceData[];
 }
 
 export default function RoomShow({ 
@@ -123,6 +136,7 @@ export default function RoomShow({
     userFileCount = 0,
     maxFiles = 20,
     lastReadMessageId = null,
+    invoices = [],
 }: RoomDetailProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
@@ -196,8 +210,34 @@ export default function RoomShow({
     const [isProcessingTopUp, setIsProcessingTopUp] = useState(false);
     const [simulatorOrderId, setSimulatorOrderId] = useState<string | null>(null);
 
-    // State Modal Upgrade Premium (Dummy)
+    // State Modal Upgrade Premium & Invoice
     const [showPremiumModal, setShowPremiumModal] = useState(false);
+    const [isBuyingPremium, setIsBuyingPremium] = useState(false);
+    const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+    const [selectedInvoice, setSelectedInvoice] = useState<RoomInvoiceData | null>(null);
+
+    const handleBuyPremium = () => {
+        const price = room.premium_price || 2000;
+
+        showConfirmDialog(
+            {
+                title: 'Beli Fitur Premium Pass?',
+                text: `Apakah Anda yakin ingin meng-upgrade room ini ke Paket Premium Pass seharga Rp ${price.toLocaleString('id-ID')}? Saldo Dompet Digital Room (Rp ${room.wallet_balance.toLocaleString('id-ID')}) akan dipotong otomatis.`,
+                confirmButtonText: 'Ya, Beli Premium Pass',
+                cancelButtonText: 'Batal',
+                icon: 'question',
+            },
+            () => {
+                setIsBuyingPremium(true);
+                router.post(`/rooms/${room.code}/buy-premium`, {}, {
+                    onFinish: () => {
+                        setIsBuyingPremium(false);
+                        setShowPremiumModal(false);
+                    },
+                });
+            }
+        );
+    };
 
     // Form Inertia untuk Kirim Pesan & File Chat
     const chatForm = useForm({
@@ -631,6 +671,11 @@ export default function RoomShow({
 
                         <h1 className="text-2xl font-bold text-foreground dark:text-white flex items-center gap-2">
                             <span>{room.name}</span>
+                            {room.is_premium && (
+                                <span className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 text-xs font-bold shadow-md shadow-amber-500/20 inline-flex items-center gap-1.5 animate-pulse">
+                                    <Crown className="w-4 h-4 fill-zinc-950" /> PREMIUM ROOM
+                                </span>
+                            )}
                         </h1>
                     </div>
 
@@ -1124,24 +1169,37 @@ export default function RoomShow({
                             </div>
                             
                             {/* File Limit Indicator & Upgrade Badge */}
-                            <button
-                                type="button"
-                                onClick={() => setShowPremiumModal(true)}
-                                className={`px-2.5 py-1 rounded-xl text-xs font-mono font-semibold border transition-all flex items-center gap-1.5 ${
-                                    userFileCount >= maxFiles
-                                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 shadow-sm'
-                                        : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground'
-                                }`}
-                                title="Batas 20 File gabungan per room (Seluruh Member). Klik untuk info Premium"
-                            >
-                                <Paperclip className="w-3.5 h-3.5 text-indigo-500" />
-                                <span>File: <strong className={userFileCount >= maxFiles ? 'text-rose-500 font-bold' : 'text-emerald-500'}>{userFileCount}/{maxFiles}</strong></span>
-                                {userFileCount >= maxFiles && (
-                                    <span className="px-1.5 py-0.2 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded text-[9px] font-sans font-bold flex items-center gap-0.5">
-                                        <Lock className="w-2.5 h-2.5" /> Terkunci
-                                    </span>
-                                )}
-                            </button>
+                            {room.is_premium ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPremiumModal(true)}
+                                    className="px-2.5 py-1 rounded-xl text-xs font-mono font-semibold border transition-all flex items-center gap-1.5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:from-amber-500/20 hover:to-orange-500/20 shadow-sm"
+                                    title="Fitur Premium Pass Aktif! Klik untuk rincian invoice"
+                                >
+                                    <Crown className="w-3.5 h-3.5 text-amber-500" />
+                                    <span>File: <strong className="text-amber-500 font-bold">Unlimited ♾️</strong></span>
+                                    <span className="px-1.5 py-0.2 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded text-[9px] font-sans font-bold">Pro</span>
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPremiumModal(true)}
+                                    className={`px-2.5 py-1 rounded-xl text-xs font-mono font-semibold border transition-all flex items-center gap-1.5 ${
+                                        userFileCount >= maxFiles
+                                            ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 shadow-sm'
+                                            : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground'
+                                    }`}
+                                    title="Batas 20 File gabungan per room (Seluruh Member). Klik untuk info Premium"
+                                >
+                                    <Paperclip className="w-3.5 h-3.5 text-indigo-500" />
+                                    <span>File: <strong className={userFileCount >= maxFiles ? 'text-rose-500 font-bold' : 'text-emerald-500'}>{userFileCount}/{maxFiles}</strong></span>
+                                    {userFileCount >= maxFiles && (
+                                        <span className="px-1.5 py-0.2 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded text-[9px] font-sans font-bold flex items-center gap-0.5">
+                                            <Lock className="w-2.5 h-2.5" /> Terkunci
+                                        </span>
+                                    )}
+                                </button>
+                            )}
                         </div>
 
                         {/* Chat Messages Feed Container */}
@@ -1298,27 +1356,27 @@ export default function RoomShow({
                                     onChange={handleFileSelect}
                                     className="hidden"
                                     accept="*/*"
-                                    disabled={userFileCount >= maxFiles}
+                                    disabled={!room.is_premium && userFileCount >= maxFiles}
                                 />
 
                                 {/* Attach File Button */}
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        if (userFileCount >= maxFiles) {
+                                        if (!room.is_premium && userFileCount >= maxFiles) {
                                             setShowPremiumModal(true);
                                         } else {
                                             document.getElementById('chat-file-input')?.click();
                                         }
                                     }}
                                     className={`p-2.5 rounded-xl border transition-all flex items-center justify-center flex-shrink-0 ${
-                                        userFileCount >= maxFiles
+                                        !room.is_premium && userFileCount >= maxFiles
                                             ? 'bg-rose-500/10 border-rose-500/30 text-rose-500 hover:bg-rose-500/20'
                                             : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground hover:border-indigo-500'
                                     }`}
-                                    title={userFileCount >= maxFiles ? 'Batas total 20 file room tercapai! Klik untuk upgrade Premium' : 'Unggah dokumen, foto, atau ZIP (Maks 20 file gabungan room)'}
+                                    title={!room.is_premium && userFileCount >= maxFiles ? 'Batas total 20 file room tercapai! Klik untuk upgrade Premium' : 'Unggah dokumen, foto, atau ZIP (Maks 20 file gabungan room)'}
                                 >
-                                    {userFileCount >= maxFiles ? (
+                                    {!room.is_premium && userFileCount >= maxFiles ? (
                                         <Lock className="w-4 h-4 text-rose-500" />
                                     ) : (
                                         <Paperclip className="w-4 h-4" />
@@ -1329,7 +1387,7 @@ export default function RoomShow({
                                     type="text"
                                     value={chatForm.data.message}
                                     onChange={e => chatForm.setData('message', e.target.value)}
-                                    placeholder={userFileCount >= maxFiles ? "Ketik pesan kamu (Upload file terkunci)..." : "Ketik pesan kamu atau lampirkan file..."}
+                                    placeholder={!room.is_premium && userFileCount >= maxFiles ? "Ketik pesan kamu (Upload file terkunci)..." : "Ketik pesan kamu atau lampirkan file..."}
                                     className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
                                 />
 
@@ -1440,7 +1498,7 @@ export default function RoomShow({
 
                 </div>
 
-                {/* DUMMY PREMIUM UPGRADE MODAL */}
+                {/* PREMIUM UPGRADE & INVOICE MODAL */}
                 {showPremiumModal && (
                     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
                         <div className="bg-card dark:bg-zinc-900 border border-amber-500/30 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
@@ -1455,63 +1513,215 @@ export default function RoomShow({
                             </div>
 
                             <div className="space-y-4">
-                                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-1">
-                                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 block">
-                                        Quota Limit File Room Tercapai ({userFileCount}/{maxFiles} File)
-                                    </span>
-                                    <p className="text-[11px] text-muted-foreground">
-                                        Batas maksimum 20 file reguler gabungan untuk seluruh member di room ini telah tercapai. Upgrade ke paket Premium untuk mengunggah file tanpa batas!
-                                    </p>
-                                </div>
+                                {room.is_premium ? (
+                                    <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl space-y-1 text-emerald-700 dark:text-emerald-300">
+                                        <span className="text-xs font-bold flex items-center gap-1.5">
+                                            <Crown className="w-4 h-4 text-amber-500" /> FITUR PREMIUM PASS AKTIF (PRO ROOM)
+                                        </span>
+                                        <p className="text-[11px] text-muted-foreground">
+                                            Seluruh member di room ini kini menikmati pengiriman berkas/file tanpa batas (Unlimited File Uploads).
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-1">
+                                        <span className="text-xs font-bold text-amber-600 dark:text-amber-400 block">
+                                            Upgrade Ke Paket Premium Pass Room
+                                        </span>
+                                        <p className="text-[11px] text-muted-foreground">
+                                            Beli fitur Premium Pass untuk membuka akses unggah file tanpa batas untuk <strong>SELURUH MEMBER</strong> di room ini!
+                                        </p>
+                                    </div>
+                                )}
 
+                                {/* Benefits List */}
                                 <div className="space-y-2.5">
                                     <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Keuntungan Akun Premium:</h4>
                                     <ul className="space-y-2 text-xs">
                                         <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
                                             <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                                            <span>Upload File Tanpa Batas (Unlimited File Slots)</span>
+                                            <span>Upload File Tanpa Batas (Berlaku untuk Semua Member)</span>
                                         </li>
                                         <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
                                             <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                                            <span>Batas Ukuran File Hingga 100 MB (ZIP, Dokumen, Foto)</span>
+                                            <span>Badge Mahkota Premium Mahkota di Header Room</span>
                                         </li>
                                         <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
                                             <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                                            <span>Prioritas Kecepatan Server & Penyimpanan Permanen</span>
+                                            <span>Batas Ukuran File Hingga 25 MB per File</span>
                                         </li>
                                         <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
                                             <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                                            <span>Lencana Khusus Mahkota Premium di profil room</span>
+                                            <span>Penyimpanan Aman & Invoice Pembelian Kas Resmi</span>
                                         </li>
                                     </ul>
                                 </div>
 
-                                <div className="bg-background dark:bg-zinc-950 p-4 rounded-xl border border-border dark:border-zinc-800 text-center space-y-1">
-                                    <span className="text-[10px] text-muted-foreground block uppercase font-bold">Harga Spesial Promo</span>
-                                    <span className="text-2xl font-mono font-extrabold text-amber-500">Rp 29.000 <span className="text-xs text-muted-foreground font-normal">/ bulan</span></span>
+                                {/* Price & Wallet Calculation Card */}
+                                <div className="bg-background dark:bg-zinc-950 p-4 rounded-xl border border-border dark:border-zinc-800 space-y-2">
+                                    <div className="flex items-center justify-between text-xs">
+                                        <span className="text-muted-foreground">Durasi Room:</span>
+                                        <span className="font-semibold text-foreground dark:text-white">{room.duration_hours} Jam</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-xs">
+                                        <span className="text-muted-foreground">Saldo Dompet Kas Room:</span>
+                                        <span className={`font-mono font-bold ${room.wallet_balance >= (room.premium_price || 2000) ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                            Rp {room.wallet_balance.toLocaleString('id-ID')}
+                                        </span>
+                                    </div>
+                                    <div className="pt-2 border-t border-border dark:border-zinc-900 flex items-center justify-between font-bold">
+                                        <span className="text-xs text-foreground dark:text-white">Harga Premium Pass:</span>
+                                        <span className="text-lg font-mono text-amber-500">
+                                            Rp {(room.premium_price || 2000).toLocaleString('id-ID')}
+                                        </span>
+                                    </div>
+                                    <span className="text-[10px] text-muted-foreground block text-right font-mono">
+                                        (Rp 2.000 base + {Math.max(0, room.duration_hours - 1)} jam × Rp 500)
+                                    </span>
                                 </div>
+
+                                {/* Wallet Balance Status Message */}
+                                {!room.is_premium && (
+                                    room.wallet_balance < (room.premium_price || 2000) ? (
+                                        <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-600 dark:text-rose-400 space-y-1">
+                                            <span className="font-bold flex items-center gap-1">
+                                                <AlertTriangle className="w-3.5 h-3.5" /> Saldo Dompet Kas Tidak Cukup
+                                            </span>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                Butuh Rp {((room.premium_price || 2000) - room.wallet_balance).toLocaleString('id-ID')} lagi di Saldo Kas Room. Silakan lakukan Top Up Saldo Kas terlebih dahulu.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-600 dark:text-emerald-400">
+                                            <span className="font-bold flex items-center gap-1">
+                                                <CheckCircle2 className="w-3.5 h-3.5" /> Saldo Kas Siap Digunakan
+                                            </span>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                Pembelian Premium akan memotong Saldo Kas Room sebesar Rp {(room.premium_price || 2000).toLocaleString('id-ID')}.
+                                            </p>
+                                        </div>
+                                    )
+                                )}
                             </div>
 
                             <div className="flex flex-col gap-2 pt-1">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowPremiumModal(false);
-                                        showInfoAlert('Fitur Pembelian Premium masih dalam tahap pengujian (Dummy Demo). Nantikan update selanjutnya!', 'Fitur Premium (Demo)');
-                                    }}
-                                    className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5"
-                                >
-                                    <Crown className="w-4 h-4" />
-                                    <span>Upgrade Ke Premium Sekarang</span>
-                                </button>
+                                {room.is_premium ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (invoices && invoices.length > 0) {
+                                                setSelectedInvoice(invoices[0]);
+                                                setShowInvoiceModal(true);
+                                            } else {
+                                                showInfoAlert('Room ini sudah aktif Paket Premium Pass!', 'Premium Active');
+                                            }
+                                        }}
+                                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                        <span>Lihat Bukti Invoice Pembelian</span>
+                                    </button>
+                                ) : room.wallet_balance < (room.premium_price || 2000) ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowPremiumModal(false);
+                                            setShowTopUpModal(true);
+                                        }}
+                                        className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5"
+                                    >
+                                        <PlusCircle className="w-4 h-4" />
+                                        <span>Top Up Saldo Digital Room Sekarang</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        disabled={isBuyingPremium}
+                                        onClick={handleBuyPremium}
+                                        className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                    >
+                                        <Crown className="w-4 h-4" />
+                                        <span>{isBuyingPremium ? 'Memproses Pembelian...' : `Beli Premium Pass (Rp ${(room.premium_price || 2000).toLocaleString('id-ID')})`}</span>
+                                    </button>
+                                )}
+
                                 <button
                                     type="button"
                                     onClick={() => setShowPremiumModal(false)}
                                     className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-semibold"
                                 >
-                                    Nanti Saja
+                                    Tutup
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* INVOICE RESMI MODAL */}
+                {showInvoiceModal && (
+                    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-card dark:bg-zinc-900 border border-emerald-500/30 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                            <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
+                                <div className="flex items-center gap-2">
+                                    <FileText className="w-5 h-5 text-emerald-500" />
+                                    <h3 className="font-bold text-foreground dark:text-white text-base">Invoice Resmi Premium Pass</h3>
+                                </div>
+                                <button onClick={() => setShowInvoiceModal(false)} className="text-muted-foreground hover:text-foreground">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {selectedInvoice || (invoices && invoices.length > 0) ? (
+                                <div className="space-y-4 text-xs">
+                                    {(() => {
+                                        const inv = selectedInvoice || invoices[0];
+                                        return (
+                                            <div className="bg-background dark:bg-zinc-950 p-4 rounded-xl border border-border dark:border-zinc-800 space-y-3">
+                                                <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-2">
+                                                    <div>
+                                                        <span className="text-[10px] text-muted-foreground block uppercase font-bold">No. Invoice</span>
+                                                        <span className="font-mono font-bold text-indigo-500 text-sm">{inv.invoice_number}</span>
+                                                    </div>
+                                                    <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">LUNAS / PAID</span>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                                                    <div>
+                                                        <span className="text-muted-foreground block text-[9px]">Pembeli / Member</span>
+                                                        <span className="font-semibold text-foreground dark:text-white">{inv.user_name}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground block text-[9px]">Waktu Transaksi</span>
+                                                        <span className="font-mono text-foreground dark:text-white">{inv.paid_at}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground block text-[9px]">Layanan</span>
+                                                        <span className="font-semibold text-amber-500">{inv.feature_name}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground block text-[9px]">Sumber Pembayaran</span>
+                                                        <span className="font-semibold text-emerald-500">Saldo Dompet Kas Room</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="pt-2 border-t border-border dark:border-zinc-800 flex items-center justify-between font-bold text-sm">
+                                                    <span>Total Potongan Kas</span>
+                                                    <span className="font-mono text-emerald-500">Rp {inv.amount.toLocaleString('id-ID')}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-muted-foreground text-center py-4">Tidak ada data invoice.</p>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={() => setShowInvoiceModal(false)}
+                                className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl text-xs transition-colors"
+                            >
+                                Tutup Invoice
+                            </button>
                         </div>
                     </div>
                 )}

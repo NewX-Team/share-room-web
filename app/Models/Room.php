@@ -34,6 +34,7 @@ class Room extends Model
         'wallet_balance',
         'is_frozen',
         'freeze_reason',
+        'is_premium',
     ];
 
     protected function casts(): array
@@ -43,6 +44,7 @@ class Room extends Model
             'wallet_balance' => 'float',
             'duration_hours' => 'integer',
             'is_frozen' => 'boolean',
+            'is_premium' => 'boolean',
         ];
     }
 
@@ -84,6 +86,23 @@ class Room extends Model
     public function joinRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(RoomJoinRequest::class);
+    }
+
+    /**
+     * Get invoices for the room.
+     */
+    public function invoices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RoomInvoice::class);
+    }
+
+    /**
+     * Calculate room premium price based on duration hours.
+     * Base (1 hr) = Rp 2.000, each additional hr = Rp 500.
+     */
+    public function calculatePremiumPrice(): int
+    {
+        return 2000 + max(0, (int) $this->duration_hours - 1) * 500;
     }
 
     /**

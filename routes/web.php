@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('rooms/join', [UserRoomController::class, 'join'])->name('rooms.join');
     Route::get('rooms/{code}', [UserRoomController::class, 'show'])->name('rooms.show');
     Route::post('rooms/{code}/messages', [UserRoomController::class, 'sendMessage'])->name('rooms.messages.store');
+    Route::post('rooms/{code}/buy-premium', [UserRoomController::class, 'buyPremium'])->name('rooms.buy-premium');
     Route::post('rooms/{code}/members/{member}/role', [UserRoomController::class, 'updateMemberRole'])->name('rooms.members.role');
     Route::post('rooms/{code}/members/{member}/kick', [UserRoomController::class, 'kickMember'])->name('rooms.members.kick');
     Route::post('rooms/{code}/leave', [UserRoomController::class, 'leave'])->name('rooms.leave');
