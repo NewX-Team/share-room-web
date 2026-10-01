@@ -1,190 +1,228 @@
-<div align="center">
+# ShareRoom — Enterprise Temporary Chat Room & Shared Digital Kas Wallet Platform
 
-  # 🚀 ShareRoom — Temporary Room Chat & Digital Kas Wallet Platform
-
-  <p align="center">
-    A modern, feature-rich web application built with <b>Laravel 11</b>, <b>Inertia.js v3</b>, <b>React 19</b>, <b>TypeScript</b>, <b>Tailwind CSS</b>, and <b>Midtrans Payment Gateway</b>.
-  </p>
-
-  <p align="center">
-    <img src="https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 11" />
-    <img src="https://img.shields.io/badge/React-19.x-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 19" />
-    <img src="https://img.shields.io/badge/Inertia.js-v3-9553E9?style=for-the-badge&logo=inertia&logoColor=white" alt="Inertia.js" />
-    <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/TailwindCSS-v3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-    <img src="https://img.shields.io/badge/Midtrans-Sandbox-0070BA?style=for-the-badge&logo=paypal&logoColor=white" alt="Midtrans Gateway" />
-  </p>
-</div>
+**Version 1.0 (V1)** | Developed by **Noxei Resource Development**
 
 ---
 
-## 📖 Ringkasan Aplikasi (About Project)
+## Executive Summary
 
-**ShareRoom** adalah platform manajemen room obrolan sementara dan dompet kas digital bersama. Pengguna dapat membuat room instan dengan masa aktif (durasi) tertentu, membagikan kode unik unik room ke rekan tim/teman, serta mengelola dompet kas digital room yang terintegrasi dengan **Midtrans Payment Gateway (Sandbox)**.
+**ShareRoom V1** is an enterprise-grade web application engineered for secure, temporary collaboration spaces integrated with a shared digital wallet ecosystem. Built upon **Laravel 11**, **Inertia.js v3**, **React 19**, **TypeScript**, and **Tailwind CSS**, the platform enables users to create time-bound public or private rooms, conduct live communication, share files, manage communal digital kas wallets integrated with the **Midtrans Payment Gateway**, upgrade to Premium status, and extend room operational durations.
 
-Aplikasi ini dilengkapi dengan sistem peran pengguna (*Owner*, *Bendahara*, *Member*), manajemen voucher promo diskon, notifikasi tindakan berbentuk SweetAlert2, serta **Dashboard Governance Admin** untuk memantau room, membekukan saldo dengan notifikasi alasan, serta mempublikasikan pengumuman resmi global menggunakan *Quick Templates*.
-
----
-
-## ✨ Fitur-Fitur Utama (Key Features)
-
-### 🏠 1. Manajemen Room & Gelembung Chat
-- **Pembuatan Room Instan**: Pengguna menentukan nama room dan durasi masa aktif room (misal: 1 jam, 1 hari, 7 hari).
-- **Auto-Generate Kode Unik**: Menghasilkan kode unik yang dapat langsung disalin dan dibagikan ke berbagai platform.
-- **Gelembung Chat & Countdown Timer**: Antarmuka chat interaktif dengan indikator timer waktu tersisa room secara real-time.
-- **Manajemen Peran Member**:
-  - **Owner**: Memiliki hak penuh untuk mengelola room, menunjuk **Bendahara (Financial Manager)**, serta melakukan *kick member*.
-  - **Bendahara (Treasurer)**: Hak khusus pengelola transaksi dan saldo keuangan kas room.
-  - **Member**: Dapat berpartisipasi dalam obrolan, keluar dari room (*leave room*), serta menghapus riwayat room jika sudah tidak terhubung.
-
-### 💳 2. Dompet Digital Kas Room & Payment Gateway
-- **Inisialisasi Saldo Rp 0**: Setiap room baru memiliki saldo kas terpisah yang berawal dari Rp 0.
-- **Integrasi Midtrans Payment Gateway (Sandbox)**: Simulasi top-up saldo kas room menggunakan Midtrans Snap API.
-- **Pilihan Nominal Cepat**: Pilihan cepat nominal top-up (Rp 10.000, Rp 20.000, Rp 50.000) atau input manual min. Rp 10.000.
-- **Sistem Kode Promo (Voucher Diskon)**: Fitur diskon persentase (%) atau potongan harga tetap (Rp) yang dibuat oleh Admin. User mendapatkan nilai top-up penuh dengan biaya pembayaran yang sudah terpotong diskon.
-
-### 🛡️ 3. Dashboard Governance Admin
-- **Manajemen Room**: Memantau total room aktif dan pengguna tanpa mengakses isi chat pribadi.
-- **Suntik Saldo Manual (Top-Up Admin)**: Admin dapat menambahkan dana ke kas room jika diperlukan.
-- **Pembekuan Saldo Kas (Freeze Wallet)**: Admin dapat membekukan dompet kas room beserta **Alasan Pembekuan Wajib**. Notifikasi alasan pembekuan akan tampil secara transparan kepada seluruh member di dalam room.
-- **Manajemen Kode Promo**: Admin dapat membuat, mengaktifkan/menonaktifkan, menentukan minimal top-up, serta mengatur masa berlaku kode promo.
-
-### 📢 4. Pusat Pengumuman Global & Quick Templates Admin
-- **Timeline Pengumuman User (`/announcements`)**: Halaman khusus pemberitahuan resmi dari Admin lengkap dengan badge kategori (*Update*, *Promo*, *Maintenance*, *Warning*) dan penanda sematan (📌 *Pinned*).
-- **Quick Template Chips Admin**: Admin dapat mempublikasikan pengumuman secara instan menggunakan template cepat:
-  - 📢 **Perawatan Sistem (Maintenance Scheduled)**
-  - 🚀 **Rilis Fitur Baru (New Release)**
-  - 🎁 **Event & Promo Top Up Spesial**
-  - ⚠️ **Himbauan Keamanan & Privasi Akun**
-
-### 🎨 5. Tampilan Dual-Layout & Mode Gelap/Terang
-- **Sistem Navigasi Berbasis Role**:
-  - **Regular User Layout**: Navigasi **Floating Top Navbar** melayang di atas tengah dengan efek *Glassmorphism* (`rounded-2xl`) & *Hamburger Mobile Drawer*.
-  - **Admin Layout**: Navigasi **Collapsible Vertical Sidebar** di sebelah kiri untuk fleksibilitas dan skalabilitas menu manajemen admin di masa depan.
-- **Theme Switcher**: Segmented control 3 mode (**☀️ Terang | 🌙 Gelap | 🖥️ Auto**) yang responsif di seluruh tampilan aplikasi.
-- **SweetAlert2 Feedback Popups**: Notifikasi pop-up interaktif untuk setiap hasil tindakan CRUD, konfirmasi hapus, atau kelayakan transaksi.
+The platform enforces strict governance through a dual-interface architecture: a modern user workspace and a comprehensive administrative management portal equipped with multi-chart financial analytics (including candlestick market pattern visualization), wallet control mechanisms, automated promo engines, and global announcement broadcasting systems.
 
 ---
 
-## 🛠️ Teknologi & Stack (Tech Stack)
+## Technology Stack & Architecture
 
-| Kategori | Teknologi | Deskripsi |
+| Architecture Layer | Core Technology | Implementation Description |
 | :--- | :--- | :--- |
-| **Backend Framework** | [Laravel 11.x](https://laravel.com) | Framework PHP modern dengan struktur bersih & performa tinggi. |
-| **Frontend Bridge** | [Inertia.js v3](https://inertiajs.com) | Monolith modern tanpa perlu membangun API REST terpisah. |
-| **Frontend Library** | [React 19](https://react.dev) | UI declarative berbasis komponen React modern. |
-| **Type Safety** | [TypeScript](https://www.typescriptlang.org) | Pengetikan statis penuh di seluruh komponen frontend. |
-| **Styling & CSS** | [Tailwind CSS v3](https://tailwindcss.com) | Utility-first CSS dengan variabel CSS design system. |
-| **Payment Gateway** | [Midtrans Snap API](https://midtrans.com) | Payment gateway sandbox untuk simulasi transaksi top-up. |
-| **Icons & Alerts** | [Lucide React](https://lucide.dev) & [SweetAlert2](https://sweetalert2.github.io) | Ikonik modern & pop-up umpan balik pengguna interaktif. |
+| **Backend Engine** | Laravel 11.x | PHP enterprise framework handling ORM, routing, middleware, authentication, and database migrations. |
+| **Monolith Bridge** | Inertia.js v3 | Client-side routing layer eliminating separate REST/GraphQL API boilerplates. |
+| **Frontend UI** | React 19 & TypeScript 5 | Reactive UI library with strict static type checking across all client modules. |
+| **Styling & Layout** | Tailwind CSS v3 | Utility-first design system with custom CSS variables, dark/light themes, and glassmorphism UI. |
+| **Payment Gateway** | Midtrans Snap API | Production-ready payment processing supporting sandbox transaction simulations. |
+| **Alert Subsystem** | SweetAlert2 | Modal dialog system for user feedback, transaction confirmations, and security warnings. |
 
 ---
 
-## 📂 Struktur Direktori Proyek (Project Structure)
+## Core System Capabilities
+
+### 1. Room Lifecycle & Communication
+- **Instant Room Provisioning**: Create public or approval-gated private rooms with customizable expiration periods.
+- **Role-Based Access Control (RBAC)**: Defined permissions for Room Owners, designated Treasurers (Bendahara), and Members.
+- **Message Pinning Subsystem**: Room Owners can pin up to two high-priority messages to a floating header banner for instant team visibility.
+- **File Sharing & Validation**: Support for sharing documents, images, and compressed archives capped at 20 files per room (expandable via Pro Pass).
+- **Unread Message Navigation**: Automatic scroll positioning to unread messages with visual unread indicators.
+
+### 2. Digital Kas Wallet & Monetization
+- **Communal Room Wallet**: Dedicated digital ledger for every active room initialized at zero balance.
+- **Midtrans Top-Up Pipeline**: Wallet funding via Snap Gateway supporting preset nominal selection and promo code redemption.
+- **Pro Pass Subscription**: Wallet-funded room upgrades providing unlimited file attachments and premium badge status for all participants.
+- **Room Duration Extension**: Configurable time extension packages managed dynamically by administrators.
+- **Strict Spending Authorization**: Wallet balance deduction restricted strictly to Room Owners, Treasurers, and System Administrators.
+
+### 3. Administrative Governance & Analytics
+- **Multi-Chart Analytics Dashboard**: Visual metrics tracking user growth, public/private room distribution, and a financial candlestick pattern chart for cash flow monitoring.
+- **Financial Accounting**: Automated tracking of active room balances, expired/abandoned room funds, and total platform liquidity.
+- **Security & Wallet Controls**: Administrative wallet freezing with mandatory reason audit logging displayed transparently to room participants.
+- **Global Broadcast Engine**: Multi-category announcement publisher featuring pinned status and pre-configured quick templates.
+
+---
+
+## Visual Application Overview
+
+### User Portal & Onboarding Experience
+![Welcome Landing Page](public/assets/images-md/WelcomePage.png)
+*Public Landing Page featuring dynamic room discovery, instant room creation, and system architecture overview.*
+
+![Platform Overview & Feature Showcase](public/assets/images-md/WelcomPage2.png)
+*Ecosystem overview detailing temporary chat capabilities, digital kas wallets, and security controls.*
+
+### Authentication & Access Security
+![User Login Interface](public/assets/images-md/LoginPage.png)
+*User authentication portal with credentials validation and account recovery options.*
+
+![User Registration Interface](public/assets/images-md/RegisterPage.png)
+*User onboarding registration form with real-time validation.*
+
+### User Workspace & Control Panel
+![User Dashboard](public/assets/images-md/DashboardUser.png)
+*Centralized user dashboard displaying active rooms, pending private room join requests, and kicked notices.*
+
+### Room Workspace & Live Communication
+![Room Chat Interface](public/assets/images-md/RoomChatUser.png)
+*Live room chat workspace featuring pinned messages header, role badges, file attachment drawer, and member controls.*
+
+### Digital Kas Wallet & Midtrans Payment Pipeline
+![Wallet Top-Up Modal](public/assets/images-md/TopupSaldoUser.png)
+*Top-up modal with nominal presets, promo code input, and payment breakdown summary.*
+
+![Midtrans Sandbox Gateway Interface](public/assets/images-md/TopupByMidtransPage.png)
+*Midtrans payment gateway integration for payment settlement simulation.*
+
+![Payment Settlement Confirmation](public/assets/images-md/TopUpByMidtransSuccess.png)
+*Payment settlement callback confirmation screen.*
+
+![Wallet Balance Updated](public/assets/images-md/SaldoJadi20Ribu.png)
+*Wallet balance update notification and announcement broadcast.*
+
+### Premium Pass & Global Announcements
+![Premium Pass Upgrade Modal](public/assets/images-md/PremiumAccessPageUser.png)
+*Pro Pass purchase modal displaying benefits, pricing formula, and kas wallet balance checks.*
+
+![Public Announcements Board](public/assets/images-md/UserPengumumanPage.png)
+*System-wide announcements board featuring category badges and pinned notices.*
+
+---
+
+### Administrative Governance Portal
+
+![Admin Analytics Dashboard](public/assets/images-md/AdminDashboardPage.png)
+*Executive dashboard presenting user growth curve, room type distribution donut chart, and financial candlestick market pattern analytics.*
+
+![Admin User Management](public/assets/images-md/AdminManajemenPenggunaPage.png)
+*User administration panel for account monitoring, role assignments, and account deletion.*
+
+![Admin Room Governance](public/assets/images-md/AdminManajemenRoomPage.png)
+*Room management interface supporting manual fund injections, wallet freezing with reason logging, and termination.*
+
+![Admin Room Extension Packages](public/assets/images-md/AdminPerpanjangDurasiPage.png)
+*Management panel for room extension duration options, pricing, and package activation.*
+
+![Admin Promo Code Engine](public/assets/images-md/AdminManajemenKodePromoTopupPage.png)
+*Voucher discount administration supporting percentage and fixed discount configurations.*
+
+![Admin Announcement Publisher](public/assets/images-md/AdminManajemenPengumumanPage.png)
+*Global announcement broadcasting tool equipped with quick template chips and pin options.*
+
+---
+
+## Installation & Deployment Guide
+
+### Prerequisites
+- **PHP**: >= 8.2 (PDO, OpenSSL, Mbstring, Tokenizer enabled)
+- **Composer**: >= 2.x
+- **Node.js**: >= 18.x & **npm**
+- **Database**: MySQL 8.0+ or MariaDB 10.5+
+
+### Installation Steps
+
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/NewX-Team/share-room-web.git
+   cd share_room
+   ```
+
+2. **Install Backend Dependencies**
+   ```bash
+   composer install
+   ```
+
+3. **Install Frontend Dependencies**
+   ```bash
+   npm install
+   ```
+
+4. **Environment Configuration**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+5. **Configure Database Connection**
+   Update `.env` with your database credentials:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=shared-room
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+6. **Execute Database Migrations & Seeders**
+   ```bash
+   php artisan migrate --seed
+   ```
+
+7. **Launch Development Application**
+   ```bash
+   # Terminal 1: Vite Asset Compiler
+   npm run dev
+
+   # Terminal 2: Laravel Application Server
+   php artisan serve
+   ```
+
+   Access the application at `http://127.0.0.1:8000`.
+
+---
+
+## Directory Structure
 
 ```text
 share_room/
 ├── app/
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── Admin/              # Admin Room, User, Promo, & Announcement Controllers
+│   │   │   ├── Admin/              # Governance Controllers (Rooms, Users, Extension Packages, Promos, Announcements)
 │   │   │   ├── AnnouncementController.php
 │   │   │   ├── DashboardController.php
 │   │   │   ├── TopUpController.php
 │   │   │   └── UserRoomController.php
-│   │   └── Middleware/             # EnsureUserIsAdmin & HandleAppearance Middlewares
-│   └── Models/                     # Room, RoomMember, RoomMessage, PromoCode, GlobalAnnouncement
+│   │   └── Middleware/             # Security & Appearance Middlewares
+│   └── Models/                     # Eloquent Domain Models
 ├── database/
-│   ├── migrations/                 # Migrasi Skema Tabel MySQL
-│   └── seeders/                    # Sample Seeder Admin & Initial Data
+│   ├── migrations/                 # Database Schema Migrations
+│   └── seeders/                    # Database Initial Seeders
+├── public/
+│   └── assets/
+│       └── images-md/              # Documentation Screenshots
 ├── resources/
 │   ├── js/
-│   │   ├── components/             # AppHeader (Floating Navbar), AppSidebar, SweetAlert Helper
-│   │   ├── layouts/                # AppLayout, AppHeaderLayout, AppSidebarLayout
-│   │   ├── pages/                  # Dashboard, Rooms, Admin Panel, Announcements
-│   │   └── types/                  # TypeScript Types Definitions
-│   └── css/                        # Tailwind CSS Entry Point
+│   │   ├── components/             # Reusable UI Components & Navigation
+│   │   ├── layouts/                # Base Application & Governance Layouts
+│   │   ├── pages/                  # Inertia React View Pages
+│   │   └── types/                  # TypeScript Type Definitions
+│   └── css/                        # Tailwind CSS Entry Points
 └── routes/
     └── web.php                     # Route Definitions & Protection Groups
 ```
 
 ---
 
-## ⚡ Petunjuk Instalasi & Cara Menjalankan (Installation Guide)
-
-### 1. Prasyarat Sistem (Prerequisites)
-Pastikan komputer Anda telah terinstal:
-- **PHP** >= 8.2
-- **Composer** >= 2.x
-- **Node.js** >= 18.x & **npm**
-- **MySQL Database Server**
-
-### 2. Langkah-Langkah Instalasi
+## Verification & Build Commands
 
 ```bash
-# 1. Clone repository ini
-git clone https://github.com/NewX-Team/share-room-web.git
-cd share_room / share-room-web
+# TypeScript Static Type Checking
+npx tsc --noEmit
 
-# 2. Install dependensi PHP (Composer)
-composer install
-
-# 3. Install dependensi Frontend (NPM)
-npm install
-
-# 4. Salin file lingkungan .env
-cp .env.example .env
-
-# 5. Generate Application Key
-php artisan key:generate
-```
-
-### 3. Konfigurasi Lingkungan (`.env`)
-
-Buka file `.env` lalu sesuaikan konfigurasi database Anda:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=shared-room
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-### 4. Migrasi Database & Run Project
-
-```bash
-# Jalankan migrasi database beserta data awal (Seeder)
-php artisan migrate --seed
-
-# Kompilasi aset frontend (Development Server)
-npm run dev
-
-# Di terminal terpisah, jalankan server Laravel
-php artisan serve
-```
-
-Aplikasi dapat diakses melalui browser di: `http://127.0.0.1:8000`.
-
----
-
-## 🧪 Perintah Pengujian & Verifikasi (Verification Commands)
-
-```bash
-# Pengecekan Type Safety TypeScript
-npm run types:check
-
-# Kompilasi Production Bundle Asset
+# Production Bundle Build
 npm run build
 ```
 
 ---
 
-## 📝 Lisensi (License)
+## Development Credits & License
 
-Proyek **ShareRoom** dirilis di bawah lisensi [MIT License](LICENSE). Bebas digunakan dan dikembangkan kembali.
-
-<div align="center">
-  <p>Dikembangkan dengan ❤️ Oleh <b></b><b>Dev Team</b></p>
-</div>
+**ShareRoom V1** is developed and maintained by **Noxei Resource Development**. Distributed under the [MIT License](LICENSE).
