@@ -114,6 +114,12 @@ interface ReportData {
     created_at: string;
 }
 
+interface ExtensionPackageData {
+    id: number;
+    hours: number;
+    price: number;
+}
+
 interface RoomDetailProps {
     room: {
         id: number;
@@ -140,6 +146,7 @@ interface RoomDetailProps {
     maxFiles?: number;
     lastReadMessageId?: number | null;
     invoices?: RoomInvoiceData[];
+    extensionPackages?: ExtensionPackageData[];
 }
 
 export default function RoomShow({ 
@@ -153,6 +160,7 @@ export default function RoomShow({
     maxFiles = 20,
     lastReadMessageId = null,
     invoices = [],
+    extensionPackages = [],
 }: RoomDetailProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
@@ -234,6 +242,54 @@ export default function RoomShow({
     const [isBuyingPremium, setIsBuyingPremium] = useState(false);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<RoomInvoiceData | null>(null);
+
+    // State Modal Perpanjang Durasi Room
+    const [showExtendModal, setShowExtendModal] = useState(false);
+    const [selectedExtensionId, setSelectedExtensionId] = useState<number | null>(null);
+    const [isExtendingDuration, setIsExtendingDuration] = useState(false);
+
+    const handleExtendDurationSubmit = () => {
+        if (!selectedExtensionId) return;
+
+        const pkg = extensionPackages.find(p => p.id === selectedExtensionId);
+        if (!pkg) return;
+
+        if (!canUseWallet) {
+            showErrorAlert('Hanya Owner Room dan Bendahara yang memiliki wewenang untuk memperpanjang durasi menggunakan saldo kas digital.', 'Akses Terbatas');
+            return;
+        }
+
+        if (room.wallet_balance < pkg.price) {
+            showConfirmDialog({
+                title: 'Saldo Dompet Kas Tidak Cukup',
+                text: `Saldo kas digital room saat ini (Rp ${room.wallet_balance.toLocaleString('id-ID')}) tidak mencukupi untuk memperpanjang durasi +${pkg.hours} Jam (Harga: Rp ${pkg.price.toLocaleString('id-ID')}). Silakan lakukan Top Up Saldo Kas terlebih dahulu.`,
+                confirmButtonText: 'Top Up Saldo Kas Sekarang',
+                cancelButtonText: 'Batal',
+                icon: 'warning',
+            }, () => {
+                setShowExtendModal(false);
+                setShowTopUpModal(true);
+            });
+            return;
+        }
+
+        showConfirmDialog({
+            title: `Perpanjang Durasi Room +${pkg.hours} Jam?`,
+            text: `Apakah Anda yakin ingin memperpanjang durasi room sebanyak +${pkg.hours} Jam seharga Rp ${pkg.price.toLocaleString('id-ID')}? Saldo kas digital room akan dipotong otomatis.`,
+            confirmButtonText: 'Ya, Perpanjang Sekarang',
+            cancelButtonText: 'Batal',
+            icon: 'question',
+        }, () => {
+            setIsExtendingDuration(true);
+            router.post(`/rooms/${room.code}/extend-duration`, { package_id: pkg.id }, {
+                preserveScroll: true,
+                onFinish: () => {
+                    setIsExtendingDuration(false);
+                    setShowExtendModal(false);
+                },
+            });
+        });
+    };
 
     // State Modal Report Member (User side) & Owner Report Panel (Owner side)
     const [showReportModal, setShowReportModal] = useState(false);
@@ -773,6 +829,21 @@ export default function RoomShow({
                                 <span className="font-mono font-bold text-amber-500 dark:text-amber-400">{formatTime(secondsLeft)}</span>
                             </div>
                         </div>
+
+                        {/* Tombol Perpanjang Durasi Room */}
+                        <button
+                            onClick={() => {
+                                if (extensionPackages && extensionPackages.length > 0) {
+                                    setSelectedExtensionId(extensionPackages[0].id);
+                                }
+                                setShowExtendModal(true);
+                            }}
+                            className="px-3.5 py-2.5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm"
+                            title="Perpanjang durasi waktu room menggunakan Saldo Dompet Kas Digital"
+                        >
+                            <Clock className="w-4 h-4 text-amber-500" />
+                            <span>Perpanjang Waktu</span>
+                        </button>
 
                         {/* Kas Dompet Digital Room Widget */}
                         <div className={`border px-3.5 py-2 rounded-xl text-xs flex items-center gap-2 ${
@@ -2040,6 +2111,175 @@ export default function RoomShow({
                                     className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs"
                                 >
                                     Tutup Panel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* MODAL PERPANJANG DURASI ROOM VIA SALDO KAS DIGITAL */}
+                {showExtendModal && (
+                    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-card dark:bg-zinc-900 border border-amber-500/30 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                            <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
+                                <div>
+                                    <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
+                                        <Clock className="w-5 h-5 text-amber-500" /> Perpanjang Durasi Room
+                                    </h3>
+                                    <p className="text-[11px] text-muted-foreground">Tambah masa aktif room menggunakan Saldo Dompet Kas Digital</p>
+                                </div>
+                                <button onClick={() => setShowExtendModal(false)} className="text-muted-foreground hover:text-foreground p-1">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                {/* Current Expiration Card */}
+                                <div className="bg-background dark:bg-zinc-950 p-3.5 rounded-xl border border-border dark:border-zinc-800 space-y-1 text-xs">
+                                    <div className="flex items-center justify-between text-muted-foreground">
+                                        <span>Berlaku Hingga saat ini:</span>
+                                        <span className="font-mono font-bold text-amber-500">
+                                            {new Date(room.expires_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-muted-foreground pt-1 border-t border-border dark:border-zinc-900">
+                                        <span>Saldo Kas Room Tersedia:</span>
+                                        <span className="font-mono font-bold text-emerald-500">
+                                            Rp {room.wallet_balance.toLocaleString('id-ID')}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Restricted Notice if Regular Member */}
+                                {!canUseWallet && (
+                                    <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-600 dark:text-amber-400 space-y-1">
+                                        <span className="font-bold flex items-center gap-1.5">
+                                            <Shield className="w-4 h-4 text-amber-500" /> Wewenang Kas Terbatas
+                                        </span>
+                                        <p className="text-[11px] text-muted-foreground">
+                                            Penggunaan saldo kas digital untuk perpanjangan durasi room hanya dapat dilakukan oleh <strong>Owner Room</strong> atau <strong>Bendahara</strong>. Anda tetap dapat melakukan Top Up untuk membantu mengisi saldo kas room.
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Extension Packages List */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                        Pilih Paket Perpanjangan Durasi (Jam):
+                                    </label>
+
+                                    {extensionPackages.length === 0 ? (
+                                        <div className="p-4 bg-muted/30 border border-border dark:border-zinc-800 rounded-xl text-center text-xs text-muted-foreground">
+                                            Maaf, opsi paket perpanjangan durasi room saat ini sedang tidak disediakan oleh Admin.
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
+                                            {extensionPackages.map((pkg) => {
+                                                const isSelected = selectedExtensionId === pkg.id;
+                                                const isAffordable = room.wallet_balance >= pkg.price;
+
+                                                return (
+                                                    <button
+                                                        key={pkg.id}
+                                                        type="button"
+                                                        onClick={() => setSelectedExtensionId(pkg.id)}
+                                                        className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all ${
+                                                            isSelected
+                                                                ? 'bg-amber-500/10 border-amber-500 text-foreground ring-2 ring-amber-500/40 shadow-sm'
+                                                                : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 hover:border-amber-500/50'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+                                                                isSelected ? 'bg-amber-500 text-zinc-950' : 'bg-muted text-muted-foreground'
+                                                            }`}>
+                                                                +{pkg.hours}h
+                                                            </div>
+                                                            <div>
+                                                                <span className="font-bold text-xs text-foreground dark:text-white block">
+                                                                    Tambah +{pkg.hours} Jam
+                                                                </span>
+                                                                <span className="text-[10px] text-muted-foreground font-mono">
+                                                                    ({(pkg.hours / 24).toFixed(1)} hari tambahan)
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="text-right">
+                                                            <span className="font-mono font-bold text-sm text-amber-500 block">
+                                                                Rp {pkg.price.toLocaleString('id-ID')}
+                                                            </span>
+                                                            {!isAffordable && (
+                                                                <span className="text-[9px] font-bold text-rose-500 block">
+                                                                    Saldo Kas Kurang
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2 pt-1">
+                                {extensionPackages.length > 0 && (
+                                    !canUseWallet ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowExtendModal(false);
+                                                setShowTopUpModal(true);
+                                            }}
+                                            className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
+                                        >
+                                            <PlusCircle className="w-4 h-4" />
+                                            <span>Isi / Top Up Saldo Digital Room</span>
+                                        </button>
+                                    ) : (() => {
+                                        const selectedPkg = extensionPackages.find(p => p.id === selectedExtensionId);
+                                        const isAffordable = selectedPkg ? room.wallet_balance >= selectedPkg.price : false;
+
+                                        if (!isAffordable) {
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setShowExtendModal(false);
+                                                        setShowTopUpModal(true);
+                                                    }}
+                                                    className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5"
+                                                >
+                                                    <PlusCircle className="w-4 h-4" />
+                                                    <span>Saldo Kas Kurang (Top Up Sekarang)</span>
+                                                </button>
+                                            );
+                                        }
+
+                                        return (
+                                            <button
+                                                type="button"
+                                                disabled={isExtendingDuration || !selectedExtensionId}
+                                                onClick={handleExtendDurationSubmit}
+                                                className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                            >
+                                                <Clock className="w-4 h-4" />
+                                                <span>
+                                                    {isExtendingDuration
+                                                        ? 'Memproses Perpanjangan...'
+                                                        : `Perpanjang +${selectedPkg?.hours || 0} Jam Sekarang (Rp ${selectedPkg?.price.toLocaleString('id-ID') || 0})`}
+                                                </span>
+                                            </button>
+                                        );
+                                    })()
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowExtendModal(false)}
+                                    className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-semibold"
+                                >
+                                    Tutup
                                 </button>
                             </div>
                         </div>

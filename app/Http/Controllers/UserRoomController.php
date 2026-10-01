@@ -296,6 +296,17 @@ class UserRoomController extends Controller
         $userRoleInRoom = $currentMemberRecord ? $currentMemberRecord->role_in_room : ($isOwner ? 'owner' : 'member');
         $canUseWallet = $isOwner || $user->isAdmin() || ($currentMemberRecord && $currentMemberRecord->role_in_room === 'bendahara');
 
+        $extensionPackages = \App\Models\RoomExtensionPackage::where('is_active', true)
+            ->oldest('hours')
+            ->get()
+            ->map(function ($pkg) {
+                return [
+                    'id' => $pkg->id,
+                    'hours' => $pkg->hours,
+                    'price' => (float) $pkg->price,
+                ];
+            });
+
         return Inertia::render('rooms/show', [
             'room' => [
                 'id' => $room->id,
@@ -322,6 +333,7 @@ class UserRoomController extends Controller
             'lastReadMessageId' => $lastReadMessageId,
             'invoices' => $invoices,
             'reports' => $reports,
+            'extensionPackages' => $extensionPackages,
         ]);
     }
 
@@ -464,6 +476,79 @@ class UserRoomController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Selamat! Fitur Premium Pass berhasil diaktifkan untuk seluruh member di room ini.');
+    }
+
+    /**
+     * Extend room duration using Digital Wallet balance.
+     */
+    public function extendDuration(Request $request, string $code): RedirectResponse
+    {
+        $validated = $request->validate([
+            'package_id' => ['required', 'integer', 'exists:room_extension_packages,id'],
+        ]);
+
+        $code = strtoupper(trim($code));
+        $room = Room::where('code', $code)->firstOrFail();
+
+        if ($room->isExpired()) {
+            return redirect()->back()->with('error', 'Room sudah kadaluarsa dan tidak aktif.');
+        }
+
+        $user = $request->user();
+        $isOwner = $room->user_id === $user->id;
+        $memberRecord = RoomMember::where('room_id', $room->id)->where('user_id', $user->id)->first();
+        $canUseWallet = $isOwner || $user->isAdmin() || ($memberRecord && $memberRecord->role_in_room === 'bendahara');
+
+        if (! $canUseWallet) {
+            return redirect()->back()->with('error', 'Hanya Owner Room dan Bendahara yang memiliki wewenang untuk memperpanjang durasi menggunakan saldo kas digital.');
+        }
+
+        $package = \App\Models\RoomExtensionPackage::where('id', $validated['package_id'])
+            ->where('is_active', true)
+            ->first();
+
+        if (! $package) {
+            return redirect()->back()->with('error', 'Paket perpanjangan durasi yang dipilih tidak tersedia.');
+        }
+
+        if ($room->wallet_balance < $package->price) {
+            return redirect()->back()->with('error', 'Saldo Dompet Digital Room tidak mencukupi (Saldo: Rp ' . number_format($room->wallet_balance, 0, ',', '.') . ', Harga: Rp ' . number_format($package->price, 0, ',', '.') . '). Silakan Top Up Saldo Kas Room terlebih dahulu.');
+        }
+
+        // Deduct room wallet balance and extend room expiration time
+        $room->wallet_balance -= $package->price;
+        $room->expires_at = \Carbon\Carbon::parse($room->expires_at)->addHours($package->hours);
+        $room->save();
+
+        // Create Room Invoice
+        $invoice = RoomInvoice::create([
+            'room_id' => $room->id,
+            'user_id' => $user->id,
+            'invoice_number' => 'INV-EXT-' . strtoupper(Str::random(8)),
+            'feature_name' => "Perpanjangan Durasi Room +{$package->hours} Jam",
+            'amount' => $package->price,
+            'duration_hours' => $package->hours,
+            'paid_at' => now(),
+        ]);
+
+        $newExpiration = \Carbon\Carbon::parse($room->expires_at)->format('d M Y, H:i');
+
+        // Post Room Announcement visible to all members
+        RoomAnnouncement::create([
+            'room_id' => $room->id,
+            'type' => 'success',
+            'title' => '⏳ DURASI ROOM BERHASIL DIPERPANJANG!',
+            'message' => "{$user->name} telah memperpanjang durasi room sebanyak +{$package->hours} Jam seharga Rp " . number_format($package->price, 0, ',', '.') . " menggunakan Saldo Dompet Digital. Masa aktif room kini berlaku hingga {$newExpiration}.",
+        ]);
+
+        // Post automated Chat Message so all members see it in the feed
+        Message::create([
+            'room_id' => $room->id,
+            'user_id' => $user->id,
+            'message' => "⏳ TELAH MEMPERPANJANG DURASI ROOM! 🕒\nNo. Invoice: {$invoice->invoice_number}\nPenambahan Waktu: +{$package->hours} Jam\nTotal Pembayaran Kas: Rp " . number_format($package->price, 0, ',', '.') . "\nWaktu Kadaluarsa Baru: {$newExpiration}",
+        ]);
+
+        return redirect()->back()->with('success', "Durasi room berhasil diperpanjang +{$package->hours} Jam!");
     }
 
     /**

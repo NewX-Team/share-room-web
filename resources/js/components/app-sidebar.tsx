@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, DoorClosed, Sun, Moon, Monitor, Ticket, Megaphone } from 'lucide-react';
+import { LayoutGrid, Users, DoorClosed, Sun, Moon, Monitor, Ticket, Megaphone, Timer } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -47,6 +47,11 @@ export function AppSidebar() {
                       title: 'Manajemen Room',
                       href: '/admin/rooms',
                       icon: DoorClosed,
+                  },
+                  {
+                      title: 'Paket Perpanjang Room',
+                      href: '/admin/extension-packages',
+                      icon: Timer,
                   },
                   {
                       title: 'Kode Promo',

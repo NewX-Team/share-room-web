@@ -23,6 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('rooms/{code}', [UserRoomController::class, 'show'])->name('rooms.show');
     Route::post('rooms/{code}/messages', [UserRoomController::class, 'sendMessage'])->name('rooms.messages.store');
     Route::post('rooms/{code}/buy-premium', [UserRoomController::class, 'buyPremium'])->name('rooms.buy-premium');
+    Route::post('rooms/{code}/extend-duration', [UserRoomController::class, 'extendDuration'])->name('rooms.extend-duration');
     Route::post('rooms/{code}/members/{member}/role', [UserRoomController::class, 'updateMemberRole'])->name('rooms.members.role');
     Route::post('rooms/{code}/members/{member}/kick', [UserRoomController::class, 'kickMember'])->name('rooms.members.kick');
     Route::post('rooms/{code}/leave', [UserRoomController::class, 'leave'])->name('rooms.leave');
@@ -58,6 +59,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('rooms/{room}/freeze', [AdminRoomController::class, 'freezeWallet'])->name('rooms.freeze');
         Route::post('rooms/{room}/unfreeze', [AdminRoomController::class, 'unfreezeWallet'])->name('rooms.unfreeze');
         Route::delete('rooms/{room}', [AdminRoomController::class, 'destroy'])->name('rooms.destroy');
+
+        // Admin Extension Packages Routes
+        Route::get('extension-packages', [\App\Http\Controllers\Admin\RoomExtensionPackageController::class, 'index'])->name('extension-packages.index');
+        Route::post('extension-packages', [\App\Http\Controllers\Admin\RoomExtensionPackageController::class, 'store'])->name('extension-packages.store');
+        Route::post('extension-packages/{package}', [\App\Http\Controllers\Admin\RoomExtensionPackageController::class, 'update'])->name('extension-packages.update');
+        Route::post('extension-packages/{package}/toggle', [\App\Http\Controllers\Admin\RoomExtensionPackageController::class, 'toggleStatus'])->name('extension-packages.toggle');
+        Route::delete('extension-packages/{package}', [\App\Http\Controllers\Admin\RoomExtensionPackageController::class, 'destroy'])->name('extension-packages.destroy');
 
         // Admin Promo Code Routes
         Route::get('promos', [AdminPromoCodeController::class, 'index'])->name('promos.index');
