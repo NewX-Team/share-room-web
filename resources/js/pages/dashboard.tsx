@@ -324,7 +324,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                     {d.count} User
                                                 </span>
                                                 <div 
-                                                    className="w-full bg-gradient-to-t from-indigo-600/40 to-indigo-500 rounded-t-lg transition-all group-hover:scale-105"
+                                                    className="w-full bg-linear-to-t from-indigo-600/40 to-indigo-500 rounded-t-lg transition-all group-hover:scale-105"
                                                     style={{ height: `${(d.count / (stats?.totalUsers || 70)) * 100}%` }}
                                                 />
                                             </div>
@@ -548,7 +548,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
 
                                                     {/* Open-Close Body Rect */}
                                                     <div
-                                                        className={`absolute w-full max-w-[28px] rounded transition-all shadow-md group-hover:scale-110 ${
+                                                        className={`absolute w-full max-w-7 rounded transition-all shadow-md group-hover:scale-110 ${
                                                             isBullish 
                                                                 ? 'bg-emerald-500 border-2 border-emerald-400 shadow-emerald-500/20' 
                                                                 : 'bg-rose-500 border-2 border-rose-400 shadow-rose-500/20'
@@ -563,7 +563,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                 {/* Volume Sub-Bar */}
                                                 <div className="w-full pt-2 border-t border-border dark:border-zinc-800 flex flex-col items-center gap-1">
                                                     <div 
-                                                        className={`w-full max-w-[20px] rounded-t ${isBullish ? 'bg-emerald-500/30' : 'bg-rose-500/30'}`}
+                                                        className={`w-full max-w-5 rounded-t ${isBullish ? 'bg-emerald-500/30' : 'bg-rose-500/30'}`}
                                                         style={{ height: `${(c.volume / 1000000) * 24}px` }}
                                                     />
                                                     <span className="text-[11px] font-semibold text-muted-foreground">{c.day}</span>
@@ -587,7 +587,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                     <h3 className="font-bold text-rose-600 dark:text-rose-400 text-base flex items-center gap-2">
                                         <ShieldAlert className="w-5 h-5 text-rose-500" /> Pemberitahuan Dikeluarkan dari Room ({kickedNotices.length})
                                     </h3>
-                                    <span className="text-[11px] text-rose-500/80 font-medium font-semibold">Tindakan Owner Room</span>
+                                    <span className="text-[11px] text-rose-500/80 font-semibold">Tindakan Owner Room</span>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

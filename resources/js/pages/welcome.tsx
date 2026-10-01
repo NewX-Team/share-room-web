@@ -174,7 +174,7 @@ export default function Welcome() {
                     {/* Headline */}
                     <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight max-w-4xl mx-auto">
                         Nongkrong & Patungan Seru, <br className="hidden sm:inline" />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-zinc-200 to-amber-300">
+                        <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 via-zinc-200 to-amber-300">
                             Room Otomatis Hapus Sendiri.
                         </span>
                     </h1>
@@ -369,7 +369,7 @@ export default function Welcome() {
                                 </div>
 
                                 {/* Chat Feed Preview */}
-                                <div className="lg:col-span-7 bg-zinc-950 border border-zinc-800 rounded-xl p-4 flex flex-col justify-between h-[280px]">
+                                <div className="lg:col-span-7 bg-zinc-950 border border-zinc-800 rounded-xl p-4 flex flex-col justify-between h-70">
                                     <div className="flex items-center justify-between pb-2 border-b border-zinc-900 text-xs">
                                         <span className="font-bold text-white">Room: {roomTitle}</span>
                                         <span className="font-mono text-[11px] text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">
@@ -501,7 +501,7 @@ export default function Welcome() {
                             {/* Contributor History */}
                             <div className="space-y-2 pt-2 border-t border-zinc-800/80">
                                 <p className="text-xs font-semibold text-zinc-400">Daftar Patungan Anggota:</p>
-                                <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                                <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                                     {members.map(m => (
                                         <div key={m.id} className="flex items-center justify-between bg-zinc-950 p-2.5 rounded-lg border border-zinc-800/60 text-xs">
                                             <div className="flex items-center gap-2">

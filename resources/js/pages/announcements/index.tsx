@@ -77,7 +77,7 @@ export default function AnnouncementsIndex({ announcements }: AnnouncementsIndex
                         >
                             {/* Pinned Badge */}
                             {ann.is_pinned && (
-                                <div className="absolute -top-3 right-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                                <div className="absolute -top-3 right-6 bg-linear-to-r from-indigo-600 to-purple-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1">
                                     <Pin className="w-3 h-3 fill-white" /> Disematkan (Pinned)
                                 </div>
                             )}

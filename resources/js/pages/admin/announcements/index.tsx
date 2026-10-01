@@ -215,7 +215,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
 
                     <button
                         onClick={() => setShowModal(true)}
-                        className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+                        className="px-5 py-2.5 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
                     >
                         <PlusCircle className="w-4 h-4" />
                         <span>+ Buat Pengumuman Baru</span>

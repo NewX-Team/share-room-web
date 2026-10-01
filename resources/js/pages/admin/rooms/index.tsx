@@ -400,7 +400,7 @@ export default function AdminRoomsIndex({ rooms, walletStats }: AdminRoomsIndexP
                         </div>
 
                         <div className="bg-sky-500/10 border border-sky-500/20 p-3 rounded-xl flex items-start gap-2.5 text-xs text-sky-600 dark:text-sky-300">
-                            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-sky-500" />
+                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-sky-500" />
                             <div>
                                 Membekukan dompet tidak mengurangi saldo yang ada, namun akan membatasi transaksi dan mengirimkan notifikasi alasan pembekuan ke seluruh anggota room.
                             </div>

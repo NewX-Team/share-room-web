@@ -29,13 +29,13 @@ export default function AuthSimpleLayout({
     return (
         <div className="min-h-screen bg-[#0e0f12] text-zinc-100 flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans selection:bg-indigo-500 selection:text-white relative overflow-hidden">
             {/* Subtle background glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-indigo-900/15 via-purple-900/10 to-amber-900/10 blur-[140px] pointer-events-none rounded-full" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-125 bg-linear-to-tr from-indigo-900/15 via-purple-900/10 to-amber-900/10 blur-[140px] pointer-events-none rounded-full" />
 
             {/* Main Auth Container Card */}
             <div className="w-full max-w-4xl bg-zinc-900/90 border border-zinc-800/90 rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 backdrop-blur-xl relative z-10">
                 
                 {/* Left Side Showcase Banner (Visible on LG screens) */}
-                <div className="hidden lg:flex lg:col-span-5 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 p-8 flex-col justify-between border-r border-zinc-800/80 relative">
+                <div className="hidden lg:flex lg:col-span-5 bg-linear-to-b from-zinc-950 via-zinc-900 to-zinc-950 p-8 flex-col justify-between border-r border-zinc-800/80 relative">
                     <div className="space-y-6">
                         {/* Logo */}
                         <Link href={home()} className="inline-flex items-center gap-2.5 group">

@@ -162,7 +162,7 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
                                 <button
                                     type="submit"
                                     disabled={form.processing}
-                                    className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-semibold text-xs transition-colors shadow-md"
+                                    className="px-6 py-2.5 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-semibold text-xs transition-colors shadow-md"
                                 >
                                     {form.processing ? 'Menyimpan...' : 'Simpan User Baru'}
                                 </button>

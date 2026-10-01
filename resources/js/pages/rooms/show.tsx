@@ -843,7 +843,7 @@ export default function RoomShow({
                         <h1 className="text-2xl font-bold text-foreground dark:text-white flex items-center gap-2">
                             <span>{room.name}</span>
                             {room.is_premium && (
-                                <span className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 text-xs font-bold shadow-md shadow-amber-500/20 inline-flex items-center gap-1.5 animate-pulse">
+                                <span className="px-2.5 py-1 rounded-xl bg-linear-to-r from-amber-500 to-orange-500 text-zinc-950 text-xs font-bold shadow-md shadow-amber-500/20 inline-flex items-center gap-1.5 animate-pulse">
                                     <Crown className="w-4 h-4 fill-zinc-950" /> PREMIUM ROOM
                                 </span>
                             )}
@@ -869,7 +869,7 @@ export default function RoomShow({
                                 }
                                 setShowExtendModal(true);
                             }}
-                            className="px-3.5 py-2.5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm"
+                            className="px-3.5 py-2.5 bg-linear-to-r from-amber-500/10 to-orange-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm"
                             title="Perpanjang durasi waktu room menggunakan Saldo Dompet Kas Digital"
                         >
                             <Clock className="w-4 h-4 text-amber-500" />
@@ -901,7 +901,7 @@ export default function RoomShow({
                         {/* Tombol Top Up Kas (Midtrans) */}
                         <button
                             onClick={() => setShowTopUpModal(true)}
-                            className="px-3.5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
+                            className="px-3.5 py-2.5 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
                             title="Top Up Saldo Kas Dompet via Midtrans"
                         >
                             <CreditCard className="w-4 h-4" />
@@ -982,7 +982,7 @@ export default function RoomShow({
                                             </p>
                                         </div>
 
-                                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                                        <div className="flex items-center gap-1.5 shrink-0">
                                             <button
                                                 onClick={() => handleApproveJoinRequest(req.id, req.name)}
                                                 className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold text-[11px] transition-colors flex items-center gap-1 shadow-sm"
@@ -1026,7 +1026,7 @@ export default function RoomShow({
                             </div>
                             <button
                                 onClick={handleDismissFrozenBanner}
-                                className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition-colors flex-shrink-0"
+                                className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition-colors shrink-0"
                                 title="Tutup notifikasi ini"
                             >
                                 <X className="w-4 h-4" />
@@ -1072,7 +1072,7 @@ export default function RoomShow({
                                     </div>
                                     <button
                                         onClick={() => handleDismissAnnouncement(ann.id)}
-                                        className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors flex-shrink-0"
+                                        className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors shrink-0"
                                         title="Tutup notifikasi ini"
                                     >
                                         <X className="w-4 h-4" />
@@ -1220,7 +1220,7 @@ export default function RoomShow({
                                         {appliedPromo ? (
                                             <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between gap-2 text-xs text-emerald-700 dark:text-emerald-300">
                                                 <div className="flex items-center gap-2">
-                                                    <Tag className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                                    <Tag className="w-4 h-4 text-emerald-500 shrink-0" />
                                                     <div>
                                                         <span className="font-bold font-mono uppercase">{appliedPromo.code}</span>
                                                         <span className="text-[11px] block text-emerald-600 dark:text-emerald-400 font-medium">
@@ -1304,7 +1304,7 @@ export default function RoomShow({
                                         <button
                                             type="submit"
                                             disabled={isProcessingTopUp || room.is_frozen || selectedNominal < 10000}
-                                            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs transition-all shadow-md shadow-emerald-600/20 disabled:opacity-50 flex items-center gap-1.5"
+                                            className="px-5 py-2.5 rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs transition-all shadow-md shadow-emerald-600/20 disabled:opacity-50 flex items-center gap-1.5"
                                         >
                                             <CreditCard className="w-4 h-4" />
                                             <span>{isProcessingTopUp ? 'Memproses Token...' : 'Lanjutkan Midtrans Sandbox'}</span>
@@ -1368,7 +1368,7 @@ export default function RoomShow({
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     
                     {/* LEFT COLUMN: LIVE GROUP CHAT FEED */}
-                    <div className="lg:col-span-8 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between min-h-[540px] shadow-sm">
+                    <div className="lg:col-span-8 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between min-h-135 shadow-sm">
                         <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3 flex-wrap gap-2">
                             <div className="flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -1380,7 +1380,7 @@ export default function RoomShow({
                                 <button
                                     type="button"
                                     onClick={() => setShowPremiumModal(true)}
-                                    className="px-2.5 py-1 rounded-xl text-xs font-mono font-semibold border transition-all flex items-center gap-1.5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:from-amber-500/20 hover:to-orange-500/20 shadow-sm"
+                                    className="px-2.5 py-1 rounded-xl text-xs font-mono font-semibold border transition-all flex items-center gap-1.5 bg-linear-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:from-amber-500/20 hover:to-orange-500/20 shadow-sm"
                                     title="Fitur Premium Pass Aktif! Klik untuk rincian invoice"
                                 >
                                     <Crown className="w-3.5 h-3.5 text-amber-500" />
@@ -1410,10 +1410,10 @@ export default function RoomShow({
                         </div>
 
                         {/* Chat Messages Feed Container */}
-                        <div className="space-y-4 overflow-y-auto max-h-[400px] pr-2 my-auto py-2">
+                        <div className="space-y-4 overflow-y-auto max-h-100 pr-2 py-2">
                             {/* PINNED MESSAGES HEADER BANNER */}
                             {pinnedMessages && pinnedMessages.length > 0 && (
-                                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 space-y-2 text-xs shadow-sm mb-3 animate-in fade-in duration-200">
+                                <div className="sticky top-0 z-10 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 space-y-2 text-xs shadow-sm mb-3 animate-in fade-in duration-200">
                                     <div className="flex items-center justify-between border-b border-amber-500/20 pb-1.5">
                                         <span className="font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
                                             <Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-pulse" /> Pesan Disematkan oleh Owner ({pinnedMessages.length}/2)
@@ -1444,7 +1444,7 @@ export default function RoomShow({
                                                             e.stopPropagation();
                                                             handleTogglePinMessage(pm.id, true);
                                                         }}
-                                                        className="p-1 rounded text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 flex-shrink-0"
+                                                        className="p-1 rounded text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 shrink-0"
                                                         title="Lepas Sematan Pesan Ini"
                                                     >
                                                         <X className="w-3.5 h-3.5" />
@@ -1469,11 +1469,11 @@ export default function RoomShow({
                                     <Fragment key={msg.id}>
                                         {isFirstUnread && (
                                             <div id="unread-divider" className="my-4 flex items-center gap-3">
-                                                <div className="h-[1px] flex-1 bg-amber-500/30 dark:bg-amber-500/20" />
+                                                <div className="h-px flex-1 bg-amber-500/30 dark:bg-amber-500/20" />
                                                 <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
                                                     <Bell className="w-3 h-3 text-amber-500 animate-bounce" /> Pesan Belum Dibaca
                                                 </span>
-                                                <div className="h-[1px] flex-1 bg-amber-500/30 dark:bg-amber-500/20" />
+                                                <div className="h-px flex-1 bg-amber-500/30 dark:bg-amber-500/20" />
                                             </div>
                                         )}
 
@@ -1483,7 +1483,7 @@ export default function RoomShow({
                                         >
                                             {/* User Initial Avatar */}
                                             <div
-                                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 text-white shadow-sm ${
+                                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 text-white shadow-sm ${
                                                     isSelf
                                                         ? 'bg-indigo-600'
                                                         : isOwner
@@ -1559,7 +1559,7 @@ export default function RoomShow({
                                                             <div className="space-y-2">
                                                                 <img src={msg.file_path} alt={msg.file_name || 'Gambar'} className="max-h-48 rounded-lg object-cover w-full border border-black/10 dark:border-white/10" />
                                                                 <div className="flex items-center justify-between gap-2 text-[10px]">
-                                                                    <span className="truncate max-w-[150px] font-mono">{msg.file_name}</span>
+                                                                    <span className="truncate max-w-37.5 font-mono">{msg.file_name}</span>
                                                                     <a href={msg.file_path} target="_blank" rel="noopener noreferrer" download className="px-2 py-1 rounded bg-black/20 hover:bg-black/40 text-white flex items-center gap-1 font-semibold">
                                                                         <Download className="w-3 h-3" /> Unduh
                                                                     </a>
@@ -1569,11 +1569,11 @@ export default function RoomShow({
                                                             <div className="flex items-center justify-between gap-3">
                                                                 <div className="flex items-center gap-2 min-w-0">
                                                                     {msg.file_type === 'archive' ? (
-                                                                        <FileArchive className="w-6 h-6 text-amber-400 flex-shrink-0" />
+                                                                        <FileArchive className="w-6 h-6 text-amber-400 shrink-0" />
                                                                     ) : msg.file_type === 'document' ? (
-                                                                        <FileText className="w-6 h-6 text-indigo-400 flex-shrink-0" />
+                                                                        <FileText className="w-6 h-6 text-indigo-400 shrink-0" />
                                                                     ) : (
-                                                                        <File className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+                                                                        <File className="w-6 h-6 text-emerald-400 shrink-0" />
                                                                     )}
                                                                     <div className="min-w-0">
                                                                         <p className="font-bold truncate text-[11px]">{msg.file_name}</p>
@@ -1585,7 +1585,7 @@ export default function RoomShow({
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     download
-                                                                    className="px-2.5 py-1.5 rounded-lg bg-black/20 hover:bg-black/30 text-white font-semibold text-[10px] transition-colors flex items-center gap-1 flex-shrink-0"
+                                                                    className="px-2.5 py-1.5 rounded-lg bg-black/20 hover:bg-black/30 text-white font-semibold text-[10px] transition-colors flex items-center gap-1 shrink-0"
                                                                 >
                                                                     <Download className="w-3 h-3" />
                                                                     <span>Unduh</span>
@@ -1615,7 +1615,7 @@ export default function RoomShow({
                             {chatForm.data.file && (
                                 <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/30 rounded-xl flex items-center justify-between gap-2 text-xs text-indigo-600 dark:text-indigo-300">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <Paperclip className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                                        <Paperclip className="w-4 h-4 text-indigo-500 shrink-0" />
                                         <span className="font-bold font-mono truncate">{chatForm.data.file.name}</span>
                                         <span className="text-[10px] opacity-75 font-mono">({formatFileSize(chatForm.data.file.size)})</span>
                                     </div>
@@ -1646,7 +1646,7 @@ export default function RoomShow({
                                             document.getElementById('chat-file-input')?.click();
                                         }
                                     }}
-                                    className={`p-2.5 rounded-xl border transition-all flex items-center justify-center flex-shrink-0 ${
+                                    className={`p-2.5 rounded-xl border transition-all flex items-center justify-center shrink-0 ${
                                         !room.is_premium && userFileCount >= maxFiles
                                             ? 'bg-rose-500/10 border-rose-500/30 text-rose-500 hover:bg-rose-500/20'
                                             : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground hover:border-indigo-500'
@@ -1671,7 +1671,7 @@ export default function RoomShow({
                                 <button
                                     type="submit"
                                     disabled={chatForm.processing || (!chatForm.data.message.trim() && !chatForm.data.file)}
-                                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-indigo-600/20 flex-shrink-0"
+                                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-indigo-600/20 shrink-0"
                                 >
                                     <Send className="w-4 h-4" />
                                     <span>Kirim</span>
@@ -1691,7 +1691,7 @@ export default function RoomShow({
                         </div>
 
                         {/* Members List */}
-                        <div className="space-y-3 max-h-[440px] overflow-y-auto pr-1">
+                        <div className="space-y-3 max-h-110 overflow-y-auto pr-1">
                             {members.map((m) => {
                                 const isOwner = m.role_in_room === 'owner';
                                 const isBendahara = m.role_in_room === 'bendahara';
@@ -1830,19 +1830,19 @@ export default function RoomShow({
                                     <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Keuntungan Akun Premium:</h4>
                                     <ul className="space-y-2 text-xs">
                                         <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                                             <span>Upload File Tanpa Batas (Berlaku untuk Semua Member)</span>
                                         </li>
                                         <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                                             <span>Badge Mahkota Premium Mahkota di Header Room</span>
                                         </li>
                                         <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                                             <span>Batas Ukuran File Hingga 25 MB per File</span>
                                         </li>
                                         <li className="flex items-center gap-2 text-foreground dark:text-zinc-200 font-semibold">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                                             <span>Penyimpanan Aman & Invoice Pembelian Kas Resmi</span>
                                         </li>
                                     </ul>
@@ -1929,7 +1929,7 @@ export default function RoomShow({
                                                 setShowPremiumModal(false);
                                                 setShowTopUpModal(true);
                                             }}
-                                            className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5"
+                                            className="w-full py-2.5 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5"
                                         >
                                             <PlusCircle className="w-4 h-4" />
                                             <span>Isi / Top Up Saldo Digital Room</span>
@@ -1945,7 +1945,7 @@ export default function RoomShow({
                                             setShowPremiumModal(false);
                                             setShowTopUpModal(true);
                                         }}
-                                        className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5"
+                                        className="w-full py-2.5 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5"
                                     >
                                         <PlusCircle className="w-4 h-4" />
                                         <span>Top Up Saldo Digital Room Sekarang</span>
@@ -1955,7 +1955,7 @@ export default function RoomShow({
                                         type="button"
                                         disabled={isBuyingPremium}
                                         onClick={handleBuyPremium}
-                                        className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                        className="w-full py-2.5 bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 disabled:opacity-50"
                                     >
                                         <Crown className="w-4 h-4" />
                                         <span>{isBuyingPremium ? 'Memproses Pembelian...' : `Beli Premium Pass (Rp ${(room.premium_price || 2000).toLocaleString('id-ID')})`}</span>
@@ -2139,7 +2139,7 @@ export default function RoomShow({
                             </div>
 
                             {reports && reports.length > 0 ? (
-                                <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                                <div className="space-y-3 max-h-105 overflow-y-auto pr-1">
                                     {reports.map((rep) => (
                                         <div key={rep.id} className="bg-background dark:bg-zinc-950 p-4 rounded-xl border border-rose-500/20 space-y-3 shadow-sm text-xs">
                                             <div className="flex items-start justify-between gap-3">
@@ -2273,7 +2273,7 @@ export default function RoomShow({
                                             Maaf, opsi paket perpanjangan durasi room saat ini sedang tidak disediakan oleh Admin.
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
+                                        <div className="grid grid-cols-1 gap-2.5 max-h-55 overflow-y-auto pr-1">
                                             {extensionPackages.map((pkg) => {
                                                 const isSelected = selectedExtensionId === pkg.id;
                                                 const isAffordable = room.wallet_balance >= pkg.price;
@@ -2332,7 +2332,7 @@ export default function RoomShow({
                                                 setShowExtendModal(false);
                                                 setShowTopUpModal(true);
                                             }}
-                                            className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
+                                            className="w-full py-2.5 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
                                         >
                                             <PlusCircle className="w-4 h-4" />
                                             <span>Isi / Top Up Saldo Digital Room</span>
@@ -2349,7 +2349,7 @@ export default function RoomShow({
                                                         setShowExtendModal(false);
                                                         setShowTopUpModal(true);
                                                     }}
-                                                    className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5"
+                                                    className="w-full py-2.5 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5"
                                                 >
                                                     <PlusCircle className="w-4 h-4" />
                                                     <span>Saldo Kas Kurang (Top Up Sekarang)</span>
@@ -2362,7 +2362,7 @@ export default function RoomShow({
                                                 type="button"
                                                 disabled={isExtendingDuration || !selectedExtensionId}
                                                 onClick={handleExtendDurationSubmit}
-                                                className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                                className="w-full py-2.5 bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 disabled:opacity-50"
                                             >
                                                 <Clock className="w-4 h-4" />
                                                 <span>

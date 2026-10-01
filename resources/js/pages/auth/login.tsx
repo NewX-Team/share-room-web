@@ -132,7 +132,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             {/* Submit Button */}
                             <Button
                                 type="submit"
-                                className="w-full py-3 mt-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/25 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
+                                className="w-full py-3 mt-2 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/25 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
