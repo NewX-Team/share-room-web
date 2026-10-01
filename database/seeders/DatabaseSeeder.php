@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\GlobalAnnouncement;
 use App\Models\Room;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -59,6 +60,29 @@ class DatabaseSeeder extends Seeder
                 'duration_hours' => 24,
                 'expires_at' => now()->addHours(18),
                 'wallet_balance' => 420000,
+            ]
+        );
+
+        // Seed Global Announcements
+        GlobalAnnouncement::updateOrCreate(
+            ['title' => 'Selamat Datang di ShareRoom v2.0! 🎉'],
+            [
+                'user_id' => $admin->id,
+                'category' => 'update',
+                'content' => 'Fitur grup chat sementara, kas dompet digital room, dan sistem payment gateway Midtrans Sandbox kini telah aktif sepenuhnya. Selamat menikmati pengalaman obrolan instan bersama tim & teman kamu!',
+                'is_pinned' => true,
+                'is_active' => true,
+            ]
+        );
+
+        GlobalAnnouncement::updateOrCreate(
+            ['title' => 'Gunakan Kode Promo "HEMAT50" Saat Top Up 🎁'],
+            [
+                'user_id' => $admin->id,
+                'category' => 'promo',
+                'content' => 'Dapatkan diskon 50% untuk setiap pengisian saldo kas dompet room kamu! Cukup masukkan kode promo HEMAT50 pada modal top up saat transaksi.',
+                'is_pinned' => false,
+                'is_active' => true,
             ]
         );
     }

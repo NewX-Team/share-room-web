@@ -22,33 +22,6 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
-
-        // Seed initial sample announcements from Admin (ID: 1)
-        $adminUser = DB::table('users')->where('role', 'admin')->first();
-        $adminId = $adminUser ? $adminUser->id : 1;
-
-        DB::table('global_announcements')->insert([
-            [
-                'user_id' => $adminId,
-                'title' => 'Selamat Datang di ShareRoom v2.0! 🎉',
-                'category' => 'update',
-                'content' => 'Fitur grup chat sementara, kas dompet digital room, dan sistem payment gateway Midtrans Sandbox kini telah aktif sepenuhnya. Selamat menikmati pengalaman obrolan instan bersama tim & teman kamu!',
-                'is_pinned' => true,
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'user_id' => $adminId,
-                'title' => 'Gunakan Kode Promo "HEMAT50" Saat Top Up 🎁',
-                'category' => 'promo',
-                'content' => 'Dapatkan diskon 50% untuk setiap pengisian saldo kas dompet room kamu! Cukup masukkan kode promo HEMAT50 pada modal top up saat transaksi.',
-                'is_pinned' => false,
-                'is_active' => true,
-                'created_at' => now()->subHours(2),
-                'updated_at' => now()->subHours(2),
-            ],
-        ]);
     }
 
     /**
