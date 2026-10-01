@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('rooms/{code}/members/{member}/kick', [UserRoomController::class, 'kickMember'])->name('rooms.members.kick');
     Route::post('rooms/{code}/leave', [UserRoomController::class, 'leave'])->name('rooms.leave');
     Route::delete('rooms/{room}/history', [UserRoomController::class, 'removeHistory'])->name('rooms.history.remove');
+    Route::post('rooms/setmembertempname', [UserRoomController::class, 'setMemberTempNameInRoom'])->name('rooms.setmembertempname');
 
     // Member Report Routes
     Route::post('rooms/{code}/report', [UserRoomController::class, 'reportMember'])->name('rooms.report');

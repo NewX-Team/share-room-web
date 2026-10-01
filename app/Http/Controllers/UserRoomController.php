@@ -10,6 +10,7 @@ use App\Models\RoomInvoice;
 use App\Models\RoomJoinRequest;
 use App\Models\RoomMember;
 use App\Models\RoomMemberReport;
+use App\Models\RoomMemberTempName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -162,12 +163,13 @@ class UserRoomController extends Controller
         // Fetch members with user info
         $members = RoomMember::with('user:id,name,email')
             ->where('room_id', $room->id)
+            ->whereHas('tempName') 
             ->get()
             ->map(function ($member) {
                 return [
                     'id' => $member->id,
                     'user_id' => $member->user_id,
-                    'name' => $member->user->name ?? 'User',
+                    'name' => $member->tempName->name ?? $member->user->name ?? 'User',
                     'email' => $member->user->email ?? '',
                     'role_in_room' => $member->role_in_room,
                     'joined_at' => $member->created_at->diffForHumans(),
@@ -180,12 +182,14 @@ class UserRoomController extends Controller
             ->oldest()
             ->get()
             ->map(function ($msg) use ($members) {
-                $memberRole = $members->firstWhere('user_id', $msg->user_id)['role_in_room'] ?? 'member';
+                $member = $members->firstWhere('user_id', $msg->user_id);
+                $tempName = $member['name'] ?? null;
+                $memberRole = $member['role_in_room'] ?? 'member';
 
                 return [
                     'id' => $msg->id,
                     'user_id' => $msg->user_id,
-                    'user_name' => $msg->user->name ?? 'User',
+                    'user_name' => $tempName ?? $msg->user->name ?? 'User',
                     'role_in_room' => $memberRole,
                     'message' => $msg->message,
                     'time' => $msg->created_at->format('H:i'),
@@ -203,11 +207,14 @@ class UserRoomController extends Controller
             ->where('is_pinned', true)
             ->oldest()
             ->get()
-            ->map(function ($msg) {
+            ->map(function ($msg) use ($members) {
+                $member = $members->firstWhere('user_id', $msg->user_id);
+                $tempName = $member['name'] ?? null;
+
                 return [
                     'id' => $msg->id,
                     'user_id' => $msg->user_id,
-                    'user_name' => $msg->user->name ?? 'User',
+                    'user_name' => $tempName ?? $msg->user->name ?? 'User',
                     'message' => $msg->message,
                     'time' => $msg->created_at->format('H:i'),
                     'file_name' => $msg->file_name,
@@ -244,11 +251,14 @@ class UserRoomController extends Controller
                 ->where('expires_at', '>', now())
                 ->latest()
                 ->get()
-                ->map(function ($req) {
+                ->map(function ($req) use ($members) {
+                    $member = $members->firstWhere('user_id', $req->user->id);
+                    $tempName = $member['name'] ?? null;    
+
                     return [
                         'id' => $req->id,
                         'user_id' => $req->user_id,
-                        'name' => $req->user->name ?? 'User',
+                        'name' => $tempName ?? $req->user->name ?? 'User',
                         'email' => $req->user->email ?? '',
                         'created_at' => $req->created_at->diffForHumans(),
                         'time_left' => $req->expires_at->diffForHumans(['syntax' => \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW]),
@@ -275,11 +285,14 @@ class UserRoomController extends Controller
             ->where('room_id', $room->id)
             ->latest()
             ->get()
-            ->map(function ($inv) {
+            ->map(function ($inv) use ($members) {
+                $member = $members->firstWhere('user_id', $inv->user->id);
+                $tempName = $member['name'] ?? null;
+
                 return [
                     'id' => $inv->id,
                     'invoice_number' => $inv->invoice_number,
-                    'user_name' => $inv->user->name ?? 'User',
+                    'user_name' => $tempName ?? $inv->user->name ?? 'User',
                     'feature_name' => $inv->feature_name,
                     'amount' => (float) $inv->amount,
                     'duration_hours' => $inv->duration_hours,
@@ -294,14 +307,19 @@ class UserRoomController extends Controller
                 ->where('room_id', $room->id)
                 ->latest()
                 ->get()
-                ->map(function ($rep) {
+                ->map(function ($rep) use ($members) {
+                    $reporterMember = $members->firstWhere('user_id', $rep->reporter->id);
+                    $reportedMember = $members->firstWhere('user_id', $rep->reported->id);
+                    $reporterTempName = $reporterMember['name'] ?? null;
+                    $reportedTempName = $reportedMember['name'] ?? null;
+
                     return [
                         'id' => $rep->id,
                         'reporter_id' => $rep->reporter_id,
-                        'reporter_name' => $rep->reporter->name ?? 'User',
+                        'reporter_name' => $reporterTempName ?? $rep->reporter->name ?? 'User',
                         'reporter_email' => $rep->reporter->email ?? '',
                         'reported_id' => $rep->reported_id,
-                        'reported_name' => $rep->reported->name ?? 'User',
+                        'reported_name' => $reportedTempName ?? $rep->reported->name ?? 'User',
                         'reported_email' => $rep->reported->email ?? '',
                         'reason_category' => $rep->reason_category,
                         'description' => $rep->description,
@@ -324,6 +342,9 @@ class UserRoomController extends Controller
                     'price' => (float) $pkg->price,
                 ];
             });
+
+        // Get temp name member exist or not as boolean
+        $memberTempNameExist = RoomMemberTempName::where('room_member_id', $memberRecord->id)->exists();
 
         return Inertia::render('rooms/show', [
             'room' => [
@@ -353,6 +374,8 @@ class UserRoomController extends Controller
             'reports' => $reports,
             'extensionPackages' => $extensionPackages,
             'pinnedMessages' => $pinnedMessages,
+            'roomMemberId' => $memberRecord->id,
+            'memberTempNameExist' => $memberTempNameExist
         ]);
     }
 
@@ -890,5 +913,25 @@ class UserRoomController extends Controller
         }
 
         return redirect()->back()->with('success', 'Pemberitahuan telah dihapus.');
+    }
+
+    /**
+     * Set member temp name in room
+     */
+    public function setMemberTempNameInRoom(Request $request): RedirectResponse 
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string'],
+            'roomMemberId' => ['required', 'integer'],
+        ]);
+
+        $roomMember = RoomMember::where('id', $validated['roomMemberId'])->first();
+
+        RoomMemberTempName::create([
+            'room_member_id' => $validated['roomMemberId'],
+            'name' => $validated['name'],
+        ]);
+
+        return redirect()->route('rooms.show', $roomMember->room->code);
     }
 }

@@ -1,5 +1,5 @@
 import { Head, useForm, usePage, router } from '@inertiajs/react';
-import { getSwalConfig, showConfirmDialog, showErrorAlert, showInfoAlert, showSuccessAlert, showWarningAlert } from '@/lib/swal';
+import { getSwalConfig, showConfirmDialog, showErrorAlert, showInfoAlert, showSetTempNameDialog, showSuccessAlert, showWarningAlert } from '@/lib/swal';
 import { 
     Clock, 
     Wallet, 
@@ -159,6 +159,8 @@ interface RoomDetailProps {
     invoices?: RoomInvoiceData[];
     extensionPackages?: ExtensionPackageData[];
     pinnedMessages?: PinnedMessageData[];
+    roomMemberId: number;
+    memberTempNameExist: boolean
 }
 
 export default function RoomShow({ 
@@ -174,6 +176,8 @@ export default function RoomShow({
     invoices = [],
     extensionPackages = [],
     pinnedMessages = [],
+    roomMemberId,
+    memberTempNameExist,
 }: RoomDetailProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
@@ -181,6 +185,22 @@ export default function RoomShow({
     const currentMemberRole = room.user_role_in_room || currentMember?.role_in_room || (room.is_owner ? 'owner' : 'member');
     const canUseWallet = room.can_use_wallet ?? (room.is_owner || currentMemberRole === 'bendahara' || currentUser?.role === 'admin');
     const isOwnerOrAdmin = room.is_owner || currentUser?.role === 'admin';
+
+    // Initialize
+    useEffect(() => {
+        // Jika temp name tidak ada, munculkan dialog untuk mengatur temp name
+        if(!memberTempNameExist) {
+            showSetTempNameDialog(currentUser.name, (name) => {
+                // Set temp name member
+                router.post('/rooms/setmembertempname', {
+                    name: name,
+                    roomMemberId: roomMemberId
+                }, {
+                    preserveScroll: true,
+                });
+            });
+        }
+    }, []);
 
     // Ref untuk Scroll Posisi Chat
     const messagesEndRef = useRef<HTMLDivElement>(null);

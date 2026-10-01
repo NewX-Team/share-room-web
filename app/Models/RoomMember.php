@@ -32,4 +32,9 @@ class RoomMember extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function tempName()
+    {
+        return $this->hasOne(RoomMemberTempName::class, 'room_member_id');
+    }
 }

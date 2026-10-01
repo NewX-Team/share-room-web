@@ -89,3 +89,24 @@ export const showConfirmDialog = (options: ConfirmOptions, onConfirm: () => void
         }
     });
 };
+
+export const showSetTempNameDialog = (defaultTempName: string, onConfirm: (tempName: string) => void) => {
+    return getSwalConfig().fire({
+        title: 'Masukkan Nama Tampilan Anda',
+        text: 'Nama ini akan dilihat oleh anggota lain di dalam room.',
+        input: 'text',
+        inputPlaceholder: 'Nama',
+        inputValue: defaultTempName,
+        confirmButtonText: 'Masuk Room',
+        allowOutsideClick: false,
+        inputValidator(value) {
+            if (!value || value.trim().length === 0) {
+                return 'Harap isi nama Anda sebelum masuk ke ruangan.';
+            }
+        },
+    }).then((result) => {
+        if(result.isConfirmed) {
+            onConfirm(result.value);
+        }
+    });
+}
