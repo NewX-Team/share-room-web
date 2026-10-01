@@ -38,7 +38,8 @@ import {
     FileText,
     File,
     Image as ImageIcon,
-    Download
+    Download,
+    Flag
 } from 'lucide-react';
 import React, { useState, useEffect, useRef, Fragment } from 'react';
 import type { Auth } from '@/types/auth';
@@ -102,6 +103,17 @@ interface RoomInvoiceData {
     paid_at: string;
 }
 
+interface ReportData {
+    id: number;
+    reporter_id: number;
+    reporter_name: string;
+    reported_id: number;
+    reported_name: string;
+    reason_category: string;
+    description?: string | null;
+    created_at: string;
+}
+
 interface RoomDetailProps {
     room: {
         id: number;
@@ -116,11 +128,14 @@ interface RoomDetailProps {
         is_owner: boolean;
         is_premium?: boolean;
         premium_price?: number;
+        user_role_in_room?: 'owner' | 'bendahara' | 'member';
+        can_use_wallet?: boolean;
     };
     members: MemberData[];
     messages: MessageData[];
     announcements?: AnnouncementData[];
     pendingRequests?: PendingJoinRequestData[];
+    reports?: ReportData[];
     userFileCount?: number;
     maxFiles?: number;
     lastReadMessageId?: number | null;
@@ -133,6 +148,7 @@ export default function RoomShow({
     messages, 
     announcements = [], 
     pendingRequests = [],
+    reports = [],
     userFileCount = 0,
     maxFiles = 20,
     lastReadMessageId = null,
@@ -140,6 +156,9 @@ export default function RoomShow({
 }: RoomDetailProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
+    const currentMember = members.find(m => m.user_id === currentUser?.id);
+    const currentMemberRole = room.user_role_in_room || currentMember?.role_in_room || (room.is_owner ? 'owner' : 'member');
+    const canUseWallet = room.can_use_wallet ?? (room.is_owner || currentMemberRole === 'bendahara' || currentUser?.role === 'admin');
     const isOwnerOrAdmin = room.is_owner || currentUser?.role === 'admin';
 
     // Ref untuk Scroll Posisi Chat
@@ -216,7 +235,72 @@ export default function RoomShow({
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<RoomInvoiceData | null>(null);
 
+    // State Modal Report Member (User side) & Owner Report Panel (Owner side)
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [selectedReportMember, setSelectedReportMember] = useState<{ id: number; name: string } | null>(null);
+    const [showOwnerReportsModal, setShowOwnerReportsModal] = useState(false);
+
+    const reportForm = useForm({
+        reported_id: 0,
+        reason_category: 'Perilaku Tidak Menyenangkan',
+        description: '',
+    });
+
+    const handleOpenReportModal = (memberId: number, memberName: string) => {
+        setSelectedReportMember({ id: memberId, name: memberName });
+        reportForm.setData({
+            reported_id: memberId,
+            reason_category: 'Perilaku Tidak Menyenangkan',
+            description: '',
+        });
+        setShowReportModal(true);
+    };
+
+    const handleSubmitReport = (e: React.FormEvent) => {
+        e.preventDefault();
+        reportForm.post(`/rooms/${room.code}/report`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowReportModal(false);
+                showSuccessAlert('Laporan Anda berhasil dikirim ke Owner room.', 'Laporan Terkirim');
+            },
+        });
+    };
+
+    const handleDismissReport = (reportId: number, reportedName: string) => {
+        showConfirmDialog({
+            title: `Abaikan Laporan terhadap ${reportedName}?`,
+            text: 'Laporan ini akan diabaikan dan member terlapor tetap dipertahankan di dalam room.',
+            confirmButtonText: 'Ya, Abaikan & Pertahankan',
+            cancelButtonText: 'Batal',
+            icon: 'question',
+        }, () => {
+            router.post(`/rooms/${room.code}/reports/${reportId}/dismiss`, {}, {
+                preserveScroll: true,
+            });
+        });
+    };
+
+    const handleKickReportedMember = (reportId: number, reportedName: string) => {
+        showConfirmDialog({
+            title: `Kick ${reportedName} Berdasarkan Laporan?`,
+            text: 'Member terlapor akan dikeluarkan dari room dan pemberitahuan resmi akan dikirim ke riwayat room dashboard user tersebut.',
+            confirmButtonText: 'Ya, Kick Member Terlapor',
+            cancelButtonText: 'Batal',
+            icon: 'warning',
+        }, () => {
+            router.post(`/rooms/${room.code}/reports/${reportId}/kick`, {}, {
+                preserveScroll: true,
+            });
+        });
+    };
+
     const handleBuyPremium = () => {
+        if (!canUseWallet) {
+            showErrorAlert('Hanya Owner Room dan Bendahara yang memiliki wewenang untuk menggunakan saldo kas digital room.', 'Akses Terbatas');
+            return;
+        }
+
         const price = room.premium_price || 2000;
 
         showConfirmDialog(
@@ -730,6 +814,27 @@ export default function RoomShow({
                             <Share2 className="w-4 h-4" />
                             <span>Bagikan Kode</span>
                         </button>
+
+                        {/* Tombol Panel Laporan Member (Owner & Admin Only) */}
+                        {isOwnerOrAdmin && (
+                            <button
+                                onClick={() => setShowOwnerReportsModal(true)}
+                                className={`px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border relative ${
+                                    reports.length > 0
+                                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 shadow-sm'
+                                        : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground'
+                                }`}
+                                title="Panel Laporan Member Room"
+                            >
+                                <Flag className={`w-4 h-4 ${reports.length > 0 ? 'text-rose-500 animate-pulse' : 'text-zinc-400'}`} />
+                                <span>Laporan Member</span>
+                                {reports.length > 0 && (
+                                    <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-mono font-bold">
+                                        {reports.length}
+                                    </span>
+                                )}
+                            </button>
+                        )}
 
                         {/* Tombol Keluar Room bagi Member */}
                         {!room.is_owner && (
@@ -1463,33 +1568,48 @@ export default function RoomShow({
                                             </span>
                                         </div>
 
-                                        {/* Actions for Owner / Admin: Assign Bendahara or Kick Member */}
-                                        {isOwnerOrAdmin && !isOwner && m.user_id !== currentUser?.id && (
-                                            <div className="pt-2 border-t border-border dark:border-zinc-900 flex items-center justify-end gap-2">
-                                                {/* Toggle Bendahara */}
+                                        {/* Actions: Report Member or Owner Controls */}
+                                        <div className="pt-2 border-t border-border dark:border-zinc-900 flex items-center justify-end gap-2 flex-wrap">
+                                            {/* Report Button for all members (except reporting oneself) */}
+                                            {m.user_id !== currentUser?.id && (
                                                 <button
-                                                    onClick={() => handleToggleBendaharaRole(m.id, m.role_in_room)}
-                                                    className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors flex items-center gap-1 ${
-                                                        isBendahara
-                                                            ? 'bg-zinc-200 dark:bg-zinc-800 text-foreground dark:text-zinc-300 hover:bg-zinc-300'
-                                                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20'
-                                                    }`}
+                                                    onClick={() => handleOpenReportModal(m.user_id, m.name)}
+                                                    className="px-2 py-1 rounded text-[10px] font-semibold bg-zinc-500/10 hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 border border-border dark:border-zinc-800 hover:border-rose-500/30 transition-colors flex items-center gap-1"
+                                                    title="Laporkan member ini ke Owner room"
                                                 >
-                                                    <Coins className="w-3 h-3" />
-                                                    <span>{isBendahara ? 'Batal Bendahara' : 'Set Bendahara'}</span>
+                                                    <Flag className="w-3 h-3 text-rose-400" />
+                                                    <span>Laporkan</span>
                                                 </button>
+                                            )}
 
-                                                {/* Kick Member */}
-                                                <button
-                                                    onClick={() => handleKickMember(m.id, m.name)}
-                                                    className="px-2 py-1 rounded text-[10px] font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 transition-colors flex items-center gap-1"
-                                                    title="Keluarkan anggota dari room"
-                                                >
-                                                    <UserMinus className="w-3 h-3" />
-                                                    <span>Kick</span>
-                                                </button>
-                                            </div>
-                                        )}
+                                            {/* Actions for Owner / Admin: Assign Bendahara or Kick Member */}
+                                            {isOwnerOrAdmin && !isOwner && m.user_id !== currentUser?.id && (
+                                                <>
+                                                    {/* Toggle Bendahara */}
+                                                    <button
+                                                        onClick={() => handleToggleBendaharaRole(m.id, m.role_in_room)}
+                                                        className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors flex items-center gap-1 ${
+                                                            isBendahara
+                                                                ? 'bg-zinc-200 dark:bg-zinc-800 text-foreground dark:text-zinc-300 hover:bg-zinc-300'
+                                                                : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20'
+                                                        }`}
+                                                    >
+                                                        <Coins className="w-3 h-3" />
+                                                        <span>{isBendahara ? 'Batal Bendahara' : 'Set Bendahara'}</span>
+                                                    </button>
+
+                                                    {/* Kick Member */}
+                                                    <button
+                                                        onClick={() => handleKickMember(m.id, m.name)}
+                                                        className="px-2 py-1 rounded text-[10px] font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 transition-colors flex items-center gap-1"
+                                                        title="Keluarkan anggota dari room"
+                                                    >
+                                                        <UserMinus className="w-3 h-3" />
+                                                        <span>Kick</span>
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -1581,7 +1701,16 @@ export default function RoomShow({
 
                                 {/* Wallet Balance Status Message */}
                                 {!room.is_premium && (
-                                    room.wallet_balance < (room.premium_price || 2000) ? (
+                                    !canUseWallet ? (
+                                        <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-600 dark:text-amber-400 space-y-1">
+                                            <span className="font-bold flex items-center gap-1.5">
+                                                <Shield className="w-4 h-4 text-amber-500" /> Wewenang Kas Terbatas
+                                            </span>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                Penggunaan & pemotongan saldo kas digital room hanya dapat dilakukan oleh <strong>Owner Room</strong> atau <strong>Bendahara</strong>. Anda tetap dapat melakukan Top Up untuk mengisi saldo kas room ini.
+                                            </p>
+                                        </div>
+                                    ) : room.wallet_balance < (room.premium_price || 2000) ? (
                                         <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-600 dark:text-rose-400 space-y-1">
                                             <span className="font-bold flex items-center gap-1">
                                                 <AlertTriangle className="w-3.5 h-3.5" /> Saldo Dompet Kas Tidak Cukup
@@ -1620,6 +1749,23 @@ export default function RoomShow({
                                         <FileText className="w-4 h-4" />
                                         <span>Lihat Bukti Invoice Pembelian</span>
                                     </button>
+                                ) : !canUseWallet ? (
+                                    <div className="space-y-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowPremiumModal(false);
+                                                setShowTopUpModal(true);
+                                            }}
+                                            className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5"
+                                        >
+                                            <PlusCircle className="w-4 h-4" />
+                                            <span>Isi / Top Up Saldo Digital Room</span>
+                                        </button>
+                                        <p className="text-[10px] text-center text-muted-foreground font-medium">
+                                            * Hanya Owner Room & Bendahara yang memiliki akses menggunakan saldo kas untuk beli Premium.
+                                        </p>
+                                    </div>
                                 ) : room.wallet_balance < (room.premium_price || 2000) ? (
                                     <button
                                         type="button"
@@ -1722,6 +1868,180 @@ export default function RoomShow({
                             >
                                 Tutup Invoice
                             </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL LAPORKAN MEMBER (USER MEMBER SIDE) */}
+                {showReportModal && selectedReportMember && (
+                    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-card dark:bg-zinc-900 border border-rose-500/30 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-200">
+                            <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
+                                <div className="flex items-center gap-2">
+                                    <Flag className="w-5 h-5 text-rose-500" />
+                                    <h3 className="font-bold text-foreground dark:text-white text-base">Laporkan Member Room</h3>
+                                </div>
+                                <button onClick={() => setShowReportModal(false)} className="text-muted-foreground hover:text-foreground">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleSubmitReport} className="space-y-4">
+                                <div className="p-3 bg-background dark:bg-zinc-950 rounded-xl border border-border dark:border-zinc-800 space-y-1">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-bold block">Member Yang Dilaporkan:</span>
+                                    <span className="font-bold text-foreground dark:text-white text-sm flex items-center gap-1.5">
+                                        <UserIcon className="w-4 h-4 text-rose-500" /> {selectedReportMember.name}
+                                    </span>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                        Kategori Pelanggaran / Alasan:
+                                    </label>
+                                    <select
+                                        value={reportForm.data.reason_category}
+                                        onChange={(e) => reportForm.setData('reason_category', e.target.value)}
+                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-rose-500 font-medium"
+                                    >
+                                        <option value="Perilaku Tidak Menyenangkan">Perilaku Tidak Menyenangkan / Mengganggu</option>
+                                        <option value="Pesan Spam / Promosi">Pesan Spam / Promosi Tidak Izin</option>
+                                        <option value="Bahasa Kasar / SARA">Bahasa Kasar / Keras / SARA</option>
+                                        <option value="Pencegatan / Penipuan">Percobaan Penipuan / Pengancaman</option>
+                                        <option value="Lainnya">Lainnya</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                        Rincian Deskripsi Laporan (Opsional):
+                                    </label>
+                                    <textarea
+                                        rows={3}
+                                        value={reportForm.data.description}
+                                        onChange={(e) => reportForm.setData('description', e.target.value)}
+                                        placeholder="Jelaskan tindakan member tersebut yang dinilai melanggar aturan room..."
+                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl p-3 text-xs text-foreground dark:text-white focus:outline-none focus:border-rose-500"
+                                    />
+                                    <span className="text-[10px] text-muted-foreground block">
+                                        * Laporan ini akan langsung diteruskan ke halaman khusus Owner Room secara rahasia.
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-zinc-800">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowReportModal(false)}
+                                        className="px-4 py-2.5 rounded-xl border border-border dark:border-zinc-800 text-xs font-semibold text-muted-foreground hover:text-foreground"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={reportForm.processing}
+                                        className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-rose-600/20"
+                                    >
+                                        <Flag className="w-4 h-4" />
+                                        <span>{reportForm.processing ? 'Mengirim...' : 'Kirim Laporan ke Owner'}</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL PANEL LAPORAN MEMBER (KHUSUS OWNER ROOM & ADMIN) */}
+                {showOwnerReportsModal && isOwnerOrAdmin && (
+                    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-card dark:bg-zinc-900 border border-rose-500/30 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                            <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
+                                <div className="flex items-center gap-2">
+                                    <Shield className="w-5 h-5 text-rose-500" />
+                                    <div>
+                                        <h3 className="font-bold text-foreground dark:text-white text-base">Panel Laporan Member Room</h3>
+                                        <p className="text-[11px] text-muted-foreground">Hanya dapat diakses oleh Owner Room & Administrator</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setShowOwnerReportsModal(false)} className="text-muted-foreground hover:text-foreground">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {reports && reports.length > 0 ? (
+                                <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                                    {reports.map((rep) => (
+                                        <div key={rep.id} className="bg-background dark:bg-zinc-950 p-4 rounded-xl border border-rose-500/20 space-y-3 shadow-sm text-xs">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="space-y-1 w-full">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                                                            🚩 {rep.reason_category}
+                                                        </span>
+                                                        <span className="text-[10px] text-muted-foreground font-mono">• {rep.created_at}</span>
+                                                    </div>
+                                                    
+                                                    <div className="pt-1 grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">Pelapor (Yang Melaporkan):</span>
+                                                            <span className="font-semibold text-foreground dark:text-white flex items-center gap-1">
+                                                                <UserIcon className="w-3.5 h-3.5 text-indigo-500" /> {rep.reporter_name}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">Terlapor (Yang Dilaporkan):</span>
+                                                            <span className="font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                                                                <UserMinus className="w-3.5 h-3.5 text-rose-500" /> {rep.reported_name}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {rep.description && (
+                                                        <div className="mt-2 p-2.5 bg-card dark:bg-zinc-900 rounded-lg border border-border dark:border-zinc-800 text-muted-foreground italic">
+                                                            "{rep.description}"
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Owner Choices Actions */}
+                                            <div className="pt-2 border-t border-border dark:border-zinc-800 flex items-center justify-end gap-2 flex-wrap">
+                                                {/* Option 1: Abaikan & Pertahankan Member */}
+                                                <button
+                                                    onClick={() => handleDismissReport(rep.id, rep.reported_name)}
+                                                    className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold transition-colors flex items-center gap-1"
+                                                >
+                                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                                    <span>Abaikan & Pertahankan Member</span>
+                                                </button>
+
+                                                {/* Option 2: Kick Member Terlapor */}
+                                                <button
+                                                    onClick={() => handleKickReportedMember(rep.id, rep.reported_name)}
+                                                    className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold shadow-sm transition-colors flex items-center gap-1"
+                                                >
+                                                    <UserMinus className="w-3.5 h-3.5" />
+                                                    <span>Kick Member Terlapor</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-10 text-muted-foreground space-y-2">
+                                    <CheckCircle2 className="w-10 h-10 mx-auto text-emerald-500 opacity-60" />
+                                    <p className="text-xs font-semibold text-foreground dark:text-white">Tidak ada laporan member yang belum diproses!</p>
+                                    <p className="text-[11px]">Seluruh laporan member telah selesai ditindaklanjuti.</p>
+                                </div>
+                            )}
+
+                            <div className="flex justify-end pt-2 border-t border-border dark:border-zinc-800">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowOwnerReportsModal(false)}
+                                    className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs"
+                                >
+                                    Tutup Panel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

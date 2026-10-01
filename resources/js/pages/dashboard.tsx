@@ -59,6 +59,16 @@ interface PendingRequestData {
     time_left: string;
 }
 
+interface KickedNoticeData {
+    id: number;
+    room_id: number;
+    room_name: string;
+    room_code: string;
+    reason: string;
+    is_read: boolean;
+    created_at: string;
+}
+
 interface StatsData {
     totalUsers: number;
     totalRooms: number;
@@ -70,9 +80,10 @@ interface DashboardProps {
     stats: StatsData;
     rooms?: RoomData[];
     pendingJoinRequests?: PendingRequestData[];
+    kickedNotices?: KickedNoticeData[];
 }
 
-export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [] }: DashboardProps) {
+export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [], kickedNotices = [] }: DashboardProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
     const isAdmin = currentUser?.role === 'admin';
@@ -125,6 +136,12 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [] 
 
     const handleDismissRequest = (requestId: number) => {
         router.delete(`/rooms/requests/${requestId}/dismiss`, {
+            preserveScroll: true,
+        });
+    };
+
+    const handleDismissKickedNotice = (noticeId: number) => {
+        router.delete(`/kicked-notices/${noticeId}`, {
             preserveScroll: true,
         });
     };
@@ -563,6 +580,45 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [] 
                     /* 👥 DASHBOARD UNTUK USER BIASA                                            */
                     /* ========================================================================= */
                     <div className="space-y-8 animate-in fade-in duration-300">
+                        {/* Section Kicked Notices from Owner (Member Reports) */}
+                        {kickedNotices && kickedNotices.length > 0 && (
+                            <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-5 space-y-3 shadow-sm">
+                                <div className="flex items-center justify-between border-b border-rose-500/20 pb-3">
+                                    <h3 className="font-bold text-rose-600 dark:text-rose-400 text-base flex items-center gap-2">
+                                        <ShieldAlert className="w-5 h-5 text-rose-500" /> Pemberitahuan Dikeluarkan dari Room ({kickedNotices.length})
+                                    </h3>
+                                    <span className="text-[11px] text-rose-500/80 font-medium font-semibold">Tindakan Owner Room</span>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {kickedNotices.map((notice) => (
+                                        <div key={notice.id} className="bg-background dark:bg-zinc-950 border border-rose-500/30 rounded-xl p-4 flex items-start justify-between gap-3 shadow-sm">
+                                            <div className="space-y-1.5 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-foreground dark:text-white text-sm">{notice.room_name}</span>
+                                                    <span className="font-mono text-xs font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                                                        {notice.room_code}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-rose-600 dark:text-rose-400 font-medium bg-rose-500/10 p-2 rounded-lg border border-rose-500/15">
+                                                    📌 {notice.reason}
+                                                </p>
+                                                <span className="text-[11px] text-muted-foreground block">{notice.created_at}</span>
+                                            </div>
+
+                                            <button
+                                                onClick={() => handleDismissKickedNotice(notice.id)}
+                                                className="p-1.5 rounded-lg hover:bg-rose-500/20 text-rose-500 transition-colors"
+                                                title="Tutup Notifikasi"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Quick Action Cards Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                             {/* Card 1: Buat Room Baru */}

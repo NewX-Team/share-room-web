@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KickedRoomNotice;
 use App\Models\Message;
 use App\Models\Room;
 use App\Models\RoomAnnouncement;
 use App\Models\RoomInvoice;
 use App\Models\RoomJoinRequest;
 use App\Models\RoomMember;
+use App\Models\RoomMemberReport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -267,6 +269,33 @@ class UserRoomController extends Controller
                 ];
             });
 
+        // Fetch reports for Owner or Admin
+        $reports = [];
+        if ($isOwner || $user->isAdmin()) {
+            $reports = RoomMemberReport::with(['reporter:id,name,email', 'reported:id,name,email'])
+                ->where('room_id', $room->id)
+                ->latest()
+                ->get()
+                ->map(function ($rep) {
+                    return [
+                        'id' => $rep->id,
+                        'reporter_id' => $rep->reporter_id,
+                        'reporter_name' => $rep->reporter->name ?? 'User',
+                        'reporter_email' => $rep->reporter->email ?? '',
+                        'reported_id' => $rep->reported_id,
+                        'reported_name' => $rep->reported->name ?? 'User',
+                        'reported_email' => $rep->reported->email ?? '',
+                        'reason_category' => $rep->reason_category,
+                        'description' => $rep->description,
+                        'status' => $rep->status,
+                        'created_at' => $rep->created_at->diffForHumans(),
+                    ];
+                });
+        }
+
+        $userRoleInRoom = $currentMemberRecord ? $currentMemberRecord->role_in_room : ($isOwner ? 'owner' : 'member');
+        $canUseWallet = $isOwner || $user->isAdmin() || ($currentMemberRecord && $currentMemberRecord->role_in_room === 'bendahara');
+
         return Inertia::render('rooms/show', [
             'room' => [
                 'id' => $room->id,
@@ -281,6 +310,8 @@ class UserRoomController extends Controller
                 'is_owner' => $isOwner,
                 'is_premium' => (bool) $room->is_premium,
                 'premium_price' => $premiumPrice,
+                'user_role_in_room' => $userRoleInRoom,
+                'can_use_wallet' => $canUseWallet,
             ],
             'members' => $members,
             'messages' => $messages,
@@ -290,6 +321,7 @@ class UserRoomController extends Controller
             'maxFiles' => 20,
             'lastReadMessageId' => $lastReadMessageId,
             'invoices' => $invoices,
+            'reports' => $reports,
         ]);
     }
 
@@ -386,6 +418,14 @@ class UserRoomController extends Controller
         }
 
         $user = $request->user();
+        $isOwner = $room->user_id === $user->id;
+        $memberRecord = RoomMember::where('room_id', $room->id)->where('user_id', $user->id)->first();
+        $canUseWallet = $isOwner || $user->isAdmin() || ($memberRecord && $memberRecord->role_in_room === 'bendahara');
+
+        if (! $canUseWallet) {
+            return redirect()->back()->with('error', 'Hanya Owner Room dan Bendahara yang memiliki wewenang untuk menggunakan saldo kas digital room.');
+        }
+
         $price = $room->calculatePremiumPrice();
 
         if ($room->wallet_balance < $price) {
@@ -597,5 +637,124 @@ class UserRoomController extends Controller
         }
 
         return redirect()->back()->with('success', 'Riwayat room berhasil dihapus dari dashboard.');
+    }
+
+    /**
+     * Submit a report against a room member.
+     */
+    public function reportMember(Request $request, string $code): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reported_id' => ['required', 'integer', 'exists:users,id'],
+            'reason_category' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $code = strtoupper(trim($code));
+        $room = Room::where('code', $code)->firstOrFail();
+        $currentUser = $request->user();
+
+        if ($validated['reported_id'] == $currentUser->id) {
+            return redirect()->back()->with('error', 'Anda tidak dapat melaporkan diri sendiri.');
+        }
+
+        if ($validated['reported_id'] == $room->user_id) {
+            return redirect()->back()->with('error', 'Owner Room tidak dapat dilaporkan.');
+        }
+
+        $reporterIsMember = RoomMember::where('room_id', $room->id)->where('user_id', $currentUser->id)->exists();
+        $reportedIsMember = RoomMember::where('room_id', $room->id)->where('user_id', $validated['reported_id'])->exists();
+
+        if (!$reporterIsMember || !$reportedIsMember) {
+            return redirect()->back()->with('error', 'Pengguna harus merupakan anggota dari room ini.');
+        }
+
+        RoomMemberReport::create([
+            'room_id' => $room->id,
+            'reporter_id' => $currentUser->id,
+            'reported_id' => $validated['reported_id'],
+            'reason_category' => $validated['reason_category'],
+            'description' => $validated['description'],
+            'status' => 'pending',
+        ]);
+
+        return redirect()->back()->with('success', 'Laporan Anda telah berhasil dikirim kepada Owner Room untuk ditindaklanjuti.');
+    }
+
+    /**
+     * Owner dismisses a report and keeps the member.
+     */
+    public function dismissReport(Request $request, string $code, int $reportId): RedirectResponse
+    {
+        $code = strtoupper(trim($code));
+        $room = Room::where('code', $code)->firstOrFail();
+        $currentUser = $request->user();
+
+        if ($room->user_id !== $currentUser->id && !$currentUser->isAdmin()) {
+            return redirect()->back()->with('error', 'Hanya Owner Room yang dapat mengelola laporan anggota.');
+        }
+
+        $report = RoomMemberReport::where('room_id', $room->id)->where('id', $reportId)->firstOrFail();
+        $report->update(['status' => 'dismissed']);
+
+        return redirect()->back()->with('success', 'Laporan diabaikan. Member tetap dipertahankan di room.');
+    }
+
+    /**
+     * Owner kicks a reported member based on a report.
+     */
+    public function kickReportedMember(Request $request, string $code, int $reportId): RedirectResponse
+    {
+        $code = strtoupper(trim($code));
+        $room = Room::where('code', $code)->firstOrFail();
+        $currentUser = $request->user();
+
+        if ($room->user_id !== $currentUser->id && !$currentUser->isAdmin()) {
+            return redirect()->back()->with('error', 'Hanya Owner Room yang dapat mengeksekusi keluarkan (kick) anggota.');
+        }
+
+        $report = RoomMemberReport::with('reported')->where('room_id', $room->id)->where('id', $reportId)->firstOrFail();
+        $reportedUser = $report->reported;
+        $reportedName = $reportedUser ? $reportedUser->name : 'Anggota';
+
+        $report->update(['status' => 'actioned_kick']);
+
+        // Remove reported user from room members
+        RoomMember::where('room_id', $room->id)->where('user_id', $report->reported_id)->delete();
+
+        // Create announcement in room
+        RoomAnnouncement::create([
+            'room_id' => $room->id,
+            'type' => 'freeze',
+            'title' => 'Anggota Dikeluarkan (Kick)',
+            'message' => "{$reportedName} telah dikeluarkan dari room oleh Owner berdasarkan laporan dari anggota lain.",
+        ]);
+
+        // Create kicked notice for the user so it displays on their Dashboard
+        KickedRoomNotice::create([
+            'user_id' => $report->reported_id,
+            'room_id' => $room->id,
+            'room_name' => $room->name,
+            'room_code' => $room->code,
+            'reason' => "Anda telah dikeluarkan dari room \"{$room->name}\" oleh Owner karena adanya laporan dari anggota lain.",
+            'is_read' => false,
+        ]);
+
+        return redirect()->back()->with('success', "Member {$reportedName} berhasil dikeluarkan dari room berdasarkan laporan!");
+    }
+
+    /**
+     * Dismiss a kicked notice from user dashboard.
+     */
+    public function dismissKickedNotice(Request $request, int $noticeId): RedirectResponse
+    {
+        $currentUser = $request->user();
+        $notice = KickedRoomNotice::where('user_id', $currentUser->id)->where('id', $noticeId)->first();
+
+        if ($notice) {
+            $notice->delete();
+        }
+
+        return redirect()->back()->with('success', 'Pemberitahuan telah dihapus.');
     }
 }

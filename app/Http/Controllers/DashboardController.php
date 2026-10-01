@@ -103,11 +103,28 @@ class DashboardController extends Controller
             });
         }
 
+        // Kicked Notices for user (when kicked by Room Owner due to member report)
+        $kickedNotices = \App\Models\KickedRoomNotice::where('user_id', $currentUser->id)
+            ->latest()
+            ->get()
+            ->map(function ($notice) {
+                return [
+                    'id' => $notice->id,
+                    'room_id' => $notice->room_id,
+                    'room_name' => $notice->room_name,
+                    'room_code' => $notice->room_code,
+                    'reason' => $notice->reason,
+                    'is_read' => (bool) $notice->is_read,
+                    'created_at' => $notice->created_at->diffForHumans(),
+                ];
+            });
+
         return Inertia::render('dashboard', [
             'stats' => $stats,
             'users' => $users,
             'rooms' => $rooms,
             'pendingJoinRequests' => $pendingJoinRequests,
+            'kickedNotices' => $kickedNotices,
         ]);
     }
 }

@@ -28,6 +28,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('rooms/{code}/leave', [UserRoomController::class, 'leave'])->name('rooms.leave');
     Route::delete('rooms/{room}/history', [UserRoomController::class, 'removeHistory'])->name('rooms.history.remove');
 
+    // Member Report Routes
+    Route::post('rooms/{code}/report', [UserRoomController::class, 'reportMember'])->name('rooms.report');
+    Route::post('rooms/{code}/reports/{reportId}/dismiss', [UserRoomController::class, 'dismissReport'])->name('rooms.reports.dismiss');
+    Route::post('rooms/{code}/reports/{reportId}/kick', [UserRoomController::class, 'kickReportedMember'])->name('rooms.reports.kick');
+    Route::delete('kicked-notices/{noticeId}', [UserRoomController::class, 'dismissKickedNotice'])->name('kicked-notices.dismiss');
+
     // Private Room Join Request Routes
     Route::post('rooms/{code}/requests/{requestId}/approve', [UserRoomController::class, 'approveJoinRequest'])->name('rooms.requests.approve');
     Route::post('rooms/{code}/requests/{requestId}/reject', [UserRoomController::class, 'rejectJoinRequest'])->name('rooms.requests.reject');
