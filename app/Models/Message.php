@@ -24,6 +24,12 @@ class Message extends Model
         'file_name',
         'file_type',
         'file_size',
+        'is_pinned',
+    ];
+
+    protected $casts = [
+        'is_pinned' => 'boolean',
+        'file_size' => 'integer',
     ];
 
     public function room(): BelongsTo

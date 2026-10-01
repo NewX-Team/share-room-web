@@ -193,6 +193,24 @@ class UserRoomController extends Controller
                     'file_name' => $msg->file_name,
                     'file_type' => $msg->file_type,
                     'file_size' => $msg->file_size,
+                    'is_pinned' => (bool) $msg->is_pinned,
+                ];
+            });
+
+        // Fetch pinned messages for top banner highlight (max 2)
+        $pinnedMessages = Message::with('user:id,name')
+            ->where('room_id', $room->id)
+            ->where('is_pinned', true)
+            ->oldest()
+            ->get()
+            ->map(function ($msg) {
+                return [
+                    'id' => $msg->id,
+                    'user_id' => $msg->user_id,
+                    'user_name' => $msg->user->name ?? 'User',
+                    'message' => $msg->message,
+                    'time' => $msg->created_at->format('H:i'),
+                    'file_name' => $msg->file_name,
                 ];
             });
 
@@ -334,6 +352,7 @@ class UserRoomController extends Controller
             'invoices' => $invoices,
             'reports' => $reports,
             'extensionPackages' => $extensionPackages,
+            'pinnedMessages' => $pinnedMessages,
         ]);
     }
 
@@ -549,6 +568,36 @@ class UserRoomController extends Controller
         ]);
 
         return redirect()->back()->with('success', "Durasi room berhasil diperpanjang +{$package->hours} Jam!");
+    }
+
+    /**
+     * Toggle pin status of a message in room chat (Owner or Admin only, max 2 pinned messages).
+     */
+    public function togglePinMessage(Request $request, string $code, int $messageId): RedirectResponse
+    {
+        $code = strtoupper(trim($code));
+        $room = Room::where('code', $code)->firstOrFail();
+        $currentUser = $request->user();
+
+        if ($room->user_id !== $currentUser->id && !$currentUser->isAdmin()) {
+            return redirect()->back()->with('error', 'Hanya Owner Room yang memiliki wewenang untuk menyematkan atau melepas sematan pesan.');
+        }
+
+        $message = Message::where('room_id', $room->id)->where('id', $messageId)->firstOrFail();
+
+        if (! $message->is_pinned) {
+            // Check count of currently pinned messages in this room
+            $pinnedCount = Message::where('room_id', $room->id)->where('is_pinned', true)->count();
+            if ($pinnedCount >= 2) {
+                return redirect()->back()->with('error', 'Maksimal 2 pesan yang dapat disematkan di room ini. Silakan lepas sematan salah satu pesan terlebih dahulu.');
+            }
+
+            $message->update(['is_pinned' => true]);
+            return redirect()->back()->with('success', 'Pesan berhasil disematkan di bagian atas obrolan!');
+        } else {
+            $message->update(['is_pinned' => false]);
+            return redirect()->back()->with('success', 'Sematan pesan berhasil dilepas.');
+        }
     }
 
     /**

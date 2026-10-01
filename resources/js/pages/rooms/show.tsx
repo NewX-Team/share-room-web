@@ -39,7 +39,8 @@ import {
     File,
     Image as ImageIcon,
     Download,
-    Flag
+    Flag,
+    Pin
 } from 'lucide-react';
 import React, { useState, useEffect, useRef, Fragment } from 'react';
 import type { Auth } from '@/types/auth';
@@ -64,6 +65,16 @@ interface MessageData {
     file_name?: string | null;
     file_type?: string | null;
     file_size?: number | null;
+    is_pinned?: boolean;
+}
+
+interface PinnedMessageData {
+    id: number;
+    user_id: number;
+    user_name: string;
+    message: string;
+    time: string;
+    file_name?: string | null;
 }
 
 interface AnnouncementData {
@@ -147,6 +158,7 @@ interface RoomDetailProps {
     lastReadMessageId?: number | null;
     invoices?: RoomInvoiceData[];
     extensionPackages?: ExtensionPackageData[];
+    pinnedMessages?: PinnedMessageData[];
 }
 
 export default function RoomShow({ 
@@ -161,6 +173,7 @@ export default function RoomShow({
     lastReadMessageId = null,
     invoices = [],
     extensionPackages = [],
+    pinnedMessages = [],
 }: RoomDetailProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
@@ -247,6 +260,24 @@ export default function RoomShow({
     const [showExtendModal, setShowExtendModal] = useState(false);
     const [selectedExtensionId, setSelectedExtensionId] = useState<number | null>(null);
     const [isExtendingDuration, setIsExtendingDuration] = useState(false);
+
+    const handleTogglePinMessage = (messageId: number, isCurrentlyPinned?: boolean) => {
+        if (!isOwnerOrAdmin) {
+            showErrorAlert('Hanya Owner Room yang memiliki wewenang untuk menyematkan atau melepas sematan pesan.', 'Akses Terbatas');
+            return;
+        }
+
+        router.post(`/rooms/${room.code}/messages/${messageId}/toggle-pin`, {}, {
+            preserveScroll: true,
+        });
+    };
+
+    const handleScrollToMessage = (messageId: number) => {
+        const el = document.getElementById(`msg-${messageId}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
 
     const handleExtendDurationSubmit = () => {
         if (!selectedExtensionId) return;
@@ -1380,6 +1411,51 @@ export default function RoomShow({
 
                         {/* Chat Messages Feed Container */}
                         <div className="space-y-4 overflow-y-auto max-h-[400px] pr-2 my-auto py-2">
+                            {/* PINNED MESSAGES HEADER BANNER */}
+                            {pinnedMessages && pinnedMessages.length > 0 && (
+                                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 space-y-2 text-xs shadow-sm mb-3 animate-in fade-in duration-200">
+                                    <div className="flex items-center justify-between border-b border-amber-500/20 pb-1.5">
+                                        <span className="font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+                                            <Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-pulse" /> Pesan Disematkan oleh Owner ({pinnedMessages.length}/2)
+                                        </span>
+                                        <span className="text-[10px] text-muted-foreground font-mono">Klik pesan untuk lompat</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {pinnedMessages.map((pm) => (
+                                            <div
+                                                key={pm.id}
+                                                onClick={() => handleScrollToMessage(pm.id)}
+                                                className="p-2 bg-background dark:bg-zinc-950 border border-amber-500/20 hover:border-amber-500/50 rounded-lg cursor-pointer transition-all flex items-start justify-between gap-2 group shadow-xs"
+                                            >
+                                                <div className="min-w-0 space-y-0.5">
+                                                    <span className="font-bold text-foreground dark:text-white text-[11px] flex items-center gap-1">
+                                                        <span>{pm.user_name}</span>
+                                                        <span className="text-[9px] text-muted-foreground font-mono">({pm.time})</span>
+                                                    </span>
+                                                    <p className="text-[11px] text-muted-foreground truncate group-hover:text-foreground">
+                                                        {pm.message || (pm.file_name ? `📎 File: ${pm.file_name}` : '')}
+                                                    </p>
+                                                </div>
+
+                                                {isOwnerOrAdmin && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleTogglePinMessage(pm.id, true);
+                                                        }}
+                                                        className="p-1 rounded text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 flex-shrink-0"
+                                                        title="Lepas Sematan Pesan Ini"
+                                                    >
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {messages.map((msg, index) => {
                                 const isSelf = msg.user_id === currentUser?.id;
                                 const isOwner = msg.role_in_room === 'owner';
@@ -1422,8 +1498,10 @@ export default function RoomShow({
 
                                             {/* Gelembung Chat Bubble */}
                                             <div
-                                                className={`max-w-[78%] rounded-2xl p-3.5 text-xs border space-y-1 shadow-sm ${
-                                                    isSelf
+                                                className={`max-w-[78%] rounded-2xl p-3.5 text-xs border space-y-1 shadow-sm transition-all ${
+                                                    msg.is_pinned
+                                                        ? 'bg-amber-500/10 dark:bg-amber-950/40 text-foreground dark:text-zinc-200 border-amber-500/60 ring-1 ring-amber-500/30'
+                                                        : isSelf
                                                         ? 'bg-indigo-600 text-white rounded-tr-none border-indigo-500'
                                                         : 'bg-background dark:bg-zinc-950 text-foreground dark:text-zinc-200 rounded-tl-none border-border dark:border-zinc-800'
                                                 }`}
@@ -1432,6 +1510,11 @@ export default function RoomShow({
                                                 <div className="flex items-center gap-2 justify-between border-b border-white/10 dark:border-white/10 pb-1 mb-1">
                                                     <span className="font-bold text-[11px] flex items-center gap-1.5 flex-wrap">
                                                         <span>{msg.user_name}</span>
+                                                        {msg.is_pinned && (
+                                                            <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-600 dark:text-amber-300 text-[9px] font-bold border border-amber-500/40 inline-flex items-center gap-0.5">
+                                                                <Pin className="w-2.5 h-2.5 text-amber-500 fill-amber-500" /> Disematkan
+                                                            </span>
+                                                        )}
                                                         {isOwner && (
                                                             <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-600 dark:text-amber-300 text-[9px] font-bold border border-amber-500/30 inline-flex items-center gap-0.5">
                                                                 <Crown className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400" /> Owner Room
@@ -1443,7 +1526,25 @@ export default function RoomShow({
                                                             </span>
                                                         )}
                                                     </span>
-                                                    <span className={`text-[9px] font-mono ${isSelf ? 'text-indigo-200' : 'text-muted-foreground'}`}>{msg.time}</span>
+
+                                                    <div className="flex items-center gap-1.5">
+                                                        {isOwnerOrAdmin && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleTogglePinMessage(msg.id, msg.is_pinned)}
+                                                                className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition-all flex items-center gap-0.5 ${
+                                                                    msg.is_pinned
+                                                                        ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40'
+                                                                        : 'bg-black/10 dark:bg-white/10 hover:bg-amber-500/20 text-muted-foreground hover:text-amber-500'
+                                                                }`}
+                                                                title={msg.is_pinned ? 'Lepas Sematan Pesan' : 'Sematkan Pesan di Atas Obrolan (Maks 2)'}
+                                                            >
+                                                                <Pin className={`w-2.5 h-2.5 ${msg.is_pinned ? 'fill-amber-500 text-amber-500' : ''}`} />
+                                                                <span>{msg.is_pinned ? 'Lepas Sematan' : 'Sematkan'}</span>
+                                                            </button>
+                                                        )}
+                                                        <span className={`text-[9px] font-mono ${isSelf && !msg.is_pinned ? 'text-indigo-200' : 'text-muted-foreground'}`}>{msg.time}</span>
+                                                    </div>
                                                 </div>
 
                                                 {/* Message Text */}
