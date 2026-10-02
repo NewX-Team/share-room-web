@@ -254,7 +254,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                 {/* Modal Form Create Announcement */}
                 {showModal && (
                     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-xl w-full p-4 sm:p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                                 <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
                                     <Megaphone className="w-5 h-5 text-indigo-500" /> Buat Pengumuman Baru
@@ -381,8 +381,74 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                     </div>
                 )}
 
-                {/* Table Announcement List */}
-                <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 shadow-sm">
+                {/* Card List Mobile View */}
+                <div className="grid grid-cols-1 gap-3 md:hidden">
+                    {announcements?.map((ann) => (
+                        <div key={ann.id} className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-xl p-4 space-y-3 shadow-sm">
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="space-y-1">
+                                    <div className="font-bold text-foreground dark:text-white text-sm">
+                                        {ann.title}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground font-mono">
+                                        {ann.author_name} • {ann.created_at}
+                                    </div>
+                                </div>
+                                <div className="shrink-0">
+                                    {getCategoryBadge(ann.category)}
+                                </div>
+                            </div>
+
+                            <p className="text-xs text-muted-foreground line-clamp-3 bg-secondary/30 p-2.5 rounded-lg border border-border/50">
+                                {ann.content}
+                            </p>
+
+                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/60 dark:border-zinc-800">
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => handleTogglePin(ann.id, ann.title, ann.is_pinned)}
+                                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-colors ${
+                                            ann.is_pinned
+                                                ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20'
+                                                : 'bg-secondary text-muted-foreground border-border'
+                                        }`}
+                                    >
+                                        <Pin className="w-3 h-3" />
+                                        <span>{ann.is_pinned ? 'Pinned' : 'Biasa'}</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => handleToggleStatus(ann.id, ann.title, ann.is_active)}
+                                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-colors ${
+                                            ann.is_active
+                                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                                                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+                                        }`}
+                                    >
+                                        {ann.is_active ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3 text-rose-500" />}
+                                        <span>{ann.is_active ? 'Aktif' : 'Draft'}</span>
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={() => handleDelete(ann.id, ann.title)}
+                                    className="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-lg font-medium transition-colors inline-flex items-center gap-1 text-xs"
+                                    title="Hapus Pengumuman"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" /> Hapus
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                    {(!announcements || announcements.length === 0) && (
+                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-xl p-6 text-center text-muted-foreground text-xs">
+                            Belum ada pengumuman yang dibuat oleh Admin.
+                        </div>
+                    )}
+                </div>
+
+                {/* Table Announcement List Desktop */}
+                <div className="hidden md:block bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 shadow-sm">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs">
                             <thead className="text-muted-foreground bg-background dark:bg-zinc-950 border-b border-border dark:border-zinc-800 font-medium uppercase tracking-wider">

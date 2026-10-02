@@ -120,4 +120,12 @@ class Room extends Model
     {
         return $this->type === 'private';
     }
+
+    /**
+     * Get wallet payments (disbursements) for the room.
+     */
+    public function walletPayments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RoomWalletPayment::class);
+    }
 }

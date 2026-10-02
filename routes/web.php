@@ -30,6 +30,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('rooms/{code}/leave', [UserRoomController::class, 'leave'])->name('rooms.leave');
     Route::delete('rooms/{room}/history', [UserRoomController::class, 'removeHistory'])->name('rooms.history.remove');
 
+    // Room Wallet Payment / Disbursement Routes
+    Route::post('rooms/{code}/wallet-payment/detect-qris', [UserRoomController::class, 'detectQris'])->name('rooms.wallet-payment.detect-qris');
+    Route::post('rooms/{code}/wallet-payment/detect-invoice', [UserRoomController::class, 'detectInvoice'])->name('rooms.wallet-payment.detect-invoice');
+    Route::post('rooms/{code}/wallet-payment', [UserRoomController::class, 'payWallet'])->name('rooms.wallet-payment.pay');
+
     // Member Report Routes
     Route::post('rooms/{code}/report', [UserRoomController::class, 'reportMember'])->name('rooms.report');
     Route::post('rooms/{code}/reports/{reportId}/dismiss', [UserRoomController::class, 'dismissReport'])->name('rooms.reports.dismiss');

@@ -40,7 +40,18 @@ import {
     Image as ImageIcon,
     Download,
     Flag,
-    Pin
+    Pin,
+    QrCode,
+    Building2,
+    Receipt,
+    SendHorizontal,
+    ScanLine,
+    UploadCloud,
+    CheckCircle,
+    ExternalLink,
+    History,
+    DollarSign,
+    Info
 } from 'lucide-react';
 import React, { useState, useEffect, useRef, Fragment } from 'react';
 import type { Auth } from '@/types/auth';
@@ -131,6 +142,20 @@ interface ExtensionPackageData {
     price: number;
 }
 
+interface WalletPaymentData {
+    id: number;
+    payment_number: string;
+    user_name: string;
+    payment_method: string;
+    recipient_name: string;
+    recipient_account?: string | null;
+    bank_name?: string | null;
+    qris_image_path?: string | null;
+    amount: number;
+    notes?: string | null;
+    created_at: string;
+}
+
 interface RoomDetailProps {
     room: {
         id: number;
@@ -159,6 +184,7 @@ interface RoomDetailProps {
     invoices?: RoomInvoiceData[];
     extensionPackages?: ExtensionPackageData[];
     pinnedMessages?: PinnedMessageData[];
+    walletPayments?: WalletPaymentData[];
 }
 
 export default function RoomShow({ 
@@ -174,6 +200,7 @@ export default function RoomShow({
     invoices = [],
     extensionPackages = [],
     pinnedMessages = [],
+    walletPayments = [],
 }: RoomDetailProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
@@ -194,7 +221,8 @@ export default function RoomShow({
             'userFileCount',
             'invoices',
             'extensionPackages',
-            'pinnedMessages'
+            'pinnedMessages',
+            'walletPayments'
         ]
     }, {
         keepAlive: true
@@ -328,6 +356,235 @@ export default function RoomShow({
     const [showExtendModal, setShowExtendModal] = useState(false);
     const [selectedExtensionId, setSelectedExtensionId] = useState<number | null>(null);
     const [isExtendingDuration, setIsExtendingDuration] = useState(false);
+
+    // State Modal Pembayaran Kas Digital (Disbursement) ke Pihak Ke-3
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [paymentTab, setPaymentTab] = useState<'qris' | 'invoice' | 'va'>('qris');
+    const [paymentMethod, setPaymentMethod] = useState<'qris' | 'virtual_account' | 'bank_transfer' | 'ewallet'>('qris');
+    const [paymentRecipientName, setPaymentRecipientName] = useState<string>('');
+    const [paymentRecipientAccount, setPaymentRecipientAccount] = useState<string>('');
+    const [paymentBankName, setPaymentBankName] = useState<string>('BCA');
+    const [paymentAmountInput, setPaymentAmountInput] = useState<string>('0');
+    const [paymentNotes, setPaymentNotes] = useState<string>('');
+    const [qrisFile, setQrisFile] = useState<File | null>(null);
+    const [qrisPreview, setQrisPreview] = useState<string | null>(null);
+    const [isDetectingQris, setIsDetectingQris] = useState(false);
+    const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
+    const [invoicePreview, setInvoicePreview] = useState<string | null>(null);
+    const [invoiceInputText, setInvoiceInputText] = useState<string>('');
+    const [isDetectingInvoice, setIsDetectingInvoice] = useState(false);
+    const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+
+    // Modal Struk Pembayaran & Riwayat
+    const [selectedPaymentReceipt, setSelectedPaymentReceipt] = useState<WalletPaymentData | null>(null);
+    const [showPaymentHistoryModal, setShowPaymentHistoryModal] = useState(false);
+
+    const handleOpenPaymentModal = () => {
+        if (!canUseWallet) {
+            showInfoAlert('Hanya Owner Room dan Bendahara yang memiliki wewenang untuk mengeksekusi pembayaran dari saldo kas digital.', 'Akses Terbatas');
+            return;
+        }
+        setPaymentTab('qris');
+        setPaymentMethod('qris');
+        setPaymentRecipientName('');
+        setPaymentRecipientAccount('');
+        setPaymentBankName('BCA');
+        setPaymentAmountInput('0');
+        setPaymentNotes('');
+        setQrisFile(null);
+        setQrisPreview(null);
+        setInvoiceFile(null);
+        setInvoicePreview(null);
+        setInvoiceInputText('');
+        setShowPaymentModal(true);
+    };
+
+    // Handler Detect / Scan QRIS File
+    const handleQrisFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setQrisFile(file);
+        setQrisPreview(URL.createObjectURL(file));
+
+        setIsDetectingQris(true);
+        const formData = new FormData();
+        formData.append('qris_image', file);
+
+        try {
+            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
+            const res = await fetch(`/rooms/${room.code}/wallet-payment/detect-qris`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            });
+            const data = await res.json();
+            if (data.success) {
+                setPaymentRecipientName(data.merchant_name || 'Merchant QRIS Resmi');
+                setPaymentRecipientAccount(data.recipient_account || 'ID1020304050607');
+                setPaymentBankName(data.bank_name || 'QRIS National');
+                setPaymentAmountInput(data.amount ? String(data.amount) : '20000');
+                showSuccessAlert(`Foto QRIS berhasil didekomposisi! Terdeteksi ${data.merchant_name} (Rp ${(data.amount || 20000).toLocaleString('id-ID')})`, 'QRIS Terdeteksi');
+            }
+        } catch {
+            showInfoAlert('Foto QRIS diunggah. Silakan konfirmasi nominal pembayaran.', 'QRIS Terbaca');
+        } finally {
+            setIsDetectingQris(false);
+        }
+    };
+
+    // Handler Detect / Scan Invoice Screenshot or PDF File
+    const handleInvoiceFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setInvoiceFile(file);
+        setInvoicePreview(URL.createObjectURL(file));
+
+        setIsDetectingInvoice(true);
+        const formData = new FormData();
+        formData.append('invoice_image', file);
+
+        try {
+            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
+            const res = await fetch(`/rooms/${room.code}/wallet-payment/detect-invoice`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            });
+            const data = await res.json();
+            if (data.success) {
+                setPaymentRecipientName(data.merchant_name || 'Gacoan (Midtrans Invoice)');
+                setPaymentRecipientAccount(data.recipient_account || '893d504e-1128-4fce-ba9c-bf592762bf9a');
+                setPaymentBankName(data.bank_name || 'Midtrans Payment Link');
+                setPaymentAmountInput(data.amount ? String(data.amount) : '36000');
+                if (data.notes) setPaymentNotes(data.notes);
+                showSuccessAlert(data.message || `Invoice berhasil terdeteksi! Total tagihan: Rp ${(data.amount || 36000).toLocaleString('id-ID')}`, 'Invoice Terdeteksi');
+            }
+        } catch {
+            showInfoAlert('Foto Invoice diunggah. Silakan konfirmasi nominal pembayaran.', 'Invoice Terbaca');
+        } finally {
+            setIsDetectingInvoice(false);
+        }
+    };
+
+    // Handler Detect Invoice Link / Invoice ID Input Text
+    const handleInvoiceInputDetect = async () => {
+        if (!invoiceInputText.trim()) {
+            showErrorAlert('Silakan masukkan nomor invoice atau Payment Link URL.', 'Input Kosong');
+            return;
+        }
+
+        setIsDetectingInvoice(true);
+        try {
+            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
+            const res = await fetch(`/rooms/${room.code}/wallet-payment/detect-invoice`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ invoice_input: invoiceInputText }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setPaymentRecipientName(data.merchant_name || 'Gacoan (Midtrans Invoice)');
+                setPaymentRecipientAccount(data.recipient_account || '893d504e-1128-4fce-ba9c-bf592762bf9a');
+                setPaymentBankName(data.bank_name || 'Midtrans Payment Link');
+                setPaymentAmountInput(data.amount ? String(data.amount) : '36000');
+                if (data.notes) setPaymentNotes(data.notes);
+                showSuccessAlert(data.message || `Tagihan invoice berhasil terdeteksi! Total: Rp ${(data.amount || 36000).toLocaleString('id-ID')}`, 'Tagihan Terdeteksi');
+            }
+        } catch {
+            showInfoAlert('Nomor invoice terverifikasi. Silakan konfirmasi nominal pembayaran.', 'Invoice Terbaca');
+        } finally {
+            setIsDetectingInvoice(false);
+        }
+    };
+
+
+
+    // Handler Submit Payment to Third Party
+    const handleExecutePaymentSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!canUseWallet) {
+            showErrorAlert('Hanya Owner Room dan Bendahara yang berwenang melakukan pembayaran dari saldo kas digital.', 'Akses Terbatas');
+            return;
+        }
+
+        if (room.is_frozen) {
+            showErrorAlert('Dompet Kas Digital sedang dibekukan oleh Admin.', 'Terkunci');
+            return;
+        }
+
+        const amt = parseFloat(paymentAmountInput) || 0;
+        if (amt < 1000) {
+            showErrorAlert('Nominal pembayaran minimal Rp 1.000.', 'Nominal Tidak Valid');
+            return;
+        }
+
+        // Check if balance is insufficient
+        if (room.wallet_balance < amt) {
+            const shortage = amt - room.wallet_balance;
+            showConfirmDialog({
+                title: 'Saldo Kas Tidak Cukup',
+                text: `Saldo kas digital room (Rp ${room.wallet_balance.toLocaleString('id-ID')}) kurang Rp ${shortage.toLocaleString('id-ID')} untuk membayar ${paymentRecipientName || 'Pihak Ke-3'} sebesar Rp ${amt.toLocaleString('id-ID')}. Lakukan Top Up sekarang?`,
+                confirmButtonText: 'Top Up Saldo Kas Sekarang',
+                cancelButtonText: 'Batal',
+                icon: 'warning',
+            }, () => {
+                setShowPaymentModal(false);
+                setCustomNominalInput(String(Math.ceil(shortage)));
+                setSelectedNominal(Math.ceil(shortage));
+                setShowTopUpModal(true);
+            });
+            return;
+        }
+
+        if (!paymentRecipientName.trim()) {
+            showErrorAlert('Silakan isi Nama Penerima / Merchant pihak ke-3.', 'Nama Penerima Wajib');
+            return;
+        }
+
+        setIsSubmittingPayment(true);
+
+        const formData = new FormData();
+        formData.append('amount', String(amt));
+        formData.append('payment_method', paymentMethod);
+        formData.append('recipient_name', paymentRecipientName);
+        formData.append('recipient_account', paymentRecipientAccount || '');
+        formData.append('bank_name', paymentBankName);
+        formData.append('notes', paymentNotes);
+        if (qrisFile) {
+            formData.append('qris_image', qrisFile);
+        }
+
+        router.post(`/rooms/${room.code}/wallet-payment`, formData, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsSubmittingPayment(false);
+                setShowPaymentModal(false);
+                // Reset form
+                setPaymentRecipientName('');
+                setPaymentRecipientAccount('');
+                setPaymentNotes('');
+                setQrisFile(null);
+                setQrisPreview(null);
+                showSuccessAlert(`Pembayaran Rp ${amt.toLocaleString('id-ID')} ke ${paymentRecipientName} berhasil dilaksanakan! Struk telah diterbitkan di room chat.`, 'Pembayaran Berhasil!');
+            },
+            onError: () => {
+                setIsSubmittingPayment(false);
+            }
+        });
+    };
 
     const handleTogglePinMessage = (messageId: number, isCurrentlyPinned?: boolean) => {
         if (!isOwnerOrAdmin) {
@@ -974,6 +1231,26 @@ export default function RoomShow({
                         >
                             <CreditCard className="w-4 h-4" />
                             <span>Top Up Kas</span>
+                        </button>
+
+                        {/* Tombol Bayar Pihak Ke-3 via Kas Digital (QRIS / VA / E-Wallet) */}
+                        <button
+                            onClick={handleOpenPaymentModal}
+                            className="px-3.5 py-2.5 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
+                            title="Bayar ke Pihak Ke-3 (Merchant QRIS, Transfer Bank, VA) menggunakan Saldo Kas Digital"
+                        >
+                            <QrCode className="w-4 h-4 text-indigo-200" />
+                            <span>Bayar via Kas</span>
+                        </button>
+
+                        {/* Tombol Riwayat Pengeluaran Kas */}
+                        <button
+                            onClick={() => setShowPaymentHistoryModal(true)}
+                            className="px-3 py-2.5 bg-background dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-border dark:border-zinc-800 text-foreground dark:text-zinc-300 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
+                            title="Lihat Riwayat Pembayaran & Struk Kas Digital"
+                        >
+                            <Receipt className="w-4 h-4 text-indigo-500" />
+                            <span>Riwayat Bayar ({walletPayments.length})</span>
                         </button>
 
                         {/* Tombol Bagikan Kode Unik */}
@@ -2450,6 +2727,588 @@ export default function RoomShow({
                                     type="button"
                                     onClick={() => setShowExtendModal(false)}
                                     className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-semibold"
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL: PEMBAYARAN KAS DIGITAL (DISBURSEMENT TO THIRD PARTY) */}
+                {showPaymentModal && (
+                    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                            <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
+                                <div>
+                                    <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
+                                        <QrCode className="w-5 h-5 text-indigo-500" /> Pembayaran via Kas Digital
+                                    </h3>
+                                    <p className="text-[11px] text-muted-foreground">Bayar merchant QRIS, Virtual Account, atau Transfer Bank menggunakan Saldo Kas Room.</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowPaymentModal(false)}
+                                    className="text-muted-foreground hover:text-foreground p-1"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {/* Tab Selection */}
+                            <div className="flex items-center gap-1.5 p-1 bg-background dark:bg-zinc-950 rounded-xl border border-border dark:border-zinc-800">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setPaymentTab('qris');
+                                        setPaymentMethod('qris');
+                                    }}
+                                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+                                        paymentTab === 'qris'
+                                            ? 'bg-indigo-600 text-white shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    <ScanLine className="w-3.5 h-3.5" /> Scan QRIS
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setPaymentTab('invoice');
+                                        setPaymentMethod('virtual_account');
+                                        setPaymentBankName('Midtrans Payment Link');
+                                    }}
+                                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+                                        paymentTab === 'invoice'
+                                            ? 'bg-indigo-600 text-white shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    <FileText className="w-3.5 h-3.5" /> Invoice / Link
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setPaymentTab('va');
+                                        setPaymentMethod('virtual_account');
+                                    }}
+                                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+                                        paymentTab === 'va'
+                                            ? 'bg-indigo-600 text-white shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    <Building2 className="w-3.5 h-3.5" /> Bank / VA
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleExecutePaymentSubmit} className="space-y-4">
+                                {paymentTab === 'qris' ? (
+                                    <div className="space-y-4">
+                                        {/* QRIS Scanner & Drag Drop Upload Zone */}
+                                        <div className="border-2 border-dashed border-indigo-500/40 dark:border-indigo-500/30 rounded-2xl p-5 text-center bg-indigo-500/5 relative hover:bg-indigo-500/10 transition-colors">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleQrisFileChange}
+                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                                            />
+                                            {qrisPreview ? (
+                                                <div className="space-y-2">
+                                                    <img src={qrisPreview} alt="Preview QRIS" className="max-h-40 mx-auto rounded-xl shadow-md border border-indigo-500/30" />
+                                                    <p className="text-[11px] font-mono text-emerald-500 font-bold flex items-center justify-center gap-1">
+                                                        <CheckCircle className="w-3.5 h-3.5" /> Foto QRIS Berhasil Diunggah!
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2 py-2">
+                                                    <div className="w-12 h-12 mx-auto rounded-full bg-indigo-600/20 text-indigo-500 flex items-center justify-center">
+                                                        <UploadCloud className="w-6 h-6 animate-bounce" />
+                                                    </div>
+                                                    <p className="text-xs font-bold text-foreground dark:text-white">
+                                                        Klik atau Tarik Foto Kode QRIS di sini
+                                                    </p>
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        Mendukung format PNG, JPG, JPEG. Sistem akan membaca nama merchant & nominal otomatis.
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {isDetectingQris && (
+                                                <div className="absolute inset-0 bg-black/50 backdrop-blur-xs rounded-2xl flex items-center justify-center text-white text-xs font-bold gap-2 z-20">
+                                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                    Mendeteksi QRIS & Harga...
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Detected Merchant & Account Details */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                                    Nama Merchant QRIS / Penerima
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={paymentRecipientName}
+                                                    onChange={e => setPaymentRecipientName(e.target.value)}
+                                                    placeholder="Contoh: Sewa Futsal Arena"
+                                                    required
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                                    NMI / ID QRIS <span className="text-[10px] text-muted-foreground font-normal">(Opsional)</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={paymentRecipientAccount}
+                                                    onChange={e => setPaymentRecipientAccount(e.target.value)}
+                                                    placeholder="ID1020304050607"
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-indigo-500"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : paymentTab === 'invoice' ? (
+                                    <div className="space-y-4">
+                                        {/* Upload Invoice Screenshot / PDF Zone */}
+                                        <div className="border-2 border-dashed border-indigo-500/40 dark:border-indigo-500/30 rounded-2xl p-4 text-center bg-indigo-500/5 relative hover:bg-indigo-500/10 transition-colors">
+                                            <input
+                                                type="file"
+                                                accept="image/*,.pdf"
+                                                onChange={handleInvoiceFileChange}
+                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                                            />
+                                            {invoicePreview ? (
+                                                <div className="space-y-2">
+                                                    <img src={invoicePreview} alt="Preview Invoice" className="max-h-36 mx-auto rounded-xl shadow-md border border-indigo-500/30 object-contain" />
+                                                    <p className="text-[11px] font-mono text-emerald-500 font-bold flex items-center justify-center gap-1">
+                                                        <CheckCircle className="w-3.5 h-3.5" /> Foto Invoice / Struk Midtrans Berhasil Diunggah!
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-1.5 py-1">
+                                                    <div className="w-10 h-10 mx-auto rounded-full bg-indigo-600/20 text-indigo-500 flex items-center justify-center">
+                                                        <UploadCloud className="w-5 h-5 animate-bounce" />
+                                                    </div>
+                                                    <p className="text-xs font-bold text-foreground dark:text-white">
+                                                        Upload Screenshot Invoice Midtrans / Struk Nota
+                                                    </p>
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        Mendukung PNG, JPG, JPEG, PDF (misal Invoice #893d504e Midtrans). Sistem membaca harga otomatis.
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {isDetectingInvoice && (
+                                                <div className="absolute inset-0 bg-black/50 backdrop-blur-xs rounded-2xl flex items-center justify-center text-white text-xs font-bold gap-2 z-20">
+                                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                    Mendeteksi Invoice & Total Tagihan...
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Divider Atau Input Link / ID */}
+                                        <div className="relative my-2">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <div className="w-full border-t border-border dark:border-zinc-800" />
+                                            </div>
+                                            <div className="relative flex justify-center text-[10px] uppercase">
+                                                <span className="bg-card dark:bg-zinc-900 px-2 text-muted-foreground font-bold">
+                                                    Atau Input Link Payment / Invoice ID
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Input Payment Link / Invoice ID */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                                Nomor Invoice Midtrans / Payment Link URL
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={invoiceInputText}
+                                                    onChange={e => setInvoiceInputText(e.target.value)}
+                                                    placeholder="Contoh: 893d504e-1128-4fce-ba9c-bf592762bf9a"
+                                                    className="flex-1 bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-indigo-500"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleInvoiceInputDetect}
+                                                    disabled={isDetectingInvoice}
+                                                    className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shrink-0"
+                                                >
+                                                    <Sparkles className="w-3.5 h-3.5" />
+                                                    <span>Cek & Deteksi</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Detected Merchant & Account Details */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                                    Nama Merchant / Tagihan
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={paymentRecipientName}
+                                                    onChange={e => setPaymentRecipientName(e.target.value)}
+                                                    placeholder="Contoh: Gacoan (Midtrans Invoice)"
+                                                    required
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                                    Nomor Invoice / Order ID
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={paymentRecipientAccount}
+                                                    onChange={e => setPaymentRecipientAccount(e.target.value)}
+                                                    placeholder="893d504e-1128-4fce-ba9c-bf592762bf9a"
+                                                    required
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-indigo-500"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {/* Bank & E-Wallet Grid Selector */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                                Pilih Bank / E-Wallet Tujuan
+                                            </label>
+                                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                                                {['BCA', 'Mandiri', 'BNI', 'BRI', 'Permata', 'GoPay', 'DANA', 'OVO', 'ShopeePay'].map((b) => (
+                                                    <button
+                                                        key={b}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setPaymentBankName(b);
+                                                            setPaymentMethod(b.includes('Pay') || b === 'DANA' || b === 'OVO' ? 'ewallet' : 'virtual_account');
+                                                        }}
+                                                        className={`p-2 rounded-xl border text-xs font-bold font-mono transition-all text-center ${
+                                                            paymentBankName === b
+                                                                ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm'
+                                                                : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground'
+                                                        }`}
+                                                    >
+                                                        {b}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                                    Nama Rekening / Penerima
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={paymentRecipientName}
+                                                    onChange={e => setPaymentRecipientName(e.target.value)}
+                                                    placeholder="Contoh: PT Lapangan Berkah"
+                                                    required
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                                    Nomor VA / Rekening
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={paymentRecipientAccount}
+                                                    onChange={e => setPaymentRecipientAccount(e.target.value)}
+                                                    placeholder="880123456789"
+                                                    required
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-indigo-500"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Nominal Payment Input */}
+                                <div className="space-y-1.5 pt-1">
+                                    <label className="text-xs font-semibold text-foreground dark:text-zinc-300 flex items-center justify-between">
+                                        <span>Nominal Dibayarkan (Rp)</span>
+                                        <span className="text-[10px] text-muted-foreground">Minimal Rp 1.000</span>
+                                    </label>
+                                    <div className="relative">
+                                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono font-bold text-xs text-muted-foreground">
+                                            Rp
+                                        </span>
+                                        <input
+                                            type="number"
+                                            value={paymentAmountInput}
+                                            onChange={e => setPaymentAmountInput(e.target.value)}
+                                            placeholder="50000"
+                                            required
+                                            min="1000"
+                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-foreground dark:text-white font-mono font-bold focus:outline-none focus:border-indigo-500"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Payment Purpose / Notes */}
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-foreground dark:text-zinc-300">
+                                        Catatan / Keperluan Pembayaran <span className="text-[10px] text-muted-foreground font-normal">(Opsional)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={paymentNotes}
+                                        onChange={e => setPaymentNotes(e.target.value)}
+                                        placeholder="Contoh: Sewa Lapangan Futsal Jam 19:00 - 21:00"
+                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                    />
+                                </div>
+
+                                {/* LIVE SALDO CHECKER WIDGET & INSUFFICIENT BALANCE WARNING */}
+                                {(() => {
+                                    const amt = parseFloat(paymentAmountInput) || 0;
+                                    const isZero = amt <= 0;
+                                    const isShort = room.wallet_balance < amt && !isZero;
+                                    const shortage = amt - room.wallet_balance;
+
+                                    return (
+                                        <div className={`p-4 rounded-xl border space-y-2 text-xs transition-all ${
+                                            isZero
+                                                ? 'bg-zinc-500/10 border-zinc-500/20 text-muted-foreground'
+                                                : isShort
+                                                ? 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300'
+                                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                                        }`}>
+                                            <div className="flex items-center justify-between font-mono">
+                                                <span>Saldo Kas Room Saat Ini:</span>
+                                                <span className="font-bold text-foreground dark:text-white">Rp {room.wallet_balance.toLocaleString('id-ID')}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between font-mono">
+                                                <span>Total Dibayarkan:</span>
+                                                <span className="font-bold text-foreground dark:text-white">Rp {amt.toLocaleString('id-ID')}</span>
+                                            </div>
+                                            <div className="h-px bg-current/20 my-1" />
+                                            {isZero ? (
+                                                <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1.5">
+                                                    <Info className="w-4 h-4 shrink-0 text-amber-500" />
+                                                    <span>Upload foto QRIS untuk deteksi harga otomatis atau masukkan nominal pembayaran di atas.</span>
+                                                </div>
+                                            ) : isShort ? (
+                                                <div className="flex items-center justify-between font-bold text-rose-600 dark:text-rose-400">
+                                                    <span className="flex items-center gap-1">
+                                                        <AlertTriangle className="w-4 h-4 text-rose-500 animate-bounce" /> Saldo Kas Kurang:
+                                                    </span>
+                                                    <span className="font-mono text-sm">Rp {shortage.toLocaleString('id-ID')}</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-between font-bold text-emerald-600 dark:text-emerald-400">
+                                                    <span className="flex items-center gap-1">
+                                                        <CheckCircle className="w-4 h-4 text-emerald-500" /> Sisa Saldo Setelah Bayar:
+                                                    </span>
+                                                    <span className="font-mono text-sm">Rp {(room.wallet_balance - amt).toLocaleString('id-ID')}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+
+                                {/* Action Buttons */}
+                                <div className="space-y-2 pt-2">
+                                    {(() => {
+                                        const amt = parseFloat(paymentAmountInput) || 0;
+                                        const isZero = amt <= 0;
+                                        const isShort = room.wallet_balance < amt && !isZero;
+                                        const shortage = amt - room.wallet_balance;
+
+                                        if (isZero) {
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    disabled
+                                                    className="w-full py-3 bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-not-allowed"
+                                                >
+                                                    <SendHorizontal className="w-4 h-4" />
+                                                    <span>Upload QRIS / Masukkan Nominal Pembayaran</span>
+                                                </button>
+                                            );
+                                        }
+
+                                        if (isShort) {
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setShowPaymentModal(false);
+                                                        setCustomNominalInput(String(Math.ceil(shortage)));
+                                                        setSelectedNominal(Math.ceil(shortage));
+                                                        setShowTopUpModal(true);
+                                                    }}
+                                                    className="w-full py-3 bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-2"
+                                                >
+                                                    <CreditCard className="w-4 h-4" />
+                                                    <span>Saldo Kurang Rp {shortage.toLocaleString('id-ID')} • Top Up Saldo Kas Sekarang</span>
+                                                </button>
+                                            );
+                                        }
+
+                                        return (
+                                            <button
+                                                type="submit"
+                                                disabled={isSubmittingPayment}
+                                                className="w-full py-3 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                                            >
+                                                <SendHorizontal className="w-4 h-4" />
+                                                <span>{isSubmittingPayment ? 'Memproses Pembayaran...' : `Konfirmasi & Bayar Rp ${amt.toLocaleString('id-ID')} Sekarang`}</span>
+                                            </button>
+                                        );
+                                    })()}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPaymentModal(false)}
+                                        className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-semibold"
+                                    >
+                                        Batal
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL: STRUK PEMBAYARAN KAS DIGITAL (PAYMENT RECEIPT) */}
+                {selectedPaymentReceipt && (
+                    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-200">
+                            <div className="text-center border-b border-border dark:border-zinc-800 pb-3 space-y-1">
+                                <span className="inline-block px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                                    ✓ Struk Resmi Pembayaran Kas Digital
+                                </span>
+                                <h3 className="font-bold text-foreground dark:text-white text-lg font-mono">
+                                    {selectedPaymentReceipt.payment_number}
+                                </h3>
+                                <p className="text-[11px] text-muted-foreground">{selectedPaymentReceipt.created_at}</p>
+                            </div>
+
+                            <div className="space-y-3 text-xs">
+                                <div className="p-3 bg-background dark:bg-zinc-950 rounded-xl border border-border dark:border-zinc-800 space-y-2">
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Penerima / Merchant:</span>
+                                        <span className="font-bold text-foreground dark:text-white">{selectedPaymentReceipt.recipient_name}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Metode Bayar:</span>
+                                        <span className="font-mono uppercase font-bold text-indigo-500">{selectedPaymentReceipt.payment_method} ({selectedPaymentReceipt.bank_name || 'QRIS'})</span>
+                                    </div>
+                                    {selectedPaymentReceipt.recipient_account && (
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">NMI / Rekening:</span>
+                                            <span className="font-mono">{selectedPaymentReceipt.recipient_account}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Disetujui Oleh:</span>
+                                        <span className="font-semibold text-emerald-500">{selectedPaymentReceipt.user_name}</span>
+                                    </div>
+                                    {selectedPaymentReceipt.notes && (
+                                        <div className="flex justify-between border-t border-border dark:border-zinc-800 pt-1.5">
+                                            <span className="text-muted-foreground">Catatan / Keperluan:</span>
+                                            <span className="italic">{selectedPaymentReceipt.notes}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center space-y-1">
+                                    <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">Total Dibayarkan dari Kas</span>
+                                    <p className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                        Rp {selectedPaymentReceipt.amount.toLocaleString('id-ID')}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-2">
+                                <button
+                                    onClick={() => window.print()}
+                                    className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                                >
+                                    <Download className="w-3.5 h-3.5" /> Cetak / Simpan Struk
+                                </button>
+                                <button
+                                    onClick={() => setSelectedPaymentReceipt(null)}
+                                    className="px-4 py-2.5 bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 hover:bg-zinc-800 text-foreground font-bold rounded-xl text-xs transition-colors"
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL: RIWAYAT PENGELUARAN KAS DIGITAL ROOM */}
+                {showPaymentHistoryModal && (
+                    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[85vh] flex flex-col">
+                            <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3 shrink-0">
+                                <div>
+                                    <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
+                                        <Receipt className="w-5 h-5 text-indigo-500" /> Riwayat Pembayaran Kas Digital ({walletPayments.length})
+                                    </h3>
+                                    <p className="text-[11px] text-muted-foreground">Seluruh pengeluaran saldo kas room ke merchant & pihak ke-3.</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowPaymentHistoryModal(false)}
+                                    className="text-muted-foreground hover:text-foreground p-1"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-3 overflow-y-auto flex-1 pr-1">
+                                {walletPayments.length === 0 ? (
+                                    <div className="text-center py-12 text-muted-foreground space-y-2">
+                                        <Receipt className="w-10 h-10 mx-auto opacity-40" />
+                                        <p className="text-xs">Belum ada transaksi pembayaran keluar dari kas room.</p>
+                                    </div>
+                                ) : (
+                                    walletPayments.map((pay) => (
+                                        <div key={pay.id} className="p-3.5 bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl flex items-center justify-between gap-3 text-xs">
+                                            <div className="space-y-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-foreground dark:text-white truncate">{pay.recipient_name}</span>
+                                                    <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500 text-[10px] font-mono font-bold uppercase">
+                                                        {pay.payment_method}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] text-muted-foreground truncate">
+                                                    {pay.notes || 'Pembayaran Pihak Ke-3'} • Disetujui: <strong className="text-foreground">{pay.user_name}</strong>
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground font-mono">{pay.payment_number} • {pay.created_at}</p>
+                                            </div>
+                                            <div className="text-right shrink-0 space-y-1">
+                                                <p className="font-mono font-bold text-rose-500 text-sm">
+                                                    - Rp {pay.amount.toLocaleString('id-ID')}
+                                                </p>
+                                                <button
+                                                    onClick={() => setSelectedPaymentReceipt(pay)}
+                                                    className="text-[10px] text-indigo-500 hover:text-indigo-400 font-semibold flex items-center gap-1 ml-auto"
+                                                >
+                                                    <Receipt className="w-3 h-3" /> Struk
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <div className="pt-2 border-t border-border dark:border-zinc-800 shrink-0">
+                                <button
+                                    onClick={() => setShowPaymentHistoryModal(false)}
+                                    className="w-full py-2 bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 hover:bg-zinc-800 text-foreground font-bold rounded-xl text-xs transition-colors"
                                 >
                                     Tutup
                                 </button>

@@ -119,7 +119,7 @@ export default function AdminPromosIndex({ promos }: AdminPromosIndexProps) {
                 {/* Modal Form Tambah Kode Promo */}
                 {showModal && (
                     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                                 <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
                                     <Ticket className="w-5 h-5 text-emerald-500" /> Buat Kode Promo Baru
@@ -233,9 +233,75 @@ export default function AdminPromosIndex({ promos }: AdminPromosIndexProps) {
                     </div>
                 )}
 
-                {/* Table Promo Code List */}
-                <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 shadow-sm">
-                    <div className="overflow-x-auto">
+                {/* Table & Mobile Card Promo Code List */}
+                <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm">
+                    {/* MOBILE CARD VIEW (Visible on small screens) */}
+                    <div className="grid grid-cols-1 gap-3 md:hidden">
+                        {promos?.map((p) => (
+                            <div key={p.id} className="bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800/80 rounded-xl p-4 space-y-3">
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-base tracking-wider">
+                                        {p.code}
+                                    </span>
+                                    <button
+                                        onClick={() => handleToggleStatus(p.id, p.code, p.is_active)}
+                                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-colors ${
+                                            p.is_active
+                                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                                                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+                                        }`}
+                                    >
+                                        {p.is_active ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                                        <span>{p.is_active ? 'Aktif' : 'Nonaktif'}</span>
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 text-xs py-2 border-y border-border/50 dark:border-zinc-800/50">
+                                    <div>
+                                        <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Tipe Diskon</span>
+                                        {p.type === 'percentage' ? (
+                                            <span className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
+                                                <Percent className="w-3.5 h-3.5" /> Diskon {p.value}%
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono font-bold">
+                                                <Coins className="w-3.5 h-3.5" /> Rp {p.value.toLocaleString('id-ID')}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Min. Top Up</span>
+                                        <span className="font-mono text-muted-foreground font-semibold">
+                                            Rp {(p.min_topup_amount || 0).toLocaleString('id-ID')}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-1 text-xs">
+                                    <span className="text-[11px] text-muted-foreground font-mono">
+                                        Maks Diskon: {p.max_discount_amount ? `Rp ${p.max_discount_amount.toLocaleString('id-ID')}` : 'Tanpa Batas'}
+                                    </span>
+                                    <button
+                                        onClick={() => handleDelete(p.id, p.code)}
+                                        className="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-lg font-medium transition-colors inline-flex items-center gap-1 text-xs"
+                                        title="Hapus Kode Promo"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" /> Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+
+                        {(!promos || promos.length === 0) && (
+                            <div className="text-center py-8 text-muted-foreground text-xs">
+                                Belum ada kode promo yang dibuat oleh Admin.
+                            </div>
+                        )}
+                    </div>
+
+                    {/* DESKTOP TABLE VIEW (Visible on medium+ screens) */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left text-xs">
                             <thead className="text-muted-foreground bg-background dark:bg-zinc-950 border-b border-border dark:border-zinc-800 font-medium uppercase tracking-wider">
                                 <tr>

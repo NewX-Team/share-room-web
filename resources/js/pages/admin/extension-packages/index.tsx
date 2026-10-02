@@ -178,17 +178,87 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                             <p className="text-[11px]">Klik tombol "Tambah Paket Perpanjangan" di atas untuk menambahkan opsi perpanjangan waktu.</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse text-xs">
-                                <thead>
-                                    <tr className="bg-muted/50 dark:bg-zinc-950/50 text-muted-foreground border-b border-border dark:border-zinc-800 font-bold uppercase tracking-wider text-[10px]">
-                                        <th className="p-4">Durasi Perpanjangan</th>
-                                        <th className="p-4">Harga Kas Digital (Rp)</th>
-                                        <th className="p-4">Status Opsi</th>
-                                        <th className="p-4 text-right">Aksi Manajemen</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border dark:divide-zinc-800 font-medium">
+                        <div className="p-4 sm:p-0">
+                            {/* MOBILE CARD VIEW (Visible on small screens) */}
+                            <div className="grid grid-cols-1 gap-3 md:hidden">
+                                {packages.map((pkg) => (
+                                    <div key={pkg.id} className="bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800/80 rounded-xl p-4 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500 font-bold shrink-0">
+                                                    <Clock className="w-4 h-4" />
+                                                </div>
+                                                <div>
+                                                    <span className="font-bold text-foreground dark:text-white text-base">
+                                                        +{pkg.hours} Jam
+                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground block font-mono">
+                                                        ({(pkg.hours / 24).toFixed(1)} Hari)
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${
+                                                pkg.is_active 
+                                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                                                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                                            }`}>
+                                                {pkg.is_active ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <XCircle className="w-3 h-3 text-rose-500" />}
+                                                <span>{pkg.is_active ? 'Aktif' : 'Non-aktif'}</span>
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-2 border-t border-border/50 dark:border-zinc-800/50 text-xs">
+                                            <div>
+                                                <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Harga Kas Digital</span>
+                                                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                                                    Rp {pkg.price.toLocaleString('id-ID')}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-1.5">
+                                                <button
+                                                    onClick={() => handleToggleStatus(pkg.id, pkg.hours, pkg.is_active)}
+                                                    className={`px-2.5 py-1.5 rounded-xl font-semibold text-[11px] transition-colors flex items-center gap-1 border ${
+                                                        pkg.is_active
+                                                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                                                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                                                    }`}
+                                                >
+                                                    <span>{pkg.is_active ? 'Non-aktifkan' : 'Aktifkan'}</span>
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleOpenEdit(pkg)}
+                                                    className="px-2.5 py-1.5 rounded-xl font-semibold text-[11px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 flex items-center gap-1"
+                                                >
+                                                    <Edit2 className="w-3 h-3" /> Edit
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleDelete(pkg.id, pkg.hours)}
+                                                    className="px-2 py-1.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* DESKTOP TABLE VIEW (Visible on medium+ screens) */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr className="bg-muted/50 dark:bg-zinc-950/50 text-muted-foreground border-b border-border dark:border-zinc-800 font-bold uppercase tracking-wider text-[10px]">
+                                            <th className="p-4">Durasi Perpanjangan</th>
+                                            <th className="p-4">Harga Kas Digital (Rp)</th>
+                                            <th className="p-4">Status Opsi</th>
+                                            <th className="p-4 text-right">Aksi Manajemen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border dark:divide-zinc-800 font-medium">
                                     {packages.map((pkg) => (
                                         <tr key={pkg.id} className="hover:bg-muted/30 dark:hover:bg-zinc-950/30 transition-colors">
                                             <td className="p-4">
@@ -264,13 +334,14 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                                 </tbody>
                             </table>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
+            </div>
 
                 {/* MODAL CREATE PAKET */}
                 {showCreateModal && (
                     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-md w-full p-4 sm:p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                                 <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
                                     <Timer className="w-5 h-5 text-indigo-500" /> Tambah Paket Perpanjangan Room
@@ -349,7 +420,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                 {/* MODAL EDIT PAKET */}
                 {editingPackage && (
                     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-md w-full p-4 sm:p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                                 <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
                                     <Edit2 className="w-5 h-5 text-indigo-500" /> Edit Paket Perpanjangan Room
