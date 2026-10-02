@@ -30,7 +30,7 @@ export default function Register({ passwordRules }: Props) {
                     <LogIn className="w-3.5 h-3.5" />
                     <span>Masuk</span>
                 </Link>
-                <div className="w-1/2 text-center py-2.5 rounded-lg bg-indigo-600 text-white shadow-md flex items-center justify-center gap-1.5 transition-all">
+                <div className="w-1/2 text-center py-2.5 rounded-lg bg-[#008080] text-white shadow-md flex items-center justify-center gap-1.5 transition-all">
                     <UserPlus className="w-3.5 h-3.5" />
                     <span>Daftar Akun</span>
                 </div>
@@ -61,7 +61,7 @@ export default function Register({ passwordRules }: Props) {
                                         autoComplete="name"
                                         name="name"
                                         placeholder="Nama kamu"
-                                        className="pl-10 bg-zinc-950 border-zinc-800 focus:border-indigo-500 text-sm text-white rounded-xl py-2.5"
+                                        className="pl-10 bg-zinc-950 border-zinc-800 focus:border-[#007BFF] text-sm text-white rounded-xl py-2.5"
                                     />
                                     <User className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                                 </div>
@@ -82,7 +82,7 @@ export default function Register({ passwordRules }: Props) {
                                         autoComplete="email"
                                         name="email"
                                         placeholder="nama@email.com"
-                                        className="pl-10 bg-zinc-950 border-zinc-800 focus:border-indigo-500 text-sm text-white rounded-xl py-2.5"
+                                        className="pl-10 bg-zinc-950 border-zinc-800 focus:border-[#007BFF] text-sm text-white rounded-xl py-2.5"
                                     />
                                     <Mail className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                                 </div>
@@ -104,7 +104,7 @@ export default function Register({ passwordRules }: Props) {
                                         name="password"
                                         placeholder="Minimal 8 karakter"
                                         passwordrules={passwordRules}
-                                        className="pl-10 pr-10 bg-zinc-950 border-zinc-800 focus:border-indigo-500 text-sm text-white rounded-xl py-2.5"
+                                        className="pl-10 pr-10 bg-zinc-950 border-zinc-800 focus:border-[#007BFF] text-sm text-white rounded-xl py-2.5"
                                     />
                                     <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                                     <button
@@ -134,7 +134,7 @@ export default function Register({ passwordRules }: Props) {
                                         name="password_confirmation"
                                         placeholder="Ulangi kata sandi"
                                         passwordrules={passwordRules}
-                                        className="pl-10 pr-10 bg-zinc-950 border-zinc-800 focus:border-indigo-500 text-sm text-white rounded-xl py-2.5"
+                                        className="pl-10 pr-10 bg-zinc-950 border-zinc-800 focus:border-[#007BFF] text-sm text-white rounded-xl py-2.5"
                                     />
                                     <ShieldCheck className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                                     <button
@@ -152,7 +152,7 @@ export default function Register({ passwordRules }: Props) {
                             {/* Submit Button */}
                             <Button
                                 type="submit"
-                                className="w-full py-3 mt-2 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/25 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
+                                className="w-full py-3 mt-2 bg-[#008080] hover:bg-[#006666] text-white font-semibold rounded-xl shadow-lg shadow-teal-900/30 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
                                 tabIndex={5}
                                 disabled={processing}
                                 data-test="register-user-button"
@@ -172,7 +172,7 @@ export default function Register({ passwordRules }: Props) {
 
                 <div className="text-center text-xs text-zinc-500 pt-5">
                     Sudah punya akun?{' '}
-                    <Link href={login()} className="text-indigo-400 font-semibold hover:underline">
+                    <Link href={login()} className="text-[#007BFF] font-semibold hover:underline">
                         Masuk di sini
                     </Link>
                 </div>

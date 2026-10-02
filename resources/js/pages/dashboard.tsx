@@ -195,7 +195,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                     <ShieldAlert className="w-3.5 h-3.5" /> Dashboard Utama Admin
                                 </span>
                             ) : (
-                                <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold flex items-center gap-1">
+                                <span className="px-2.5 py-0.5 rounded-full bg-[#008080]/10 border border-[#008080]/20 text-[#008080] dark:text-teal-400 text-xs font-semibold flex items-center gap-1">
                                     <Sparkles className="w-3.5 h-3.5" /> User Workspace
                                 </span>
                             )}
@@ -213,7 +213,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                     <div className="flex items-center gap-3">
                         <div className="bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 px-4 py-2 rounded-xl text-xs">
                             <span className="text-muted-foreground block">Role Akun</span>
-                            <span className={`font-bold font-mono uppercase ${isAdmin ? 'text-rose-600 dark:text-rose-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                            <span className={`font-bold font-mono uppercase ${isAdmin ? 'text-rose-600 dark:text-rose-400' : 'text-[#008080] dark:text-teal-400'}`}>
                                 {currentUser?.role || 'user'}
                             </span>
                         </div>
@@ -228,10 +228,10 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                         {/* Main Stats Cards Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                             {/* Stat 1: Total Users */}
-                            <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl space-y-3 relative overflow-hidden group hover:border-indigo-500/40 transition-colors shadow-sm">
+                            <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl space-y-3 relative overflow-hidden group hover:border-[#008080]/40 transition-colors shadow-sm">
                                 <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-zinc-400">
                                     <span className="font-semibold uppercase tracking-wider">Total User Terdaftar</span>
-                                    <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                                    <div className="w-9 h-9 rounded-xl bg-[#008080]/10 text-[#008080] dark:text-[#008080] flex items-center justify-center font-bold">
                                         <Users className="w-5 h-5" />
                                     </div>
                                 </div>
@@ -292,13 +292,13 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                 <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-4">
                                     <div>
                                         <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
-                                            <LineChart className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                            <LineChart className="w-4 h-4 text-[#008080] dark:text-[#008080]" />
                                             Grafik Pertumbuhan User (Monthly)
                                         </h3>
                                         <p className="text-xs text-muted-foreground dark:text-zinc-400 mt-0.5">Tren pendaftaran akun pengguna baru per bulan</p>
                                     </div>
-                                    <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20 flex items-center gap-1">
-                                        <TrendingUp className="w-3 h-3 text-indigo-500" /> +12.4% MoM
+                                    <span className="text-[11px] font-semibold text-[#008080] dark:text-[#008080] bg-[#008080]/10 px-2.5 py-1 rounded-full border border-[#008080]/20 flex items-center gap-1">
+                                        <TrendingUp className="w-3 h-3 text-[#008080]" /> +12.4% MoM
                                     </span>
                                 </div>
 
@@ -307,8 +307,8 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                         <svg className="w-full h-full overflow-visible" viewBox="0 0 500 150" preserveAspectRatio="none">
                                             <defs>
                                                 <linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.35" />
-                                                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                                                    <stop offset="0%" stopColor="#008080" stopOpacity="0.35" />
+                                                    <stop offset="100%" stopColor="#008080" stopOpacity="0" />
                                                 </linearGradient>
                                             </defs>
                                             <path
@@ -318,7 +318,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                             <path
                                                 d="M 0,130 Q 100,100 200,80 T 400,30 T 500,10"
                                                 fill="none"
-                                                stroke="#6366f1"
+                                                stroke="#008080"
                                                 strokeWidth="3"
                                             />
                                         </svg>
@@ -331,7 +331,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                     {d.count} User
                                                 </span>
                                                 <div 
-                                                    className="w-full bg-linear-to-t from-indigo-600/40 to-indigo-500 rounded-t-lg transition-all group-hover:scale-105"
+                                                    className="w-full bg-linear-to-t from-[#008080]/40 to-[#008080] rounded-t-lg transition-all group-hover:scale-105"
                                                     style={{ height: `${(d.count / (stats?.totalUsers || 70)) * 100}%` }}
                                                 />
                                             </div>
@@ -373,9 +373,9 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                 fill="none"
                                                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                             />
-                                            {/* Public Slices (Indigo) */}
+                                            {/* Public Slices (Teal) */}
                                             <path
-                                                className="text-indigo-600 dark:text-indigo-500 transition-all duration-500"
+                                                className="text-[#008080] dark:text-[#008080] transition-all duration-500"
                                                 strokeDasharray="60, 100"
                                                 strokeWidth="4"
                                                 strokeLinecap="round"
@@ -410,13 +410,13 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                         {/* Public Rooms Legend */}
                                         <div className="bg-background dark:bg-zinc-950 p-2.5 rounded-xl border border-border dark:border-zinc-800 space-y-1 text-xs">
                                             <div className="flex items-center justify-between font-semibold">
-                                                <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+                                                <span className="flex items-center gap-1.5 text-[#008080] dark:text-[#008080]">
                                                     <Globe className="w-3.5 h-3.5" /> Room Public
                                                 </span>
                                                 <span className="font-mono font-bold text-foreground dark:text-white">60%</span>
                                             </div>
                                             <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                                                <div className="bg-indigo-600 h-full rounded-full" style={{ width: '60%' }} />
+                                                <div className="bg-[#008080] h-full rounded-full" style={{ width: '60%' }} />
                                             </div>
                                         </div>
 
@@ -494,7 +494,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                 </div>
                                 <div className="bg-background dark:bg-zinc-950 p-3 rounded-xl border border-border dark:border-zinc-800">
                                     <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Status Likuiditas</span>
-                                    <span className="text-sm font-mono font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                                    <span className="text-sm font-mono font-bold text-[#008080] dark:text-[#008080] flex items-center gap-1">
                                         <Sparkles className="w-3.5 h-3.5" /> High Liquidity
                                     </span>
                                 </div>
@@ -631,7 +631,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                             {/* Card 1: Buat Room Baru */}
                             <div className="md:col-span-6 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 shadow-sm">
                                 <div className="flex items-center gap-2 border-b border-border dark:border-zinc-800 pb-3">
-                                    <PlusCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                    <PlusCircle className="w-5 h-5 text-[#008080]" />
                                     <h3 className="font-bold text-foreground dark:text-white text-base">Buat Room Baru Cepat</h3>
                                 </div>
 
@@ -645,7 +645,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                             value={createRoomForm.data.name}
                                             onChange={e => createRoomForm.setData('name', e.target.value)}
                                             placeholder="Contoh: Kumpul Panitia / Patungan Pizza"
-                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-[#008080]"
                                             required
                                         />
                                         {createRoomForm.errors.name && <p className="text-rose-500 text-[11px] mt-1">{createRoomForm.errors.name}</p>}
@@ -662,7 +662,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                 onClick={() => createRoomForm.setData('type', 'public')}
                                                 className={`p-2.5 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
                                                     createRoomForm.data.type === 'public'
-                                                        ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm'
+                                                        ? 'bg-[#008080]/10 border-[#008080] text-[#008080] dark:text-teal-400 font-bold shadow-sm'
                                                         : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:border-zinc-400'
                                                 }`}
                                             >
@@ -677,7 +677,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                 onClick={() => createRoomForm.setData('type', 'private')}
                                                 className={`p-2.5 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
                                                     createRoomForm.data.type === 'private'
-                                                        ? 'bg-purple-500/10 border-purple-500 text-purple-600 dark:text-purple-400 font-bold shadow-sm'
+                                                        ? 'bg-[#007BFF]/10 border-[#007BFF] text-[#007BFF] dark:text-blue-400 font-bold shadow-sm'
                                                         : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:border-zinc-400'
                                                 }`}
                                             >
@@ -701,7 +701,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                     onClick={() => createRoomForm.setData('duration_hours', dur)}
                                                     className={`py-1.5 rounded-lg text-xs font-medium border transition-all ${
                                                         createRoomForm.data.duration_hours === dur
-                                                            ? 'bg-indigo-600/20 border-indigo-500 text-indigo-600 dark:text-indigo-300 font-bold'
+                                                            ? 'bg-[#008080]/20 border-[#008080] text-[#008080] dark:text-teal-300 font-bold'
                                                             : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:border-zinc-400'
                                                     }`}
                                                 >
@@ -714,7 +714,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                     <button
                                         type="submit"
                                         disabled={createRoomForm.processing}
-                                        className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20"
+                                        className="w-full py-2.5 rounded-xl bg-[#008080] hover:bg-[#006666] text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-teal-900/20"
                                     >
                                         <PlusCircle className="w-4 h-4" />
                                         <span>{createRoomForm.processing ? 'Membuat Room...' : 'Bikin Room & Generate Kode'}</span>
@@ -726,7 +726,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                             <div className="md:col-span-6 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between shadow-sm">
                                 <div>
                                     <div className="flex items-center gap-2 border-b border-border dark:border-zinc-800 pb-3 mb-4">
-                                        <KeyRound className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+                                        <KeyRound className="w-5 h-5 text-[#007BFF]" />
                                         <h3 className="font-bold text-foreground dark:text-white text-base">Masuk via Kode Room</h3>
                                     </div>
 
@@ -741,7 +741,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                 onChange={e => joinRoomForm.setData('code', e.target.value.toUpperCase())}
                                                 placeholder="Contoh: SR-8849"
                                                 required
-                                                className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm font-mono font-bold text-amber-500 dark:text-amber-400 focus:outline-none focus:border-amber-500 uppercase"
+                                                className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm font-mono font-bold text-[#007BFF] focus:outline-none focus:border-[#007BFF] uppercase"
                                             />
                                             {joinRoomForm.errors.code && <p className="text-rose-500 text-[11px] mt-1">{joinRoomForm.errors.code}</p>}
                                         </div>
@@ -753,7 +753,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                         <button
                                             type="submit"
                                             disabled={joinRoomForm.processing}
-                                            className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+                                            className="w-full py-2.5 rounded-xl bg-[#007BFF] hover:bg-blue-600 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-blue-900/20"
                                         >
                                             <LogIn className="w-4 h-4" />
                                             <span>{joinRoomForm.processing ? 'Menghubungkan...' : 'Gabung ke Room'}</span>
@@ -824,7 +824,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                                 <div>
                                     <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
-                                        <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Riwayat & Room Aktif Saya ({rooms?.length || 0})
+                                        <Clock className="w-5 h-5 text-[#008080] dark:text-[#008080]" /> Riwayat & Room Aktif Saya ({rooms?.length || 0})
                                     </h3>
                                     <p className="text-xs text-muted-foreground">Menampilkan room buatanmu dan room yang kamu ikuti</p>
                                 </div>
@@ -846,7 +846,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                     <div className="flex items-center gap-2">
                                                         <h4 className="font-bold text-foreground dark:text-white text-sm">{room.name}</h4>
                                                         {isPrivate ? (
-                                                            <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 flex items-center gap-0.5" title="Room Private (Butuh Izin Owner)">
+                                                            <span className="text-[10px] font-bold text-[#007BFF] dark:text-[#007BFF] bg-[#007BFF]/10 px-2 py-0.5 rounded border border-[#007BFF]/20 flex items-center gap-0.5" title="Room Private (Butuh Izin Owner)">
                                                                 <Lock className="w-2.5 h-2.5" /> Private
                                                             </span>
                                                         ) : (
@@ -865,7 +865,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                                 <Coins className="w-2.5 h-2.5" /> Bendahara
                                                             </span>
                                                         ) : (
-                                                            <span className="text-[10px] font-semibold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 flex items-center gap-1">
+                                                            <span className="text-[10px] font-semibold text-[#008080] bg-[#008080]/10 px-2 py-0.5 rounded border border-[#008080]/20 flex items-center gap-1">
                                                                 <UserIcon className="w-2.5 h-2.5" /> Anggota
                                                             </span>
                                                         )}
@@ -908,7 +908,7 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
                                                     {!isExpired && (
                                                         <a
                                                             href={`/rooms/${room.code}`}
-                                                            className="text-xs px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg flex items-center gap-1 shadow-sm"
+                                                            className="text-xs px-2.5 py-1 bg-[#008080] hover:bg-[#008080]/90 text-white font-semibold rounded-lg flex items-center gap-1 shadow-sm"
                                                         >
                                                             Chat <ArrowRight className="w-3.5 h-3.5" />
                                                         </a>

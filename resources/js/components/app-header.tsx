@@ -116,7 +116,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 className={cn(
                                     'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200',
                                     active
-                                        ? 'bg-background dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-border/60 dark:border-zinc-700/60 scale-[1.02]'
+                                        ? 'bg-background dark:bg-zinc-800 text-[#008080] dark:text-teal-400 shadow-sm border border-border/60 dark:border-zinc-700/60 scale-[1.02]'
                                         : 'text-muted-foreground hover:text-foreground hover:bg-background/60 dark:hover:bg-zinc-800/50 font-medium'
                                 )}
                             >
@@ -124,7 +124,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     <Icon
                                         className={cn(
                                             'w-4 h-4',
-                                            active ? 'text-indigo-500' : 'text-muted-foreground'
+                                            active ? 'text-[#008080]' : 'text-muted-foreground'
                                         )}
                                     />
                                 )}
@@ -181,11 +181,11 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
-                                className="relative h-9 w-9 rounded-full ring-2 ring-indigo-500/30 hover:ring-indigo-500/60 transition-all p-0 overflow-hidden"
+                                className="relative h-9 w-9 rounded-full ring-2 ring-[#008080]/30 hover:ring-[#008080]/60 transition-all p-0 overflow-hidden"
                             >
                                 <Avatar className="h-9 w-9">
                                     <AvatarImage src={user?.avatar} alt={user?.name} />
-                                    <AvatarFallback className="bg-indigo-600 text-white font-bold text-xs">
+                                    <AvatarFallback className="bg-[#008080] text-white font-bold text-xs">
                                         {getInitials(user?.name ?? '')}
                                     </AvatarFallback>
                                 </Avatar>
@@ -198,7 +198,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                             <div className="p-3 border-b border-border/60 dark:border-zinc-800 space-y-1">
                                 <p className="text-xs font-bold text-foreground leading-tight">{user?.name}</p>
                                 <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
-                                <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold uppercase tracking-wider">
+                                <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-[#008080]/10 text-[#008080] dark:text-teal-400 text-[10px] font-bold uppercase tracking-wider">
                                     {isAdmin ? 'Administrator' : 'Pengguna Regular'}
                                 </span>
                             </div>
@@ -242,9 +242,9 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                             {/* Mobile User Profile Summary Card */}
                             <div className="p-3.5 rounded-2xl bg-secondary/50 dark:bg-zinc-950/60 border border-border/50 dark:border-zinc-800/50 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <Avatar className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-indigo-500/20">
+                                    <Avatar className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-[#008080]/20">
                                         <AvatarImage src={user?.avatar} alt={user?.name} />
-                                        <AvatarFallback className="bg-indigo-600 text-white font-bold text-xs">
+                                        <AvatarFallback className="bg-[#008080] text-white font-bold text-xs">
                                             {getInitials(user?.name ?? '')}
                                         </AvatarFallback>
                                     </Avatar>
@@ -253,7 +253,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                         <p className="text-[11px] text-muted-foreground">{user?.email}</p>
                                     </div>
                                 </div>
-                                <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold uppercase">
+                                <span className="px-2 py-0.5 rounded-full bg-[#008080]/10 text-[#008080] dark:text-teal-400 text-[10px] font-bold uppercase">
                                     {isAdmin ? 'Admin' : 'User'}
                                 </span>
                             </div>
@@ -271,7 +271,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                             className={cn(
                                                 'flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all',
                                                 active
-                                                    ? 'bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-bold'
+                                                    ? 'bg-[#008080]/10 dark:bg-[#008080]/20 text-[#008080] dark:text-teal-400 border border-[#008080]/20 font-bold'
                                                     : 'text-foreground/80 hover:bg-secondary hover:text-foreground'
                                             )}
                                         >
@@ -280,14 +280,14 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                                     <Icon
                                                         className={cn(
                                                             'w-4 h-4',
-                                                            active ? 'text-indigo-500' : 'text-muted-foreground'
+                                                            active ? 'text-[#008080]' : 'text-muted-foreground'
                                                         )}
                                                     />
                                                 )}
                                                 <span>{item.title}</span>
                                             </div>
                                             {active && (
-                                                <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-sm" />
+                                                <span className="w-2 h-2 rounded-full bg-[#008080] shadow-sm" />
                                             )}
                                         </Link>
                                     );
@@ -303,7 +303,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                         className={cn(
                                             'py-1.5 rounded-lg flex items-center justify-center gap-1.5 text-[11px] transition-all',
                                             appearance === 'light'
-                                                ? 'bg-indigo-600 text-white font-bold shadow-sm'
+                                                ? 'bg-[#008080] text-white font-bold shadow-sm'
                                                 : 'text-muted-foreground hover:text-foreground'
                                         )}
                                     >
@@ -314,7 +314,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                         className={cn(
                                             'py-1.5 rounded-lg flex items-center justify-center gap-1.5 text-[11px] transition-all',
                                             appearance === 'dark'
-                                                ? 'bg-indigo-600 text-white font-bold shadow-sm'
+                                                ? 'bg-[#008080] text-white font-bold shadow-sm'
                                                 : 'text-muted-foreground hover:text-foreground'
                                         )}
                                     >
@@ -325,7 +325,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                         className={cn(
                                             'py-1.5 rounded-lg flex items-center justify-center gap-1.5 text-[11px] transition-all',
                                             appearance === 'system'
-                                                ? 'bg-indigo-600 text-white font-bold shadow-sm'
+                                                ? 'bg-[#008080] text-white font-bold shadow-sm'
                                                 : 'text-muted-foreground hover:text-foreground'
                                         )}
                                     >

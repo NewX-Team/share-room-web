@@ -130,7 +130,7 @@ export default function AdminRoomsIndex({ rooms, walletStats }: AdminRoomsIndexP
         <>
             <Head title="Manajemen Room — ShareRoom Admin" />
 
-            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 bg-background dark:bg-[#0e0f12] text-foreground dark:text-zinc-100 min-h-screen">
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 bg-background dark:bg-[#090d10] text-foreground dark:text-zinc-100 min-h-screen">
                 {/* Header Page */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl shadow-sm">
                     <div className="space-y-1">
@@ -185,15 +185,15 @@ export default function AdminRoomsIndex({ rooms, walletStats }: AdminRoomsIndexP
                     </div>
 
                     {/* DOMPET 3: TOTAL SALDO GABUNGAN ADMIN */}
-                    <div className="bg-card dark:bg-zinc-900 border border-indigo-500/30 p-5 rounded-2xl space-y-2 shadow-sm relative overflow-hidden">
+                    <div className="bg-card dark:bg-zinc-900 border border-[#008080]/30 p-5 rounded-2xl space-y-2 shadow-sm relative overflow-hidden">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
-                                <Coins className="w-4 h-4 text-indigo-500" /> 3. Total Saldo Gabungan Admin
+                            <span className="text-xs font-bold uppercase tracking-wider text-[#008080] dark:text-teal-400 flex items-center gap-1.5">
+                                <Coins className="w-4 h-4 text-[#008080]" /> 3. Total Saldo Gabungan Admin
                             </span>
-                            <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded text-[10px] font-bold">Total Kas</span>
+                            <span className="px-2 py-0.5 bg-[#008080]/20 text-[#008080] dark:text-teal-400 rounded text-[10px] font-bold">Total Kas</span>
                         </div>
                         <div className="space-y-1">
-                            <span className="text-2xl font-mono font-extrabold text-indigo-500 block">
+                            <span className="text-2xl font-mono font-extrabold text-[#008080] dark:text-teal-300 block">
                                 Rp {(walletStats?.total_combined_balance || 0).toLocaleString('id-ID')}
                             </span>
                             <p className="text-[11px] text-muted-foreground">
@@ -259,7 +259,7 @@ export default function AdminRoomsIndex({ rooms, walletStats }: AdminRoomsIndexP
                                 </div>
 
                                 <div className="flex items-center justify-between text-xs pt-1">
-                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold text-[11px]">
+                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#008080]/10 text-[#008080] dark:text-[#008080] font-semibold text-[11px]">
                                         <Users className="w-3 h-3" />
                                         <span>{r.members_count || 0} Member</span>
                                     </div>
@@ -341,7 +341,7 @@ export default function AdminRoomsIndex({ rooms, walletStats }: AdminRoomsIndexP
                                         <td className="p-3.5 text-muted-foreground dark:text-zinc-300">
                                             {r.user ? (
                                                 <div className="flex items-center gap-2">
-                                                    <UserIcon className="w-3.5 h-3.5 text-indigo-500" />
+                                                    <UserIcon className="w-3.5 h-3.5 text-[#008080]" />
                                                     <span>{r.user.name} ({r.user.email})</span>
                                                 </div>
                                             ) : (
@@ -351,7 +351,7 @@ export default function AdminRoomsIndex({ rooms, walletStats }: AdminRoomsIndexP
                                         
                                         {/* Total User Room */}
                                         <td className="p-3.5 text-muted-foreground dark:text-zinc-300">
-                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-semibold text-xs">
+                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#008080]/10 border border-[#008080]/20 text-[#008080] dark:text-[#008080] font-semibold text-xs">
                                                 <Users className="w-3.5 h-3.5" />
                                                 <span>{r.members_count || 0} Member</span>
                                             </div>

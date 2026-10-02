@@ -42,7 +42,7 @@ export default function Welcome() {
     // Wallet Simulator State
     const [walletTotal, setWalletTotal] = useState<number>(140000);
     const [members, setMembers] = useState([
-        { id: 1, name: 'Budi (Pembuat Room)', amount: 50000, status: 'Lunas', time: '10 menit lalu', bg: 'bg-indigo-600' },
+        { id: 1, name: 'Budi (Pembuat Room)', amount: 50000, status: 'Lunas', time: '10 menit lalu', bg: 'bg-[#008080]' },
         { id: 2, name: 'Siti Rahma', amount: 40000, status: 'Lunas', time: '5 menit lalu', bg: 'bg-emerald-600' },
         { id: 3, name: 'Rian Febrian', amount: 50000, status: 'Lunas', time: 'Baru saja', bg: 'bg-amber-600' },
     ]);
@@ -103,7 +103,7 @@ export default function Welcome() {
             <Head title="ShareRoom — Grup Chat Sementara & Kas Patungan" />
             <FlashNotifier />
 
-            <div className="min-h-screen bg-[#0e0f12] text-zinc-100 font-sans antialiased selection:bg-indigo-500 selection:text-white">
+            <div className="min-h-screen bg-[#090d10] text-zinc-100 font-sans antialiased selection:bg-teal-600 selection:text-white">
                 {/* Clean Subtle Grid Pattern Background */}
                 <div 
                     className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -114,11 +114,11 @@ export default function Welcome() {
                 />
 
                 {/* Top Navigation */}
-                <nav className="sticky top-0 z-50 backdrop-blur-md bg-[#0e0f12]/80 border-b border-zinc-800/80">
+                <nav className="sticky top-0 z-50 backdrop-blur-md bg-[#090d10]/80 border-b border-zinc-800/80">
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                         {/* Brand Logo */}
                         <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-white shadow-sm">
+                            <div className="w-9 h-9 rounded-xl bg-[#008080] flex items-center justify-center font-bold text-white shadow-sm">
                                 <Users className="w-5 h-5" />
                             </div>
                             <span className="font-semibold text-lg tracking-tight text-white">
@@ -138,7 +138,7 @@ export default function Welcome() {
                             {auth.user ? (
                                 <Link
                                     href={dashboard()}
-                                    className="px-4 py-2 text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
+                                    className="px-4 py-2 text-xs sm:text-sm font-medium text-white bg-[#008080] hover:bg-[#006666] rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
                                 >
                                     <span>Buka Dashboard</span>
                                     <ArrowRight className="w-4 h-4" />
@@ -167,14 +167,14 @@ export default function Welcome() {
                 <section className="pt-12 pb-14 sm:pt-20 sm:pb-20 px-4 sm:px-6 max-w-5xl mx-auto text-center space-y-6">
                     {/* Casual Tag Badge */}
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <span className="w-2 h-2 rounded-full bg-[#008080]" />
                         <span>Grup Chat Sementara & Dompet Urunan</span>
                     </div>
 
                     {/* Headline */}
                     <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight max-w-4xl mx-auto">
                         Nongkrong & Patungan Seru, <br className="hidden sm:inline" />
-                        <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 via-zinc-200 to-amber-300">
+                        <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-400 via-blue-400 to-[#007BFF]">
                             Room Otomatis Hapus Sendiri.
                         </span>
                     </h1>
@@ -188,16 +188,16 @@ export default function Welcome() {
                     <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                         <a
                             href="#simulasi"
-                            className="px-5 py-3 rounded-xl font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-500 transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/20"
+                            className="px-5 py-3 rounded-xl font-medium text-sm text-white bg-[#008080] hover:bg-[#006666] transition-all flex items-center gap-2 shadow-lg shadow-teal-900/30"
                         >
-                            <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                            <Zap className="w-4 h-4 text-blue-300 fill-blue-300" />
                             <span>Coba Simulasi Bikin Room</span>
                         </a>
                         <a
                             href="#dompet"
                             className="px-5 py-3 rounded-xl font-medium text-sm text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-all flex items-center gap-2"
                         >
-                            <Wallet className="w-4 h-4 text-emerald-400" />
+                            <Wallet className="w-4 h-4 text-[#007BFF]" />
                             <span>Lihat Dompet Kas</span>
                         </a>
                     </div>
@@ -251,7 +251,7 @@ export default function Welcome() {
                                             type="text"
                                             value={roomTitle}
                                             onChange={e => setRoomTitle(e.target.value)}
-                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#008080]"
                                             placeholder="Misal: Nongkrong Warkop / Futsal Sabtu"
                                         />
                                     </div>
@@ -268,7 +268,7 @@ export default function Welcome() {
                                                     onClick={() => setDurationHours(hr)}
                                                     className={`py-2 rounded-lg text-xs font-medium border transition-all ${
                                                         durationHours === hr
-                                                            ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
+                                                            ? 'bg-[#008080]/20 border-[#008080] text-teal-300'
                                                             : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                                                     }`}
                                                 >
@@ -281,7 +281,7 @@ export default function Welcome() {
                                     <div className="pt-2">
                                         <div className="p-3.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs space-y-1.5 text-zinc-400">
                                             <p className="flex items-center gap-1.5 font-medium text-zinc-300">
-                                                <Clock className="w-3.5 h-3.5 text-indigo-400" />
+                                                <Clock className="w-3.5 h-3.5 text-teal-400" />
                                                 Auto-Destruct Policy:
                                             </p>
                                             <p>
@@ -296,8 +296,8 @@ export default function Welcome() {
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between pb-2 border-b border-zinc-900 text-xs">
                                             <span className="text-zinc-500 font-medium">Tampilan Room Hasil Bikin</span>
-                                            <span className="text-emerald-400 font-medium flex items-center gap-1">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Active
+                                            <span className="text-teal-400 font-medium flex items-center gap-1">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-teal-400" /> Active
                                             </span>
                                         </div>
 
@@ -310,7 +310,7 @@ export default function Welcome() {
                                         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 text-center space-y-1">
                                             <p className="text-[11px] text-zinc-400 font-medium">KODE UNIK UNTUK ANGGOTA LAIN</p>
                                             <div className="flex items-center justify-center gap-2">
-                                                <span className="font-mono text-2xl font-bold tracking-wider text-amber-400">
+                                                <span className="font-mono text-2xl font-bold tracking-wider text-teal-300">
                                                     {generatedCode}
                                                 </span>
                                                 <button
@@ -318,7 +318,7 @@ export default function Welcome() {
                                                     className="p-1.5 text-zinc-400 hover:text-white rounded bg-zinc-800 transition-colors"
                                                     title="Salin Kode"
                                                 >
-                                                    {copiedCode ? <CheckCheck className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                                                    {copiedCode ? <CheckCheck className="w-4 h-4 text-teal-400" /> : <Copy className="w-4 h-4" />}
                                                 </button>
                                             </div>
                                         </div>
@@ -326,7 +326,7 @@ export default function Welcome() {
                                         {/* Live Timer Countdown */}
                                         <div className="flex items-center justify-between text-xs bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800">
                                             <span className="text-zinc-400 flex items-center gap-1.5">
-                                                <Timer className="w-3.5 h-3.5 text-amber-400" /> Sisa Waktu Room:
+                                                <Timer className="w-3.5 h-3.5 text-teal-400" /> Sisa Waktu Room:
                                             </span>
                                             <span className="font-mono font-bold text-zinc-200">
                                                 {formatTime(secondsLeft)}
@@ -353,14 +353,14 @@ export default function Welcome() {
                                             type="text"
                                             value={joinCodeInput}
                                             onChange={e => setJoinCodeInput(e.target.value.toUpperCase())}
-                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 font-mono text-base font-bold text-amber-400 tracking-wider focus:outline-none focus:border-indigo-500 uppercase"
+                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 font-mono text-base font-bold text-teal-300 tracking-wider focus:outline-none focus:border-[#008080] uppercase"
                                             placeholder="ROOM-8492"
                                         />
                                     </div>
 
                                     <div className="p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-400 space-y-1">
                                         <p className="text-zinc-200 font-semibold flex items-center gap-1.5">
-                                            <Shield className="w-3.5 h-3.5 text-emerald-400" /> Riwayat Chat Aman
+                                            <Shield className="w-3.5 h-3.5 text-teal-400" /> Riwayat Chat Aman
                                         </p>
                                         <p>
                                             Gak sengaja kepencet keluar dari browser? Tinggal masukkan kode unik ini lagi. Selama durasi room belum abis, seluruh obrolan & saldo kas tetep ada!
@@ -372,7 +372,7 @@ export default function Welcome() {
                                 <div className="lg:col-span-7 bg-zinc-950 border border-zinc-800 rounded-xl p-4 flex flex-col justify-between h-70">
                                     <div className="flex items-center justify-between pb-2 border-b border-zinc-900 text-xs">
                                         <span className="font-bold text-white">Room: {roomTitle}</span>
-                                        <span className="font-mono text-[11px] text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">
+                                        <span className="font-mono text-[11px] text-teal-300 bg-[#008080]/20 px-2 py-0.5 rounded">
                                             {joinCodeInput}
                                         </span>
                                     </div>
@@ -380,7 +380,7 @@ export default function Welcome() {
                                     {/* Messages */}
                                     <div className="space-y-2.5 my-auto text-xs overflow-y-auto pr-1">
                                         <div className="flex items-start gap-2">
-                                            <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-[10px] text-white">B</div>
+                                            <div className="w-6 h-6 rounded-full bg-[#008080] flex items-center justify-center font-bold text-[10px] text-white">B</div>
                                             <div className="bg-zinc-900 p-2 rounded-xl rounded-tl-none border border-zinc-800 max-w-[80%]">
                                                 <p className="font-semibold text-zinc-400 text-[10px]">Budi</p>
                                                 <p className="text-zinc-200">Udah pada kumpul di lokasi warkop belom?</p>
@@ -388,7 +388,7 @@ export default function Welcome() {
                                         </div>
 
                                         <div className="flex items-start gap-2">
-                                            <div className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-[10px] text-white">S</div>
+                                            <div className="w-6 h-6 rounded-full bg-[#007BFF] flex items-center justify-center font-bold text-[10px] text-white">S</div>
                                             <div className="bg-zinc-900 p-2 rounded-xl rounded-tl-none border border-zinc-800 max-w-[80%]">
                                                 <p className="font-semibold text-zinc-400 text-[10px]">Siti</p>
                                                 <p className="text-zinc-200">Pengingat patungan telah diatur di dompet kas room.</p>
@@ -396,7 +396,7 @@ export default function Welcome() {
                                         </div>
 
                                         <div className="flex justify-end">
-                                            <div className="bg-indigo-600 text-white p-2 rounded-xl rounded-tr-none max-w-[80%]">
+                                            <div className="bg-[#008080] text-white p-2 rounded-xl rounded-tr-none max-w-[80%]">
                                                 <p className="text-[11px]">Siap, transaksi kas Rp 20.000 sudah berhasil disetor.</p>
                                             </div>
                                         </div>
@@ -410,7 +410,7 @@ export default function Welcome() {
                                             placeholder="Ketik pesan..."
                                             className="w-full bg-zinc-900 text-xs text-zinc-500 rounded-lg px-3 py-1.5 border border-zinc-800 cursor-not-allowed"
                                         />
-                                        <button disabled className="p-1.5 rounded-lg bg-indigo-600 text-white opacity-50 cursor-not-allowed">
+                                        <button disabled className="p-1.5 rounded-lg bg-[#008080] text-white opacity-50 cursor-not-allowed">
                                             <Send className="w-3.5 h-3.5" />
                                         </button>
                                     </div>
@@ -531,7 +531,7 @@ export default function Welcome() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         <div className="bg-zinc-900/70 border border-zinc-800 p-5 rounded-xl space-y-2">
-                            <div className="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
+                            <div className="w-9 h-9 rounded-lg bg-[#008080]/10 text-[#008080] flex items-center justify-center font-bold">
                                 <Timer className="w-5 h-5" />
                             </div>
                             <h3 className="font-bold text-white text-sm">Hapus Otomatis</h3>
@@ -565,7 +565,7 @@ export default function Welcome() {
                 {/* Footer */}
                 <footer className="border-t border-zinc-900 py-10 px-4 sm:px-6 max-w-5xl mx-auto text-xs text-zinc-500 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center font-bold text-white text-xs">
+                        <div className="w-6 h-6 rounded bg-[#008080] flex items-center justify-center font-bold text-white text-xs">
                             S
                         </div>
                         <span className="font-medium text-zinc-300">ShareRoom</span>

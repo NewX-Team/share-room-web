@@ -82,7 +82,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
             id: 'promo',
             label: 'Event / Diskon Promo',
             icon: Gift,
-            color: 'bg-purple-500/10 text-purple-600 border-purple-500/30 hover:bg-purple-500/20',
+            color: 'bg-[#008080]/10 text-[#008080] border-[#008080]/30 hover:bg-[#008080]/20',
             data: {
                 title: 'Promo Spesial Top Up Dompet Kas Room!',
                 category: 'promo' as const,
@@ -181,7 +181,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                 );
             case 'promo':
                 return (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 text-[11px] font-semibold">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#008080]/10 border border-[#008080]/20 text-[#008080] dark:text-[#008080] text-[11px] font-semibold">
                         <Gift className="w-3 h-3" /> Event/Promo
                     </span>
                 );
@@ -208,7 +208,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                 {/* Header Page */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl shadow-sm">
                     <div className="space-y-1">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#008080]/10 border border-[#008080]/20 text-[#008080] dark:text-[#008080] text-xs font-semibold">
                             <Megaphone className="w-3.5 h-3.5" /> Informasi Global & Pengumuman
                         </div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-foreground dark:text-white">
@@ -221,7 +221,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
 
                     <button
                         onClick={() => setShowModal(true)}
-                        className="px-5 py-2.5 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+                        className="px-5 py-2.5 bg-[#008080] hover:bg-[#008080]/90 text-white rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#008080]/20"
                     >
                         <PlusCircle className="w-4 h-4" />
                         <span>+ Buat Pengumuman Baru</span>
@@ -231,7 +231,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                 {/* Quick Template Selector Chips Bar */}
                 <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-4 space-y-3 shadow-sm">
                     <div className="flex items-center gap-2 text-xs font-bold text-foreground dark:text-white">
-                        <FileText className="w-4 h-4 text-indigo-500" />
+                        <FileText className="w-4 h-4 text-[#008080]" />
                         <span>Template Cepat Pengumuman Admin:</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -257,7 +257,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                         <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-xl w-full p-4 sm:p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                                 <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
-                                    <Megaphone className="w-5 h-5 text-indigo-500" /> Buat Pengumuman Baru
+                                    <Megaphone className="w-5 h-5 text-[#008080]" /> Buat Pengumuman Baru
                                 </h3>
                                 <button
                                     onClick={() => setShowModal(false)}
@@ -298,7 +298,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                                         value={form.data.title}
                                         onChange={e => form.setData('title', e.target.value)}
                                         required
-                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-indigo-500"
+                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-[#007BFF]"
                                     />
                                     {form.errors.title && <p className="text-rose-500 text-[11px] mt-1">{form.errors.title}</p>}
                                 </div>
@@ -310,7 +310,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                                     <select
                                         value={form.data.category}
                                         onChange={e => form.setData('category', e.target.value as any)}
-                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-[#007BFF]"
                                     >
                                         <option value="info">Informasi Umum (Info)</option>
                                         <option value="update">Pembaruan Sistem (Update)</option>
@@ -329,7 +329,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                                         value={form.data.content}
                                         onChange={e => form.setData('content', e.target.value)}
                                         required
-                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl p-4 text-xs text-foreground dark:text-white focus:outline-none focus:border-indigo-500 resize-y"
+                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl p-4 text-xs text-foreground dark:text-white focus:outline-none focus:border-[#007BFF] resize-y"
                                     />
                                     {form.errors.content && <p className="text-rose-500 text-[11px] mt-1">{form.errors.content}</p>}
                                 </div>
@@ -340,10 +340,10 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                                             type="checkbox"
                                             checked={form.data.is_pinned}
                                             onChange={e => form.setData('is_pinned', e.target.checked)}
-                                            className="rounded border-border text-indigo-600 focus:ring-indigo-500"
+                                            className="rounded border-border text-[#008080] focus:ring-[#007BFF]"
                                         />
                                         <span className="font-semibold text-foreground dark:text-zinc-300 flex items-center gap-1">
-                                            <Pin className="w-3.5 h-3.5 text-indigo-500" /> Sematkan di Teratas (Pin)
+                                            <Pin className="w-3.5 h-3.5 text-[#008080]" /> Sematkan di Teratas (Pin)
                                         </span>
                                     </label>
 
@@ -371,7 +371,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                                     <button
                                         type="submit"
                                         disabled={form.processing}
-                                        className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-md shadow-indigo-600/20"
+                                        className="px-5 py-2 rounded-xl bg-[#008080] hover:bg-[#006666] text-white font-semibold shadow-md shadow-teal-900/20"
                                     >
                                         Publikasikan Pengumuman
                                     </button>
@@ -409,7 +409,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                                         onClick={() => handleTogglePin(ann.id, ann.title, ann.is_pinned)}
                                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-colors ${
                                             ann.is_pinned
-                                                ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20'
+                                                ? 'bg-[#008080]/10 text-[#008080] dark:text-[#008080] border-[#008080]/20'
                                                 : 'bg-secondary text-muted-foreground border-border'
                                         }`}
                                     >
@@ -484,7 +484,7 @@ export default function AdminAnnouncementsIndex({ announcements }: AdminAnnounce
                                                 onClick={() => handleTogglePin(ann.id, ann.title, ann.is_pinned)}
                                                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-colors ${
                                                     ann.is_pinned
-                                                        ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 hover:bg-indigo-500/20'
+                                                        ? 'bg-[#008080]/10 text-[#008080] dark:text-[#008080] border-[#008080]/20 hover:bg-[#008080]/20'
                                                         : 'bg-secondary text-muted-foreground border-border hover:bg-secondary/80'
                                                 }`}
                                             >

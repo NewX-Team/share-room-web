@@ -23,7 +23,7 @@ export default function Security(props: Props) {
                 {/* Header Title Section */}
                 <div className="border-b border-border/60 dark:border-zinc-800 pb-4 space-y-1">
                     <h2 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-indigo-500" /> Keamanan & Kata Sandi
+                        <ShieldCheck className="w-5 h-5 text-[#008080]" /> Keamanan & Kata Sandi
                     </h2>
                     <p className="text-xs text-muted-foreground">
                         Pastikan akun Anda terlindungi dengan menggunakan kata sandi yang kuat dan unik.
@@ -31,8 +31,8 @@ export default function Security(props: Props) {
                 </div>
 
                 {/* Password Recommendation Info Box */}
-                <div className="p-4 rounded-2xl bg-indigo-500/5 dark:bg-indigo-500/10 border border-indigo-500/20 space-y-2">
-                    <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs">
+                <div className="p-4 rounded-2xl bg-[#008080]/5 dark:bg-[#008080]/10 border border-[#008080]/20 space-y-2">
+                    <div className="flex items-center gap-2 text-[#008080] dark:text-[#008080] font-bold text-xs">
                         <ShieldAlert className="w-4 h-4" /> Tips Keamanan Kata Sandi:
                     </div>
                     <ul className="text-[11px] text-muted-foreground space-y-1 pl-5 list-disc">
@@ -75,7 +75,7 @@ export default function Security(props: Props) {
                                     htmlFor="current_password"
                                     className="text-xs font-semibold text-foreground dark:text-zinc-300 flex items-center gap-1.5"
                                 >
-                                    <KeyRound className="w-3.5 h-3.5 text-indigo-500" /> Kata Sandi Saat Ini <span className="text-rose-500">*</span>
+                                    <KeyRound className="w-3.5 h-3.5 text-[#008080]" /> Kata Sandi Saat Ini <span className="text-rose-500">*</span>
                                 </label>
 
                                 <PasswordInput
@@ -84,7 +84,7 @@ export default function Security(props: Props) {
                                     name="current_password"
                                     autoComplete="current-password"
                                     placeholder="Masukkan kata sandi lama Anda"
-                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-[#008080] transition-colors"
                                 />
 
                                 <InputError message={errors.current_password} className="text-xs" />
@@ -95,7 +95,7 @@ export default function Security(props: Props) {
                                     htmlFor="password"
                                     className="text-xs font-semibold text-foreground dark:text-zinc-300 flex items-center gap-1.5"
                                 >
-                                    <Lock className="w-3.5 h-3.5 text-indigo-500" /> Kata Sandi Baru <span className="text-rose-500">*</span>
+                                    <Lock className="w-3.5 h-3.5 text-[#008080]" /> Kata Sandi Baru <span className="text-rose-500">*</span>
                                 </label>
 
                                 <PasswordInput
@@ -105,7 +105,7 @@ export default function Security(props: Props) {
                                     autoComplete="new-password"
                                     placeholder="Masukkan kata sandi baru yang kuat"
                                     passwordrules={props.passwordRules}
-                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-[#008080] transition-colors"
                                 />
 
                                 <InputError message={errors.password} className="text-xs" />
@@ -116,7 +116,7 @@ export default function Security(props: Props) {
                                     htmlFor="password_confirmation"
                                     className="text-xs font-semibold text-foreground dark:text-zinc-300 flex items-center gap-1.5"
                                 >
-                                    <Lock className="w-3.5 h-3.5 text-indigo-500" /> Konfirmasi Kata Sandi Baru <span className="text-rose-500">*</span>
+                                    <Lock className="w-3.5 h-3.5 text-[#008080]" /> Konfirmasi Kata Sandi Baru <span className="text-rose-500">*</span>
                                 </label>
 
                                 <PasswordInput
@@ -125,7 +125,7 @@ export default function Security(props: Props) {
                                     autoComplete="new-password"
                                     placeholder="Ketik ulang kata sandi baru Anda"
                                     passwordrules={props.passwordRules}
-                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-[#007BFF] transition-colors"
                                 />
 
                                 <InputError message={errors.password_confirmation} className="text-xs" />
@@ -136,7 +136,7 @@ export default function Security(props: Props) {
                                     type="submit"
                                     disabled={processing}
                                     data-test="update-password-button"
-                                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                                    className="px-6 py-2.5 rounded-xl bg-[#008080] hover:bg-[#006666] text-white text-xs font-semibold shadow-md shadow-teal-900/20 transition-all flex items-center gap-2 disabled:opacity-50"
                                 >
                                     <Lock className="w-4 h-4" />
                                     <span>Perbarui Kata Sandi</span>

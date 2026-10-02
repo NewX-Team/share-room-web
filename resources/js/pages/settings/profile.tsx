@@ -27,7 +27,7 @@ export default function Profile() {
                 {/* Header Title Section */}
                 <div className="border-b border-border/60 dark:border-zinc-800 pb-4 space-y-1">
                     <h2 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
-                        <User className="w-5 h-5 text-indigo-500" /> Informasi Profil & Identitas
+                        <User className="w-5 h-5 text-[#008080]" /> Informasi Profil & Identitas
                     </h2>
                     <p className="text-xs text-muted-foreground">
                         Perbarui nama lengkap dan alamat email utama yang terhubung dengan akun ShareRoom Anda.
@@ -37,9 +37,9 @@ export default function Profile() {
                 {/* Avatar Summary Card */}
                 <div className="p-4 sm:p-5 rounded-2xl bg-secondary/40 dark:bg-zinc-950/60 border border-border/60 dark:border-zinc-800 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <Avatar className="h-14 w-14 overflow-hidden rounded-full ring-2 ring-indigo-500/30">
+                        <Avatar className="h-14 w-14 overflow-hidden rounded-full ring-2 ring-[#008080]/30">
                             <AvatarImage src={user.avatar} alt={user.name} />
-                            <AvatarFallback className="bg-indigo-600 text-white font-bold text-base">
+                            <AvatarFallback className="bg-[#008080] text-white font-bold text-base">
                                 {getInitials(user.name)}
                             </AvatarFallback>
                         </Avatar>
@@ -56,7 +56,7 @@ export default function Profile() {
                         </div>
                     </div>
 
-                    <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider">
+                    <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#008080]/10 border border-[#008080]/20 text-[#008080] dark:text-[#008080] text-xs font-bold uppercase tracking-wider">
                         <ShieldCheck className="w-4 h-4" /> {user.role === 'admin' ? 'Admin' : 'Member'}
                     </span>
                 </div>
@@ -77,7 +77,7 @@ export default function Profile() {
                         <>
                             <div className="space-y-1.5">
                                 <label htmlFor="name" className="text-xs font-semibold text-foreground dark:text-zinc-300 flex items-center gap-1.5">
-                                    <User className="w-3.5 h-3.5 text-indigo-500" /> Nama Lengkap <span className="text-rose-500">*</span>
+                                    <User className="w-3.5 h-3.5 text-[#008080]" /> Nama Lengkap <span className="text-rose-500">*</span>
                                 </label>
 
                                 <input
@@ -88,7 +88,7 @@ export default function Profile() {
                                     required
                                     autoComplete="name"
                                     placeholder="Masukkan nama lengkap Anda"
-                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-[#008080] transition-colors"
                                 />
 
                                 <InputError
@@ -99,7 +99,7 @@ export default function Profile() {
 
                             <div className="space-y-1.5">
                                 <label htmlFor="email" className="text-xs font-semibold text-foreground dark:text-zinc-300 flex items-center gap-1.5">
-                                    <Mail className="w-3.5 h-3.5 text-indigo-500" /> Alamat Email <span className="text-rose-500">*</span>
+                                    <Mail className="w-3.5 h-3.5 text-[#008080]" /> Alamat Email <span className="text-rose-500">*</span>
                                 </label>
 
                                 <input
@@ -110,7 +110,7 @@ export default function Profile() {
                                     required
                                     autoComplete="username"
                                     placeholder="contoh@domain.com"
-                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-medium focus:outline-none focus:border-[#007BFF] transition-colors"
                                 />
 
                                 <InputError
@@ -124,7 +124,7 @@ export default function Profile() {
                                     type="submit"
                                     disabled={processing}
                                     data-test="update-profile-button"
-                                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                                    className="px-6 py-2.5 rounded-xl bg-[#008080] hover:bg-[#006666] text-white text-xs font-semibold shadow-md shadow-teal-900/20 transition-all flex items-center gap-2 disabled:opacity-50"
                                 >
                                     <Save className="w-4 h-4" />
                                     <span>Simpan Perubahan</span>

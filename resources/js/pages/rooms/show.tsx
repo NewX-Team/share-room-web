@@ -1159,8 +1159,8 @@ export default function RoomShow({
                                     <Lock className="w-3 h-3 text-amber-500" /> Private Room
                                 </span>
                             ) : (
-                                <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-xs font-semibold flex items-center gap-1" title="Room Public: Akses langsung dengan kode">
-                                    <Globe className="w-3 h-3 text-indigo-500" /> Public Room
+                                <span className="px-2 py-0.5 rounded bg-[#008080]/10 text-[#008080] dark:text-[#008080] border border-[#008080]/20 text-xs font-semibold flex items-center gap-1" title="Room Public: Akses langsung dengan kode">
+                                    <Globe className="w-3 h-3 text-[#008080]" /> Public Room
                                 </span>
                             )}
                         </div>
@@ -1236,10 +1236,10 @@ export default function RoomShow({
                         {/* Tombol Bayar Pihak Ke-3 via Kas Digital (QRIS / VA / E-Wallet) */}
                         <button
                             onClick={handleOpenPaymentModal}
-                            className="px-3.5 py-2.5 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
+                            className="px-3.5 py-2.5 bg-[#008080] hover:bg-[#006666] text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-md shadow-teal-900/20"
                             title="Bayar ke Pihak Ke-3 (Merchant QRIS, Transfer Bank, VA) menggunakan Saldo Kas Digital"
                         >
-                            <QrCode className="w-4 h-4 text-indigo-200" />
+                            <QrCode className="w-4 h-4 text-teal-200" />
                             <span>Bayar via Kas</span>
                         </button>
 
@@ -1249,14 +1249,14 @@ export default function RoomShow({
                             className="px-3 py-2.5 bg-background dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-border dark:border-zinc-800 text-foreground dark:text-zinc-300 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
                             title="Lihat Riwayat Pembayaran & Struk Kas Digital"
                         >
-                            <Receipt className="w-4 h-4 text-indigo-500" />
+                            <Receipt className="w-4 h-4 text-[#008080]" />
                             <span>Riwayat Bayar ({walletPayments.length})</span>
                         </button>
 
                         {/* Tombol Bagikan Kode Unik */}
                         <button
                             onClick={() => setShowShareModal(true)}
-                            className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
+                            className="px-4 py-2.5 bg-[#008080] hover:bg-[#008080]/90 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-md shadow-[#008080]/20"
                         >
                             <Share2 className="w-4 h-4" />
                             <span>Bagikan Kode</span>
@@ -1394,7 +1394,7 @@ export default function RoomShow({
                                             ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
                                             : isUnfreeze
                                             ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300'
-                                            : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-300'
+                                            : 'bg-[#008080]/10 border-[#008080]/30 text-[#008080] dark:text-[#008080]'
                                     }`}
                                 >
                                     <div className="flex items-start gap-3">
@@ -1403,7 +1403,7 @@ export default function RoomShow({
                                                 ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                                                 : isUnfreeze
                                                 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                                                : 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'
+                                                : 'bg-[#008080]/20 text-[#008080] dark:text-[#008080]'
                                         }`}>
                                             {isAddFunds ? <PlusCircle className="w-5 h-5" /> : isUnfreeze ? <Coins className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
                                         </div>
@@ -1458,13 +1458,13 @@ export default function RoomShow({
 
                             {/* Local Simulator Modal Mode */}
                             {simulatorOrderId ? (
-                                <div className="bg-background dark:bg-zinc-950 border border-indigo-500/30 p-5 rounded-2xl space-y-4 text-center">
-                                    <div className="inline-flex p-3 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                                <div className="bg-background dark:bg-zinc-950 border border-[#008080]/30 p-5 rounded-2xl space-y-4 text-center">
+                                    <div className="inline-flex p-3 rounded-full bg-[#008080]/10 text-[#008080] dark:text-[#008080]">
                                         <Sparkles className="w-6 h-6 animate-pulse" />
                                     </div>
                                     <div className="space-y-1">
                                         <h4 className="font-bold text-foreground dark:text-white text-sm">Simulasi Midtrans Payment Sandbox</h4>
-                                        <p className="text-xs text-muted-foreground">Order ID: <span className="font-mono text-indigo-500 font-semibold">{simulatorOrderId}</span></p>
+                                        <p className="text-xs text-muted-foreground">Order ID: <span className="font-mono text-[#008080] font-semibold">{simulatorOrderId}</span></p>
                                         
                                         <div className="py-2 space-y-1">
                                             <p className="text-xs text-muted-foreground">Total Pembayaran Diskon:</p>
@@ -1557,9 +1557,9 @@ export default function RoomShow({
                                     <div className="pt-2 border-t border-border dark:border-zinc-800 space-y-2">
                                         <label className="text-xs font-semibold text-foreground dark:text-zinc-300 flex items-center justify-between">
                                             <span className="flex items-center gap-1.5">
-                                                <Ticket className="w-3.5 h-3.5 text-indigo-500" /> Punya Kode Promo? <span className="text-[10px] text-muted-foreground font-normal">(Opsional)</span>
+                                                <Ticket className="w-3.5 h-3.5 text-[#008080]" /> Punya Kode Promo? <span className="text-[10px] text-muted-foreground font-normal">(Opsional)</span>
                                             </span>
-                                            <span className="text-[10px] text-indigo-500 font-semibold">Coba: HEMAT50 / DISKON5K</span>
+                                            <span className="text-[10px] text-[#008080] font-semibold">Coba: HEMAT50 / DISKON5K</span>
                                         </label>
 
                                         {appliedPromo ? (
@@ -1589,14 +1589,14 @@ export default function RoomShow({
                                                         value={promoInput}
                                                         onChange={e => setPromoInput(e.target.value.toUpperCase())}
                                                         placeholder="Ketik Kode Promo (misal: HEMAT50)"
-                                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-3.5 pr-3 py-2 text-xs text-foreground dark:text-white font-mono uppercase font-semibold focus:outline-none focus:border-indigo-500"
+                                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-3.5 pr-3 py-2 text-xs text-foreground dark:text-white font-mono uppercase font-semibold focus:outline-none focus:border-[#008080]"
                                                     />
                                                 </div>
                                                 <button
                                                     type="button"
                                                     onClick={handleApplyPromo}
                                                     disabled={isVerifyingPromo || !promoInput.trim()}
-                                                    className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 shadow-sm"
+                                                    className="px-3.5 py-2 bg-[#008080] hover:bg-[#008080]/90 disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 shadow-sm"
                                                 >
                                                     {isVerifyingPromo ? 'Memeriksa...' : 'Terapkan'}
                                                 </button>
@@ -1663,10 +1663,10 @@ export default function RoomShow({
 
                 {/* Share Modal Dialog */}
                 {showShareModal && (
-                    <div className="bg-card dark:bg-zinc-900 border border-indigo-500/30 rounded-2xl p-5 space-y-4 animate-in fade-in duration-200 shadow-2xl">
+                    <div className="bg-card dark:bg-zinc-900 border border-[#008080]/30 rounded-2xl p-5 space-y-4 animate-in fade-in duration-200 shadow-2xl">
                         <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                             <h3 className="font-bold text-foreground dark:text-white text-sm flex items-center gap-2">
-                                <Share2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Bagikan Kode Unik Room
+                                <Share2 className="w-4 h-4 text-[#008080] dark:text-[#008080]" /> Bagikan Kode Unik Room
                             </h3>
                             <button onClick={() => setShowShareModal(false)} className="text-xs text-muted-foreground hover:text-foreground">
                                 Batal
@@ -1701,7 +1701,7 @@ export default function RoomShow({
                                 className="p-3 bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 rounded-xl text-left space-y-1 transition-colors"
                             >
                                 <span className="text-xs text-muted-foreground font-semibold block">Link Langsung:</span>
-                                <span className="text-xs font-mono text-indigo-600 dark:text-indigo-300 flex items-center justify-between pt-1">
+                                <span className="text-xs font-mono text-[#008080] dark:text-[#008080] flex items-center justify-between pt-1">
                                     {copiedLink ? 'Link Tersalin!' : 'Salin URL Direct'}
                                 </span>
                             </button>
@@ -1716,7 +1716,7 @@ export default function RoomShow({
                     <div className="lg:col-span-8 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between min-h-135 shadow-sm">
                         <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3 flex-wrap gap-2">
                             <div className="flex items-center gap-2">
-                                <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                <MessageSquare className="w-4 h-4 text-[#008080] dark:text-[#008080]" />
                                 <h2 className="font-bold text-foreground dark:text-white text-sm">Obrolan Room ({messages.length})</h2>
                                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xs">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Real-Time
@@ -1746,7 +1746,7 @@ export default function RoomShow({
                                     }`}
                                     title="Batas 20 File gabungan per room (Seluruh Member). Klik untuk info Premium"
                                 >
-                                    <Paperclip className="w-3.5 h-3.5 text-indigo-500" />
+                                    <Paperclip className="w-3.5 h-3.5 text-[#008080]" />
                                     <span>File: <strong className={userFileCount >= maxFiles ? 'text-rose-500 font-bold' : 'text-emerald-500'}>{userFileCount}/{maxFiles}</strong></span>
                                     {userFileCount >= maxFiles && (
                                         <span className="px-1.5 py-0.2 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded text-[9px] font-sans font-bold flex items-center gap-0.5">
@@ -1833,7 +1833,7 @@ export default function RoomShow({
                                             <div
                                                 className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 text-white shadow-sm ${
                                                     isSelf
-                                                        ? 'bg-indigo-600'
+                                                        ? 'bg-[#008080]'
                                                         : isOwner
                                                         ? 'bg-amber-600'
                                                         : isBendahara
@@ -1850,7 +1850,7 @@ export default function RoomShow({
                                                     msg.is_pinned
                                                         ? 'bg-amber-500/10 dark:bg-amber-950/40 text-foreground dark:text-zinc-200 border-amber-500/60 ring-1 ring-amber-500/30'
                                                         : isSelf
-                                                        ? 'bg-indigo-600 text-white rounded-tr-none border-indigo-500'
+                                                        ? 'bg-[#008080] text-white rounded-tr-none border-[#008080]'
                                                         : 'bg-background dark:bg-zinc-950 text-foreground dark:text-zinc-200 rounded-tl-none border-border dark:border-zinc-800'
                                                 }`}
                                             >
@@ -1891,7 +1891,7 @@ export default function RoomShow({
                                                                 <span>{msg.is_pinned ? 'Lepas Sematan' : 'Sematkan'}</span>
                                                             </button>
                                                         )}
-                                                        <span className={`text-[9px] font-mono ${isSelf && !msg.is_pinned ? 'text-indigo-200' : 'text-muted-foreground'}`}>{msg.time}</span>
+                                                        <span className={`text-[9px] font-mono ${isSelf && !msg.is_pinned ? 'text-teal-100' : 'text-muted-foreground'}`}>{msg.time}</span>
                                                     </div>
                                                 </div>
 
@@ -1901,7 +1901,7 @@ export default function RoomShow({
                                                 {/* File Attachment Render */}
                                                 {msg.file_path && (
                                                     <div className={`mt-2 p-2.5 rounded-xl border text-xs ${
-                                                        isSelf ? 'bg-indigo-700/60 border-indigo-400/30 text-white' : 'bg-card dark:bg-zinc-900 border-border dark:border-zinc-800 text-foreground dark:text-zinc-200'
+                                                        isSelf ? 'bg-[#006666]/60 border-[#008080]/30 text-white' : 'bg-card dark:bg-zinc-900 border-border dark:border-zinc-800 text-foreground dark:text-zinc-200'
                                                     }`}>
                                                         {msg.file_type === 'image' ? (
                                                             <div className="space-y-2">
@@ -1919,7 +1919,7 @@ export default function RoomShow({
                                                                     {msg.file_type === 'archive' ? (
                                                                         <FileArchive className="w-6 h-6 text-amber-400 shrink-0" />
                                                                     ) : msg.file_type === 'document' ? (
-                                                                        <FileText className="w-6 h-6 text-indigo-400 shrink-0" />
+                                                                        <FileText className="w-6 h-6 text-[#008080] shrink-0" />
                                                                     ) : (
                                                                         <File className="w-6 h-6 text-emerald-400 shrink-0" />
                                                                     )}
@@ -1961,13 +1961,13 @@ export default function RoomShow({
                         <div className="pt-3 border-t border-border dark:border-zinc-800 space-y-2">
                             {/* Selected File Preview Banner */}
                             {chatForm.data.file && (
-                                <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/30 rounded-xl flex items-center justify-between gap-2 text-xs text-indigo-600 dark:text-indigo-300">
+                                <div className="p-2.5 bg-[#008080]/10 border border-[#008080]/30 rounded-xl flex items-center justify-between gap-2 text-xs text-[#008080] dark:text-[#008080]">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <Paperclip className="w-4 h-4 text-indigo-500 shrink-0" />
+                                        <Paperclip className="w-4 h-4 text-[#008080] shrink-0" />
                                         <span className="font-bold font-mono truncate">{chatForm.data.file.name}</span>
                                         <span className="text-[10px] opacity-75 font-mono">({formatFileSize(chatForm.data.file.size)})</span>
                                     </div>
-                                    <button type="button" onClick={handleClearSelectedFile} className="p-1 rounded hover:bg-indigo-500/20 text-rose-500">
+                                    <button type="button" onClick={handleClearSelectedFile} className="p-1 rounded hover:bg-[#008080]/20 text-rose-500">
                                         <X className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
@@ -1997,7 +1997,7 @@ export default function RoomShow({
                                     className={`p-2.5 rounded-xl border transition-all flex items-center justify-center shrink-0 ${
                                         !room.is_premium && userFileCount >= maxFiles
                                             ? 'bg-rose-500/10 border-rose-500/30 text-rose-500 hover:bg-rose-500/20'
-                                            : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground hover:border-indigo-500'
+                                            : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground hover:border-[#008080]'
                                     }`}
                                     title={!room.is_premium && userFileCount >= maxFiles ? 'Batas total 20 file room tercapai! Klik untuk upgrade Premium' : 'Unggah dokumen, foto, atau ZIP (Maks 20 file gabungan room)'}
                                 >
@@ -2013,13 +2013,13 @@ export default function RoomShow({
                                     value={chatForm.data.message}
                                     onChange={e => chatForm.setData('message', e.target.value)}
                                     placeholder={!room.is_premium && userFileCount >= maxFiles ? "Ketik pesan kamu (Upload file terkunci)..." : "Ketik pesan kamu atau lampirkan file..."}
-                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-[#008080]"
                                 />
 
                                 <button
                                     type="submit"
                                     disabled={chatForm.processing || (!chatForm.data.message.trim() && !chatForm.data.file)}
-                                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-indigo-600/20 shrink-0"
+                                    className="px-4 py-2.5 rounded-xl bg-[#008080] hover:bg-[#008080]/90 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-[#008080]/20 shrink-0"
                                 >
                                     <Send className="w-4 h-4" />
                                     <span>Kirim</span>
@@ -2032,7 +2032,7 @@ export default function RoomShow({
                     <div className="lg:col-span-4 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 space-y-4 shadow-sm">
                         <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                             <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                <Users className="w-4 h-4 text-[#008080] dark:text-[#008080]" />
                                 <h3 className="font-bold text-foreground dark:text-white text-sm">Anggota Room ({members.length})</h3>
                             </div>
                             <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Role</span>
@@ -2049,7 +2049,7 @@ export default function RoomShow({
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2.5">
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-white ${
-                                                    isOwner ? 'bg-amber-600' : isBendahara ? 'bg-emerald-600' : 'bg-indigo-600'
+                                                    isOwner ? 'bg-amber-600' : isBendahara ? 'bg-emerald-600' : 'bg-[#008080]'
                                                 }`}>
                                                     {m.name.charAt(0)}
                                                 </div>
@@ -2345,7 +2345,7 @@ export default function RoomShow({
                                                 <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-2">
                                                     <div>
                                                         <span className="text-[10px] text-muted-foreground block uppercase font-bold">No. Invoice</span>
-                                                        <span className="font-mono font-bold text-indigo-500 text-sm">{inv.invoice_number}</span>
+                                                        <span className="font-mono font-bold text-[#008080] text-sm">{inv.invoice_number}</span>
                                                     </div>
                                                     <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">LUNAS / PAID</span>
                                                 </div>
@@ -2503,7 +2503,7 @@ export default function RoomShow({
                                                         <div>
                                                             <span className="text-[10px] text-muted-foreground uppercase font-bold block">Pelapor (Yang Melaporkan):</span>
                                                             <span className="font-semibold text-foreground dark:text-white flex items-center gap-1">
-                                                                <UserIcon className="w-3.5 h-3.5 text-indigo-500" /> {rep.reporter_name}
+                                                                <UserIcon className="w-3.5 h-3.5 text-[#008080]" /> {rep.reporter_name}
                                                             </span>
                                                         </div>
                                                         <div>
@@ -2742,7 +2742,7 @@ export default function RoomShow({
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                                 <div>
                                     <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
-                                        <QrCode className="w-5 h-5 text-indigo-500" /> Pembayaran via Kas Digital
+                                        <QrCode className="w-5 h-5 text-[#008080]" /> Pembayaran via Kas Digital
                                     </h3>
                                     <p className="text-[11px] text-muted-foreground">Bayar merchant QRIS, Virtual Account, atau Transfer Bank menggunakan Saldo Kas Room.</p>
                                 </div>
@@ -2764,7 +2764,7 @@ export default function RoomShow({
                                     }}
                                     className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
                                         paymentTab === 'qris'
-                                            ? 'bg-indigo-600 text-white shadow-sm'
+                                            ? 'bg-[#008080] text-white shadow-sm'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -2779,7 +2779,7 @@ export default function RoomShow({
                                     }}
                                     className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
                                         paymentTab === 'invoice'
-                                            ? 'bg-indigo-600 text-white shadow-sm'
+                                            ? 'bg-[#008080] text-white shadow-sm'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -2793,7 +2793,7 @@ export default function RoomShow({
                                     }}
                                     className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
                                         paymentTab === 'va'
-                                            ? 'bg-indigo-600 text-white shadow-sm'
+                                            ? 'bg-[#008080] text-white shadow-sm'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -2805,7 +2805,7 @@ export default function RoomShow({
                                 {paymentTab === 'qris' ? (
                                     <div className="space-y-4">
                                         {/* QRIS Scanner & Drag Drop Upload Zone */}
-                                        <div className="border-2 border-dashed border-indigo-500/40 dark:border-indigo-500/30 rounded-2xl p-5 text-center bg-indigo-500/5 relative hover:bg-indigo-500/10 transition-colors">
+                                        <div className="border-2 border-dashed border-[#008080]/40 dark:border-[#008080]/30 rounded-2xl p-5 text-center bg-[#008080]/5 relative hover:bg-[#008080]/10 transition-colors">
                                             <input
                                                 type="file"
                                                 accept="image/*"
@@ -2814,14 +2814,14 @@ export default function RoomShow({
                                             />
                                             {qrisPreview ? (
                                                 <div className="space-y-2">
-                                                    <img src={qrisPreview} alt="Preview QRIS" className="max-h-40 mx-auto rounded-xl shadow-md border border-indigo-500/30" />
+                                                    <img src={qrisPreview} alt="Preview QRIS" className="max-h-40 mx-auto rounded-xl shadow-md border border-[#008080]/30" />
                                                     <p className="text-[11px] font-mono text-emerald-500 font-bold flex items-center justify-center gap-1">
                                                         <CheckCircle className="w-3.5 h-3.5" /> Foto QRIS Berhasil Diunggah!
                                                     </p>
                                                 </div>
                                             ) : (
                                                 <div className="space-y-2 py-2">
-                                                    <div className="w-12 h-12 mx-auto rounded-full bg-indigo-600/20 text-indigo-500 flex items-center justify-center">
+                                                    <div className="w-12 h-12 mx-auto rounded-full bg-[#008080]/20 text-[#008080] flex items-center justify-center">
                                                         <UploadCloud className="w-6 h-6 animate-bounce" />
                                                     </div>
                                                     <p className="text-xs font-bold text-foreground dark:text-white">
@@ -2852,7 +2852,7 @@ export default function RoomShow({
                                                     onChange={e => setPaymentRecipientName(e.target.value)}
                                                     placeholder="Contoh: Sewa Futsal Arena"
                                                     required
-                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-semibold focus:outline-none focus:border-[#008080]"
                                                 />
                                             </div>
                                             <div className="space-y-1">
@@ -2864,7 +2864,7 @@ export default function RoomShow({
                                                     value={paymentRecipientAccount}
                                                     onChange={e => setPaymentRecipientAccount(e.target.value)}
                                                     placeholder="ID1020304050607"
-                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-indigo-500"
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-[#008080]"
                                                 />
                                             </div>
                                         </div>
@@ -2872,7 +2872,7 @@ export default function RoomShow({
                                 ) : paymentTab === 'invoice' ? (
                                     <div className="space-y-4">
                                         {/* Upload Invoice Screenshot / PDF Zone */}
-                                        <div className="border-2 border-dashed border-indigo-500/40 dark:border-indigo-500/30 rounded-2xl p-4 text-center bg-indigo-500/5 relative hover:bg-indigo-500/10 transition-colors">
+                                        <div className="border-2 border-dashed border-[#008080]/40 dark:border-[#008080]/30 rounded-2xl p-4 text-center bg-[#008080]/5 relative hover:bg-[#008080]/10 transition-colors">
                                             <input
                                                 type="file"
                                                 accept="image/*,.pdf"
@@ -2881,14 +2881,14 @@ export default function RoomShow({
                                             />
                                             {invoicePreview ? (
                                                 <div className="space-y-2">
-                                                    <img src={invoicePreview} alt="Preview Invoice" className="max-h-36 mx-auto rounded-xl shadow-md border border-indigo-500/30 object-contain" />
+                                                    <img src={invoicePreview} alt="Preview Invoice" className="max-h-36 mx-auto rounded-xl shadow-md border border-[#008080]/30 object-contain" />
                                                     <p className="text-[11px] font-mono text-emerald-500 font-bold flex items-center justify-center gap-1">
                                                         <CheckCircle className="w-3.5 h-3.5" /> Foto Invoice / Struk Midtrans Berhasil Diunggah!
                                                     </p>
                                                 </div>
                                             ) : (
                                                 <div className="space-y-1.5 py-1">
-                                                    <div className="w-10 h-10 mx-auto rounded-full bg-indigo-600/20 text-indigo-500 flex items-center justify-center">
+                                                    <div className="w-10 h-10 mx-auto rounded-full bg-[#008080]/20 text-[#008080] flex items-center justify-center">
                                                         <UploadCloud className="w-5 h-5 animate-bounce" />
                                                     </div>
                                                     <p className="text-xs font-bold text-foreground dark:text-white">
@@ -2930,13 +2930,13 @@ export default function RoomShow({
                                                     value={invoiceInputText}
                                                     onChange={e => setInvoiceInputText(e.target.value)}
                                                     placeholder="Contoh: 893d504e-1128-4fce-ba9c-bf592762bf9a"
-                                                    className="flex-1 bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-indigo-500"
+                                                    className="flex-1 bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-[#008080]"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={handleInvoiceInputDetect}
                                                     disabled={isDetectingInvoice}
-                                                    className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shrink-0"
+                                                    className="px-3.5 py-2 bg-[#008080] hover:bg-[#008080]/90 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shrink-0"
                                                 >
                                                     <Sparkles className="w-3.5 h-3.5" />
                                                     <span>Cek & Deteksi</span>
@@ -2956,7 +2956,7 @@ export default function RoomShow({
                                                     onChange={e => setPaymentRecipientName(e.target.value)}
                                                     placeholder="Contoh: Gacoan (Midtrans Invoice)"
                                                     required
-                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-semibold focus:outline-none focus:border-[#008080]"
                                                 />
                                             </div>
                                             <div className="space-y-1">
@@ -2969,7 +2969,7 @@ export default function RoomShow({
                                                     onChange={e => setPaymentRecipientAccount(e.target.value)}
                                                     placeholder="893d504e-1128-4fce-ba9c-bf592762bf9a"
                                                     required
-                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-indigo-500"
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-[#008080]"
                                                 />
                                             </div>
                                         </div>
@@ -2992,7 +2992,7 @@ export default function RoomShow({
                                                         }}
                                                         className={`p-2 rounded-xl border text-xs font-bold font-mono transition-all text-center ${
                                                             paymentBankName === b
-                                                                ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm'
+                                                                ? 'bg-[#008080] text-white border-[#008080] shadow-sm'
                                                                 : 'bg-background dark:bg-zinc-950 border-border dark:border-zinc-800 text-muted-foreground hover:text-foreground'
                                                         }`}
                                                     >
@@ -3013,7 +3013,7 @@ export default function RoomShow({
                                                     onChange={e => setPaymentRecipientName(e.target.value)}
                                                     placeholder="Contoh: PT Lapangan Berkah"
                                                     required
-                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-semibold focus:outline-none focus:border-[#008080]"
                                                 />
                                             </div>
                                             <div className="space-y-1">
@@ -3026,7 +3026,7 @@ export default function RoomShow({
                                                     onChange={e => setPaymentRecipientAccount(e.target.value)}
                                                     placeholder="880123456789"
                                                     required
-                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-indigo-500"
+                                                    className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-[#008080]"
                                                 />
                                             </div>
                                         </div>
@@ -3050,7 +3050,7 @@ export default function RoomShow({
                                             placeholder="50000"
                                             required
                                             min="1000"
-                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-foreground dark:text-white font-mono font-bold focus:outline-none focus:border-indigo-500"
+                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-foreground dark:text-white font-mono font-bold focus:outline-none focus:border-[#008080]"
                                         />
                                     </div>
                                 </div>
@@ -3065,7 +3065,7 @@ export default function RoomShow({
                                         value={paymentNotes}
                                         onChange={e => setPaymentNotes(e.target.value)}
                                         placeholder="Contoh: Sewa Lapangan Futsal Jam 19:00 - 21:00"
-                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                        className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-foreground dark:text-white focus:outline-none focus:border-[#008080]"
                                     />
                                 </div>
 
@@ -3160,7 +3160,7 @@ export default function RoomShow({
                                             <button
                                                 type="submit"
                                                 disabled={isSubmittingPayment}
-                                                className="w-full py-3 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                                                className="w-full py-3 bg-[#008080] hover:bg-[#006666] text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-teal-900/20 flex items-center justify-center gap-2 disabled:opacity-50"
                                             >
                                                 <SendHorizontal className="w-4 h-4" />
                                                 <span>{isSubmittingPayment ? 'Memproses Pembayaran...' : `Konfirmasi & Bayar Rp ${amt.toLocaleString('id-ID')} Sekarang`}</span>
@@ -3203,7 +3203,7 @@ export default function RoomShow({
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Metode Bayar:</span>
-                                        <span className="font-mono uppercase font-bold text-indigo-500">{selectedPaymentReceipt.payment_method} ({selectedPaymentReceipt.bank_name || 'QRIS'})</span>
+                                        <span className="font-mono uppercase font-bold text-[#008080]">{selectedPaymentReceipt.payment_method} ({selectedPaymentReceipt.bank_name || 'QRIS'})</span>
                                     </div>
                                     {selectedPaymentReceipt.recipient_account && (
                                         <div className="flex justify-between">
@@ -3234,7 +3234,7 @@ export default function RoomShow({
                             <div className="flex items-center gap-2 pt-2">
                                 <button
                                     onClick={() => window.print()}
-                                    className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                                    className="flex-1 py-2.5 bg-[#008080] hover:bg-[#008080]/90 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
                                 >
                                     <Download className="w-3.5 h-3.5" /> Cetak / Simpan Struk
                                 </button>
@@ -3256,7 +3256,7 @@ export default function RoomShow({
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3 shrink-0">
                                 <div>
                                     <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
-                                        <Receipt className="w-5 h-5 text-indigo-500" /> Riwayat Pembayaran Kas Digital ({walletPayments.length})
+                                        <Receipt className="w-5 h-5 text-[#008080]" /> Riwayat Pembayaran Kas Digital ({walletPayments.length})
                                     </h3>
                                     <p className="text-[11px] text-muted-foreground">Seluruh pengeluaran saldo kas room ke merchant & pihak ke-3.</p>
                                 </div>
@@ -3280,7 +3280,7 @@ export default function RoomShow({
                                             <div className="space-y-1 min-w-0">
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-bold text-foreground dark:text-white truncate">{pay.recipient_name}</span>
-                                                    <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500 text-[10px] font-mono font-bold uppercase">
+                                                    <span className="px-2 py-0.5 rounded bg-[#008080]/10 text-[#008080] text-[10px] font-mono font-bold uppercase">
                                                         {pay.payment_method}
                                                     </span>
                                                 </div>
@@ -3295,7 +3295,7 @@ export default function RoomShow({
                                                 </p>
                                                 <button
                                                     onClick={() => setSelectedPaymentReceipt(pay)}
-                                                    className="text-[10px] text-indigo-500 hover:text-indigo-400 font-semibold flex items-center gap-1 ml-auto"
+                                                    className="text-[10px] text-[#008080] hover:text-[#008080]/80 font-semibold flex items-center gap-1 ml-auto"
                                                 >
                                                     <Receipt className="w-3 h-3" /> Struk
                                                 </button>

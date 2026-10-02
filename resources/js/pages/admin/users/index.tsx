@@ -62,11 +62,11 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
         <>
             <Head title="Manajemen Pengguna — ShareRoom Admin" />
 
-            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 bg-background dark:bg-[#0e0f12] text-foreground dark:text-zinc-100 min-h-screen">
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 bg-background dark:bg-[#090d10] text-foreground dark:text-zinc-100 min-h-screen">
                 {/* Header Page */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl shadow-sm">
                     <div className="space-y-1">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#008080]/10 border border-[#008080]/20 text-[#008080] dark:text-teal-400 text-xs font-semibold">
                             <Users className="w-3.5 h-3.5" /> Fitur Admin Terpisah
                         </div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-foreground dark:text-white">
@@ -79,7 +79,7 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
 
                     <button
                         onClick={() => setShowModal(true)}
-                        className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 shrink-0"
+                        className="w-full sm:w-auto px-5 py-2.5 bg-[#008080] hover:bg-[#006666] text-white rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-teal-900/20 shrink-0"
                     >
                         <UserPlus className="w-4 h-4" />
                         <span>+ Tambah User Manual</span>
@@ -89,10 +89,10 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
                 {/* Modal Form Tambah User */}
                 {showModal && (
                     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div className="bg-card dark:bg-zinc-900 border border-indigo-500/30 rounded-2xl p-4 sm:p-6 space-y-4 max-w-xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 shadow-2xl">
+                        <div className="bg-card dark:bg-zinc-900 border border-[#008080]/30 rounded-2xl p-4 sm:p-6 space-y-4 max-w-xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 shadow-2xl">
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                                 <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
-                                    <UserPlus className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Form Tambah Pengguna Baru
+                                    <UserPlus className="w-4 h-4 text-[#008080]" /> Form Tambah Pengguna Baru
                                 </h3>
                                 <button
                                     onClick={() => setShowModal(false)}
@@ -112,7 +112,7 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
                                             onChange={e => form.setData('name', e.target.value)}
                                             placeholder="Nama User"
                                             required
-                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-foreground dark:text-white focus:outline-none focus:border-[#007BFF]"
                                         />
                                         <UserIcon className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                                     </div>
@@ -128,7 +128,7 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
                                             onChange={e => form.setData('email', e.target.value)}
                                             placeholder="email@example.com"
                                             required
-                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-foreground dark:text-white focus:outline-none focus:border-[#007BFF]"
                                         />
                                         <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                                     </div>
@@ -144,7 +144,7 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
                                             onChange={e => form.setData('password', e.target.value)}
                                             placeholder="Minimal 8 karakter"
                                             required
-                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-foreground dark:text-white focus:outline-none focus:border-[#007BFF]"
                                         />
                                         <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                                     </div>
@@ -157,7 +157,7 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
                                         <select
                                             value={form.data.role}
                                             onChange={e => form.setData('role', e.target.value as 'admin' | 'user')}
-                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-foreground dark:text-white focus:outline-none focus:border-indigo-500"
+                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-foreground dark:text-white focus:outline-none focus:border-[#007BFF]"
                                         >
                                             <option value="user">User Biasa</option>
                                             <option value="admin">Administrator</option>
@@ -177,7 +177,7 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
                                     <button
                                         type="submit"
                                         disabled={form.processing}
-                                        className="w-full sm:w-auto px-6 py-2.5 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-semibold text-xs transition-colors shadow-md"
+                                        className="w-full sm:w-auto px-6 py-2.5 bg-[#008080] hover:bg-[#006666] text-white rounded-xl font-semibold text-xs transition-colors shadow-md"
                                     >
                                         {form.processing ? 'Menyimpan...' : 'Simpan User Baru'}
                                     </button>
@@ -195,7 +195,7 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
                             <div key={u.id} className="bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800/80 rounded-xl p-4 space-y-3">
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="flex items-center gap-2.5">
-                                        <div className="w-9 h-9 rounded-full bg-indigo-600/20 text-indigo-600 dark:text-indigo-300 font-bold flex items-center justify-center text-sm shrink-0">
+                                        <div className="w-9 h-9 rounded-full bg-[#008080]/20 text-[#008080] dark:text-teal-300 font-bold flex items-center justify-center text-sm shrink-0">
                                             {u.name.charAt(0)}
                                         </div>
                                         <div>
@@ -254,7 +254,7 @@ export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
                                     <tr key={u.id} className="hover:bg-background/50 dark:hover:bg-zinc-950/50 transition-colors">
                                         <td className="p-3.5 font-mono text-muted-foreground">#{u.id}</td>
                                         <td className="p-3.5 font-bold text-foreground dark:text-white flex items-center gap-2.5">
-                                            <div className="w-7 h-7 rounded-full bg-indigo-600/20 text-indigo-600 dark:text-indigo-300 font-bold flex items-center justify-center text-xs">
+                                            <div className="w-7 h-7 rounded-full bg-[#008080]/20 text-[#008080] dark:text-teal-300 font-bold flex items-center justify-center text-xs">
                                                 {u.name.charAt(0)}
                                             </div>
                                             <span>{u.name}</span>

@@ -27,9 +27,9 @@ export default function AuthSimpleLayout({
     };
 
     return (
-        <div className="min-h-screen bg-[#0e0f12] text-zinc-100 flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans selection:bg-indigo-500 selection:text-white relative overflow-hidden">
+        <div className="min-h-screen bg-[#090d10] text-zinc-100 flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans selection:bg-teal-600 selection:text-white relative overflow-hidden">
             {/* Subtle background glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-125 bg-linear-to-tr from-indigo-900/15 via-purple-900/10 to-amber-900/10 blur-[140px] pointer-events-none rounded-full" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-180 h-120 bg-teal-900/10 blur-[140px] pointer-events-none rounded-full" />
 
             {/* Main Auth Container Card */}
             <div className="w-full max-w-4xl bg-zinc-900/90 border border-zinc-800/90 rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 backdrop-blur-xl relative z-10">
@@ -39,15 +39,15 @@ export default function AuthSimpleLayout({
                     <div className="space-y-6">
                         {/* Logo */}
                         <Link href={home()} className="inline-flex items-center gap-2.5 group">
-                            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md group-hover:scale-105 transition-transform">
+                            <div className="w-9 h-9 rounded-xl bg-[#008080] flex items-center justify-center text-white font-bold shadow-md group-hover:scale-105 transition-transform">
                                 <Users className="w-5 h-5" />
                             </div>
                             <span className="font-bold text-xl tracking-tight text-white">ShareRoom</span>
                         </Link>
 
                         <div className="space-y-2 pt-2">
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[11px] font-semibold text-indigo-300">
-                                <Sparkles className="w-3 h-3 text-amber-400" /> Web Shared Room
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#008080]/15 border border-[#008080]/30 text-[11px] font-semibold text-teal-300">
+                                <span>Web Shared Room</span>
                             </div>
                             <h2 className="text-2xl font-bold text-white leading-snug">
                                 Chat Sementara & Dompet Kas Bareng
@@ -62,10 +62,10 @@ export default function AuthSimpleLayout({
                             {/* Live Timer Preview */}
                             <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 flex items-center justify-between text-xs">
                                 <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-indigo-400" />
+                                    <Clock className="w-4 h-4 text-teal-400" />
                                     <span className="text-zinc-300 font-medium">Auto-Destruct:</span>
                                 </div>
-                                <span className="font-mono font-bold text-amber-400 bg-zinc-950 px-2.5 py-1 rounded border border-zinc-800">
+                                <span className="font-mono font-bold text-teal-300 bg-zinc-950 px-2.5 py-1 rounded border border-zinc-800">
                                     {formatTime(seconds)}
                                 </span>
                             </div>
@@ -73,7 +73,7 @@ export default function AuthSimpleLayout({
                             {/* Kode Room Preview */}
                             <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 flex items-center justify-between text-xs">
                                 <div className="flex items-center gap-2">
-                                    <KeyRound className="w-4 h-4 text-amber-400" />
+                                    <KeyRound className="w-4 h-4 text-[#007BFF]" />
                                     <span className="text-zinc-300 font-medium">Akses Unik:</span>
                                 </div>
                                 <span className="font-mono font-bold text-white bg-zinc-950 px-2.5 py-1 rounded border border-zinc-800 tracking-wider">
@@ -84,10 +84,10 @@ export default function AuthSimpleLayout({
                             {/* Wallet Preview */}
                             <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 flex items-center justify-between text-xs">
                                 <div className="flex items-center gap-2">
-                                    <Wallet className="w-4 h-4 text-emerald-400" />
+                                    <Wallet className="w-4 h-4 text-[#007BFF]" />
                                     <span className="text-zinc-300 font-medium">Kas Room:</span>
                                 </div>
-                                <span className="font-mono font-bold text-emerald-400">
+                                <span className="font-mono font-bold text-[#007BFF]">
                                     Rp 185.000
                                 </span>
                             </div>
@@ -95,7 +95,7 @@ export default function AuthSimpleLayout({
                     </div>
 
                     <div className="pt-6 border-t border-zinc-900 text-[11px] text-zinc-500 flex items-center gap-1.5">
-                        <ShieldCheck className="w-4 h-4 text-emerald-500" /> Privasi Aman & Tanpa Log Permanen
+                        <ShieldCheck className="w-4 h-4 text-teal-400" /> Privasi Aman & Tanpa Log Permanen
                     </div>
                 </div>
 
@@ -104,7 +104,7 @@ export default function AuthSimpleLayout({
                     {/* Mobile Header Logo */}
                     <div className="lg:hidden flex items-center justify-between pb-6 mb-4 border-b border-zinc-800">
                         <Link href={home()} className="inline-flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                            <div className="w-8 h-8 rounded-lg bg-[#008080] flex items-center justify-center text-white font-bold text-sm">
                                 <Users className="w-4 h-4" />
                             </div>
                             <span className="font-bold text-lg text-white">ShareRoom</span>

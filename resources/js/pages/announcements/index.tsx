@@ -50,10 +50,10 @@ export default function AnnouncementsIndex({ announcements }: AnnouncementsIndex
         <>
             <Head title="Pengumuman & Informasi — ShareRoom" />
 
-            <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6 bg-background dark:bg-[#0e0f12] text-foreground dark:text-zinc-100 min-h-screen">
+            <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6 bg-background dark:bg-[#090d10] text-foreground dark:text-zinc-100 min-h-screen">
                 {/* Header Page */}
                 <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl shadow-sm space-y-2">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#008080]/10 border border-[#008080]/20 text-[#008080] dark:text-teal-400 text-xs font-semibold">
                         <Megaphone className="w-3.5 h-3.5" /> Pusat Pengumuman Resmi
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-bold text-foreground dark:text-white">
@@ -71,13 +71,13 @@ export default function AnnouncementsIndex({ announcements }: AnnouncementsIndex
                             key={ann.id}
                             className={`relative bg-card dark:bg-zinc-900 border ${
                                 ann.is_pinned
-                                    ? 'border-indigo-500/40 dark:border-indigo-500/40 shadow-md shadow-indigo-500/5'
+                                    ? 'border-[#008080]/40 dark:border-[#008080]/40 shadow-md shadow-teal-900/5'
                                     : 'border-border dark:border-zinc-800'
-                            } rounded-2xl p-5 sm:p-6 transition-all space-y-4 hover:border-indigo-500/30`}
+                            } rounded-2xl p-5 sm:p-6 transition-all space-y-4 hover:border-[#008080]/30`}
                         >
                             {/* Pinned Badge */}
                             {ann.is_pinned && (
-                                <div className="absolute -top-3 right-6 bg-linear-to-r from-indigo-600 to-purple-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                                <div className="absolute -top-3 right-6 bg-[#008080] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1">
                                     <Pin className="w-3 h-3 fill-white" /> Disematkan (Pinned)
                                 </div>
                             )}
@@ -89,7 +89,7 @@ export default function AnnouncementsIndex({ announcements }: AnnouncementsIndex
                                 </div>
                                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                     <span className="flex items-center gap-1">
-                                        <User className="w-3.5 h-3.5 text-indigo-500" /> {ann.author_name}
+                                        <User className="w-3.5 h-3.5 text-[#008080]" /> {ann.author_name}
                                     </span>
                                     <span>•</span>
                                     <span className="flex items-center gap-1 font-mono">

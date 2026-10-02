@@ -12,7 +12,7 @@ export const getSwalConfig = () => {
     return Swal.mixin({
         background: dark ? '#18181b' : '#ffffff',
         color: dark ? '#f4f4f5' : '#18181b',
-        confirmButtonColor: '#4f46e5', // Indigo-600
+        confirmButtonColor: '#008080', // Teal brand
         cancelButtonColor: '#71717a',  // Zinc-500
         customClass: {
             popup: 'rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl p-6 font-sans',
@@ -82,7 +82,7 @@ export const showConfirmDialog = (options: ConfirmOptions, onConfirm: () => void
         confirmButtonText: options.confirmButtonText || 'Ya, Lanjutkan',
         cancelButtonText: options.cancelButtonText || 'Batal',
         reverseButtons: true,
-        confirmButtonColor: options.icon === 'error' ? '#e11d48' : '#4f46e5',
+        confirmButtonColor: options.icon === 'error' ? '#e11d48' : '#008080',
     }).then((result) => {
         if (result.isConfirmed) {
             onConfirm();

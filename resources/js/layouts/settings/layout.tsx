@@ -38,7 +38,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             {/* Header Settings Card */}
             <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-3xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#008080]/10 border border-[#008080]/20 text-[#008080] dark:text-[#008080] text-xs font-semibold">
                         <SettingsIcon className="w-3.5 h-3.5" /> Pengaturan Akun
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-bold text-foreground dark:text-white">
@@ -72,7 +72,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                     className={cn(
                                         'flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-semibold transition-all whitespace-nowrap lg:w-full',
                                         active
-                                            ? 'bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-bold shadow-sm'
+                                            ? 'bg-[#008080]/10 dark:bg-[#008080]/20 text-[#008080] dark:text-[#008080] border border-[#008080]/20 font-bold shadow-sm'
                                             : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60 dark:hover:bg-zinc-800/50'
                                     )}
                                 >
@@ -80,7 +80,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                         <Icon
                                             className={cn(
                                                 'w-4 h-4 flex-shrink-0',
-                                                active ? 'text-indigo-500' : 'text-muted-foreground'
+                                                active ? 'text-[#008080]' : 'text-muted-foreground'
                                             )}
                                         />
                                     )}

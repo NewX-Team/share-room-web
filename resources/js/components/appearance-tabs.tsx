@@ -53,8 +53,8 @@ export default function AppearanceToggleTab({
                         className={cn(
                             'group relative text-left p-5 rounded-3xl border transition-all duration-200 flex flex-col justify-between space-y-4 cursor-pointer',
                             active
-                                ? 'bg-card dark:bg-zinc-900 border-indigo-500 ring-2 ring-indigo-500/20 shadow-lg shadow-indigo-500/10 scale-[1.02]'
-                                : 'bg-card/60 dark:bg-zinc-900/60 border-border/70 dark:border-zinc-800 hover:border-indigo-500/50 hover:bg-card dark:hover:bg-zinc-900'
+                                ? 'bg-card dark:bg-zinc-900 border-[#008080] ring-2 ring-[#008080]/20 shadow-lg shadow-[#008080]/10 scale-[1.02]'
+                                : 'bg-card/60 dark:bg-zinc-900/60 border-border/70 dark:border-zinc-800 hover:border-[#008080]/50 hover:bg-card dark:hover:bg-zinc-900'
                         )}
                     >
                         {/* Mini Visual Mockup Box */}
@@ -78,11 +78,11 @@ export default function AppearanceToggleTab({
                         <div className="space-y-1">
                             <div className="flex items-center justify-between">
                                 <span className="font-bold text-xs text-foreground dark:text-white flex items-center gap-1.5">
-                                    <Icon className={cn('w-4 h-4', active ? 'text-indigo-500' : 'text-muted-foreground')} />
+                                    <Icon className={cn('w-4 h-4', active ? 'text-[#008080]' : 'text-muted-foreground')} />
                                     {label}
                                 </span>
                                 {active && (
-                                    <CheckCircle2 className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                                    <CheckCircle2 className="w-4 h-4 text-[#008080] flex-shrink-0" />
                                 )}
                             </div>
                             <p className="text-[11px] text-muted-foreground leading-relaxed">

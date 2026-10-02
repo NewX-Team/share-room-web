@@ -92,11 +92,11 @@ export default function AdminPromosIndex({ promos }: AdminPromosIndexProps) {
         <>
             <Head title="Manajemen Kode Promo — ShareRoom Admin" />
 
-            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 bg-background dark:bg-[#0e0f12] text-foreground dark:text-zinc-100 min-h-screen">
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 bg-background dark:bg-[#090d10] text-foreground dark:text-zinc-100 min-h-screen">
                 {/* Header Page */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl shadow-sm">
                     <div className="space-y-1">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#008080]/10 border border-[#008080]/20 text-[#008080] dark:text-teal-400 text-xs font-semibold">
                             <Ticket className="w-3.5 h-3.5" /> Diskon & Voucher Top Up
                         </div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-foreground dark:text-white">
@@ -109,7 +109,7 @@ export default function AdminPromosIndex({ promos }: AdminPromosIndexProps) {
 
                     <button
                         onClick={() => setShowModal(true)}
-                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20"
+                        className="px-5 py-2.5 bg-[#008080] hover:bg-[#006666] text-white rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-900/20"
                     >
                         <PlusCircle className="w-4 h-4" />
                         <span>+ Tambah Kode Promo Baru</span>
@@ -260,7 +260,7 @@ export default function AdminPromosIndex({ promos }: AdminPromosIndexProps) {
                                     <div>
                                         <span className="text-[10px] text-muted-foreground uppercase font-semibold block">Tipe Diskon</span>
                                         {p.type === 'percentage' ? (
-                                            <span className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
+                                            <span className="inline-flex items-center gap-1 text-[#008080] dark:text-[#008080] font-bold">
                                                 <Percent className="w-3.5 h-3.5" /> Diskon {p.value}%
                                             </span>
                                         ) : (
@@ -321,7 +321,7 @@ export default function AdminPromosIndex({ promos }: AdminPromosIndexProps) {
                                         </td>
                                         <td className="p-3.5 text-foreground dark:text-white font-semibold">
                                             {p.type === 'percentage' ? (
-                                                <span className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400">
+                                                <span className="inline-flex items-center gap-1 text-[#008080] dark:text-[#008080]">
                                                     <Percent className="w-3.5 h-3.5" /> Diskon {p.value}%
                                                 </span>
                                             ) : (

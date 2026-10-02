@@ -113,11 +113,11 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
         <>
             <Head title="Manajemen Paket Perpanjang Room — ShareRoom Admin" />
 
-            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 bg-background dark:bg-[#0e0f12] text-foreground dark:text-zinc-100 min-h-screen">
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 bg-background dark:bg-[#090d10] text-foreground dark:text-zinc-100 min-h-screen">
                 {/* Header Page */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 p-6 rounded-2xl shadow-sm">
                     <div className="space-y-1">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#008080]/10 border border-[#008080]/20 text-[#008080] dark:text-teal-400 text-xs font-semibold">
                             <Timer className="w-3.5 h-3.5" /> Paket Durasi Room (Jam)
                         </div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-foreground dark:text-white">
@@ -130,7 +130,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
 
                     <button
                         onClick={() => setShowCreateModal(true)}
-                        className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 self-start sm:self-auto"
+                        className="px-4 py-2.5 bg-[#008080] hover:bg-[#006666] text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-teal-900/20 flex items-center justify-center gap-2 self-start sm:self-auto"
                     >
                         <PlusCircle className="w-4 h-4" />
                         <span>Tambah Paket Perpanjangan</span>
@@ -167,7 +167,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                 <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm space-y-4">
                     <div className="p-4 border-b border-border dark:border-zinc-800 flex items-center justify-between">
                         <h3 className="font-bold text-foreground dark:text-white text-sm flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-indigo-500" /> Daftar Opsi Paket Perpanjangan Waktu
+                            <Clock className="w-4 h-4 text-[#008080]" /> Daftar Opsi Paket Perpanjangan Waktu
                         </h3>
                     </div>
 
@@ -185,7 +185,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                                     <div key={pkg.id} className="bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800/80 rounded-xl p-4 space-y-3">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500 font-bold shrink-0">
+                                                <div className="p-2 rounded-xl bg-[#008080]/10 text-[#008080] font-bold shrink-0">
                                                     <Clock className="w-4 h-4" />
                                                 </div>
                                                 <div>
@@ -230,7 +230,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
 
                                                 <button
                                                     onClick={() => handleOpenEdit(pkg)}
-                                                    className="px-2.5 py-1.5 rounded-xl font-semibold text-[11px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 flex items-center gap-1"
+                                                    className="px-2.5 py-1.5 rounded-xl font-semibold text-[11px] bg-[#008080]/10 text-[#008080] dark:text-[#008080] border border-[#008080]/30 flex items-center gap-1"
                                                 >
                                                     <Edit2 className="w-3 h-3" /> Edit
                                                 </button>
@@ -263,7 +263,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                                         <tr key={pkg.id} className="hover:bg-muted/30 dark:hover:bg-zinc-950/30 transition-colors">
                                             <td className="p-4">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500 font-bold">
+                                                    <div className="p-2 rounded-xl bg-[#008080]/10 text-[#008080] font-bold">
                                                         <Clock className="w-4 h-4" />
                                                     </div>
                                                     <div>
@@ -312,7 +312,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                                                     {/* Edit Package */}
                                                     <button
                                                         onClick={() => handleOpenEdit(pkg)}
-                                                        className="px-2.5 py-1.5 rounded-xl font-semibold text-[11px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 transition-colors flex items-center gap-1"
+                                                        className="px-2.5 py-1.5 rounded-xl font-semibold text-[11px] bg-[#008080]/10 text-[#008080] dark:text-[#008080] border border-[#008080]/30 hover:bg-[#008080]/20 transition-colors flex items-center gap-1"
                                                         title="Edit paket"
                                                     >
                                                         <Edit2 className="w-3 h-3" />
@@ -344,7 +344,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                         <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-md w-full p-4 sm:p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                                 <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
-                                    <Timer className="w-5 h-5 text-indigo-500" /> Tambah Paket Perpanjangan Room
+                                    <Timer className="w-5 h-5 text-[#008080]" /> Tambah Paket Perpanjangan Room
                                 </h3>
                                 <button onClick={() => setShowCreateModal(false)} className="text-muted-foreground hover:text-foreground">
                                     <X className="w-4 h-4" />
@@ -365,7 +365,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                                             onChange={e => createForm.setData('hours', e.target.value)}
                                             placeholder="1"
                                             required
-                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-mono font-bold focus:outline-none focus:border-indigo-500"
+                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-mono font-bold focus:outline-none focus:border-[#008080]"
                                         />
                                         <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-semibold text-muted-foreground text-xs">
                                             Jam
@@ -407,7 +407,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                                     <button
                                         type="submit"
                                         disabled={createForm.processing}
-                                        className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold text-xs transition-colors shadow-md shadow-indigo-600/20"
+                                        className="px-5 py-2.5 rounded-xl bg-[#008080] hover:bg-[#008080]/90 disabled:opacity-50 text-white font-semibold text-xs transition-colors shadow-md shadow-[#008080]/20"
                                     >
                                         {createForm.processing ? 'Menyimpan...' : 'Simpan Paket Baru'}
                                     </button>
@@ -423,7 +423,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                         <div className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl max-w-md w-full p-4 sm:p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                             <div className="flex items-center justify-between border-b border-border dark:border-zinc-800 pb-3">
                                 <h3 className="font-bold text-foreground dark:text-white text-base flex items-center gap-2">
-                                    <Edit2 className="w-5 h-5 text-indigo-500" /> Edit Paket Perpanjangan Room
+                                    <Edit2 className="w-5 h-5 text-[#008080]" /> Edit Paket Perpanjangan Room
                                 </h3>
                                 <button onClick={() => setEditingPackage(null)} className="text-muted-foreground hover:text-foreground">
                                     <X className="w-4 h-4" />
@@ -443,7 +443,7 @@ export default function AdminExtensionPackagesIndex({ packages }: AdminExtension
                                             value={editForm.data.hours}
                                             onChange={e => editForm.setData('hours', e.target.value)}
                                             required
-                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-mono font-bold focus:outline-none focus:border-indigo-500"
+                                            className="w-full bg-background dark:bg-zinc-950 border border-border dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-foreground dark:text-white font-mono font-bold focus:outline-none focus:border-[#008080]"
                                         />
                                         <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-semibold text-muted-foreground text-xs">
                                             Jam
