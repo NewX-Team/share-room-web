@@ -1,4 +1,4 @@
-import { Head, useForm, usePage, router } from '@inertiajs/react';
+import { Head, useForm, usePage, router, usePoll } from '@inertiajs/react';
 import { showConfirmDialog } from '@/lib/swal';
 import { 
     Users, 
@@ -19,6 +19,13 @@ interface AdminUsersIndexProps {
 export default function AdminUsersIndex({ users }: AdminUsersIndexProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
+
+    // Real-Time Sync for Admin Users list
+    usePoll(3000, {
+        only: ['users']
+    }, {
+        keepAlive: true
+    });
 
     const [showModal, setShowModal] = useState(false);
 

@@ -1,4 +1,4 @@
-import { Head, useForm, usePage, router } from '@inertiajs/react';
+import { Head, useForm, usePage, router, usePoll } from '@inertiajs/react';
 import { getSwalConfig, showConfirmDialog, showErrorAlert, showInfoAlert, showSuccessAlert, showWarningAlert } from '@/lib/swal';
 import { 
     Clock, 
@@ -182,34 +182,102 @@ export default function RoomShow({
     const canUseWallet = room.can_use_wallet ?? (room.is_owner || currentMemberRole === 'bendahara' || currentUser?.role === 'admin');
     const isOwnerOrAdmin = room.is_owner || currentUser?.role === 'admin';
 
-    // Ref untuk Scroll Posisi Chat
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    // Enable Inertia Real-Time Polling Sync every 2 seconds
+    usePoll(2000, {
+        only: [
+            'messages',
+            'room',
+            'members',
+            'announcements',
+            'pendingRequests',
+            'reports',
+            'userFileCount',
+            'invoices',
+            'extensionPackages',
+            'pinnedMessages'
+        ]
+    }, {
+        keepAlive: true
+    });
 
-    // Auto Scroll: Ke pesan pertama belum dibaca atau langsung ke pesan terbaru
+    // Ref untuk Scroll Posisi Chat & Container
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+    const isInitialMount = useRef(true);
+    const prevMessagesLength = useRef(messages?.length || 0);
+
+    // Audio chime notification for incoming real-time messages from other users
+    const playMessageChime = () => {
+        try {
+            const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.25);
+        } catch {
+            // Audio blocked by browser policy until user interacts
+        }
+    };
+
+    // Smart Auto Scroll: Ke pesan pertama belum dibaca saat mount, atau scroll otomatis saat pesan baru masuk
     useEffect(() => {
         if (!messages || messages.length === 0) return;
 
-        let unreadTargetId: number | null = null;
-        if (lastReadMessageId) {
-            const firstUnread = messages.find(m => m.id > lastReadMessageId);
-            if (firstUnread) {
-                unreadTargetId = firstUnread.id;
-            }
-        }
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            prevMessagesLength.current = messages.length;
 
-        const timer = setTimeout(() => {
-            if (unreadTargetId) {
-                const el = document.getElementById(`msg-${unreadTargetId}`);
-                if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    return;
+            let unreadTargetId: number | null = null;
+            if (lastReadMessageId) {
+                const firstUnread = messages.find(m => m.id > lastReadMessageId);
+                if (firstUnread) {
+                    unreadTargetId = firstUnread.id;
                 }
             }
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 200);
 
-        return () => clearTimeout(timer);
-    }, [messages, lastReadMessageId]);
+            const timer = setTimeout(() => {
+                if (unreadTargetId) {
+                    const el = document.getElementById(`msg-${unreadTargetId}`);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+                }
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, 200);
+
+            return () => clearTimeout(timer);
+        }
+
+        // Subsequent real-time updates: check if new messages arrived
+        if (messages.length > prevMessagesLength.current) {
+            const lastMsg = messages[messages.length - 1];
+            const isMyMessage = lastMsg?.user_id === currentUser?.id;
+
+            if (!isMyMessage) {
+                playMessageChime();
+            }
+
+            const container = chatContainerRef.current;
+            const isNearBottom = container
+                ? container.scrollHeight - container.scrollTop - container.clientHeight < 250
+                : true;
+
+            if (isMyMessage || isNearBottom) {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }
+            prevMessagesLength.current = messages.length;
+        }
+    }, [messages, lastReadMessageId, currentUser?.id]);
 
     // State untuk Copy Link & Share Modal
     const [copiedCode, setCopiedCode] = useState(false);
@@ -1373,6 +1441,9 @@ export default function RoomShow({
                             <div className="flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                 <h2 className="font-bold text-foreground dark:text-white text-sm">Obrolan Room ({messages.length})</h2>
+                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xs">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Real-Time
+                                </span>
                             </div>
                             
                             {/* File Limit Indicator & Upgrade Badge */}
@@ -1410,7 +1481,7 @@ export default function RoomShow({
                         </div>
 
                         {/* Chat Messages Feed Container */}
-                        <div className="space-y-4 overflow-y-auto max-h-100 pr-2 py-2">
+                        <div ref={chatContainerRef} className="space-y-4 overflow-y-auto max-h-100 pr-2 py-2">
                             {/* PINNED MESSAGES HEADER BANNER */}
                             {pinnedMessages && pinnedMessages.length > 0 && (
                                 <div className="sticky top-0 z-10 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 space-y-2 text-xs shadow-sm mb-3 animate-in fade-in duration-200">

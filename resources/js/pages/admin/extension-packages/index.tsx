@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePoll } from '@inertiajs/react';
 import { showConfirmDialog } from '@/lib/swal';
 import { 
     Timer, 
@@ -28,6 +28,12 @@ interface AdminExtensionPackagesProps {
 }
 
 export default function AdminExtensionPackagesIndex({ packages }: AdminExtensionPackagesProps) {
+    // Real-Time Sync for Extension Packages
+    usePoll(3000, {
+        only: ['packages']
+    }, {
+        keepAlive: true
+    });
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingPackage, setEditingPackage] = useState<ExtensionPackageData | null>(null);
 

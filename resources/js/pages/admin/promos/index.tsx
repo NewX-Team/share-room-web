@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePoll } from '@inertiajs/react';
 import { showConfirmDialog } from '@/lib/swal';
 import { 
     Ticket, 
@@ -31,6 +31,12 @@ interface AdminPromosIndexProps {
 }
 
 export default function AdminPromosIndex({ promos }: AdminPromosIndexProps) {
+    // Real-Time Sync for Promo Codes
+    usePoll(3000, {
+        only: ['promos']
+    }, {
+        keepAlive: true
+    });
     const [showModal, setShowModal] = useState(false);
 
     const form = useForm({

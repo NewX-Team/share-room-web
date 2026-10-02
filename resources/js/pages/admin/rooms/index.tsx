@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePoll } from '@inertiajs/react';
 import { showConfirmDialog, showWarningAlert } from '@/lib/swal';
 import { 
     DoorClosed, 
@@ -52,6 +52,12 @@ interface AdminRoomsIndexProps {
 }
 
 export default function AdminRoomsIndex({ rooms, walletStats }: AdminRoomsIndexProps) {
+    // Real-Time Sync for Admin Rooms & Wallet Stats
+    usePoll(3000, {
+        only: ['rooms', 'walletStats']
+    }, {
+        keepAlive: true
+    });
     // State Modal Tambah Saldo
     const [selectedAddFundsRoom, setSelectedAddFundsRoom] = useState<RoomData | null>(null);
     const addFundsForm = useForm({

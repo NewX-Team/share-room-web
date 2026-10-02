@@ -1,4 +1,4 @@
-import { Head, useForm, usePage, router } from '@inertiajs/react';
+import { Head, useForm, usePage, router, usePoll } from '@inertiajs/react';
 import { showConfirmDialog, showWarningAlert } from '@/lib/swal';
 import { dashboard } from '@/routes';
 import { 
@@ -87,6 +87,13 @@ export default function Dashboard({ stats, rooms = [], pendingJoinRequests = [],
     const { auth } = usePage<{ auth: Auth }>().props;
     const currentUser = auth?.user;
     const isAdmin = currentUser?.role === 'admin';
+
+    // Real-Time Background Sync every 3 seconds
+    usePoll(3000, {
+        only: ['stats', 'rooms', 'pendingJoinRequests', 'kickedNotices']
+    }, {
+        keepAlive: true
+    });
 
     // Inertia Forms for User
     const createRoomForm = useForm({

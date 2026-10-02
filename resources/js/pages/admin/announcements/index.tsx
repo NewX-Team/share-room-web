@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePoll } from '@inertiajs/react';
 import { showConfirmDialog } from '@/lib/swal';
 import {
     Megaphone,
@@ -35,6 +35,12 @@ interface AdminAnnouncementsIndexProps {
 }
 
 export default function AdminAnnouncementsIndex({ announcements }: AdminAnnouncementsIndexProps) {
+    // Real-Time Sync for Global Announcements
+    usePoll(3000, {
+        only: ['announcements']
+    }, {
+        keepAlive: true
+    });
     const [showModal, setShowModal] = useState(false);
 
     const form = useForm({
